@@ -5,59 +5,119 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-03-03
+#'''Last Modified On : 2025-03-07
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
-#'''Version : 0.0.0
+#'''Version : 0.0.1
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
+#'''0.0.1	2025-03-07    Connectoin à Clarity et authentification
+#''                       Utilisation de Chrome au lieu de Edge
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ## TODO 1 Installer edgedriver sur mes 2 ordis. portable et bureau. Version 134.0.3124.39 
-## TODO 2 Ajouter le path \\ADMIN06\Microsoft\EdgeDriver dans la variable d'environnement
+## TODO 1.1 Installer ChromeDriver sur mes 2 ordis. portable et bureau. Version 110.0.5481.177
+## TODO 2 Ajouter le path \\ADMIN06\Download\Microsoft\EdgeDriver dans la variable d'environnement
 ## TODO 3 Pour désactiver la collecte de données de diagnostic pour Microsoft Edge WebDriver, définissez la variable d’environnement sur MSEDGEDRIVER_TELEMETRY_OPTOUT1
 ## TODO 4 Ajouter le chemin d'environnement: 'C:\Users\thebe\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\Scripts'
 
+import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+import uuid
 
-# Chemin vers EdgeDriver (assurez-vous de le modifier en fonction de l'emplacement de votre EdgeDriver)
-driver_path = '\\ADMIN06\Microsoft\EdgeDriver'
-driver = webdriver.Edge(driver_path)
+# Chemin vers ChromeDriver (assurez-vous de le modifier en fonction de l'emplacement de votre ChromeDriver)
+#driver_path = 'path_to_chromedriver'
+service = ChromeService()
+options = webdriver.ChromeOptions()
+options.add_argument("--user-data-dir=C:/Users/thebe/AppData/Local/Google/Chrome/User Data/ClarityDownloadProfile")
+
+# Ajoutez un argument unique pour éviter les conflits de session
+unique_profile = f"C:/Users/thebe/AppData/Local/Google/Chrome/User Data/ClarityDownloadProfile_{uuid.uuid4()}"
+options.add_argument(f"--user-data-dir={unique_profile}")
+
+driver = webdriver.Chrome(service=service, options=options)
 
 # URL de la page Dexcom Clarity
 ## TODO 5 Ajouter l'url de la page de Login de Clarity
-url = 'https://clarity.dexcom.eu/#/agp?dates=2024-08-05%2F2024-08-19'
+url = "https://clarity.dexcom.eu/?&locale=fr-CA"
 driver.get(url)
 
 # Attendez que la page soit entièrement chargée
 wait = WebDriverWait(driver, 10)
 
-# Connectez-vous si nécessaire (vous devrez peut-être adapter cette partie du code en fonction de la page de connexion)
-# Par exemple :
-# username_input = wait.until(EC.presence_of_element_located((By.ID, 'username')))
-# username_input.send_keys('your_username')
-# password_input = wait.until(EC.presence_of_element_located((By.ID, 'password')))
-# password_input.send_keys('your_password')
-# login_button = wait.until(EC.element_to_be_clickable((By.ID, 'login_button')))
-# login_button.click()
+# Recherchez et cliquez sur le bouton "Dexcom Clarity pour les utilisateurs à domicile"
+try:
+    bouton = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@value='Dexcom Clarity pour les utilisateurs à domicile']")))
+    bouton.click()
+    print("Le bouton a été cliqué avec succès!")
+except Exception as e:
+    print(f"Une erreur s'est produite : {e}")
+
+# Recherchez les champs de saisie pour le courriel/nom d'utilisateur et le mot de passe
+try:
+    # Remplacez par les valeurs correctes pour les attributs id ou name
+    username_input = driver.find_element(By.NAME, "username")  # Assurez-vous que l'attribut name est correct
+    password_input = driver.find_element(By.NAME, "password")  # Assurez-vous que l'attribut name est correct
+
+    # Entrez votre nom d'utilisateur et mot de passe à partir des variables d'environnement
+    dexcom_username = os.getenv("DEXCOM_USERNAME")
+    dexcom_password = os.getenv("DEXCOM_PASSWORD")
+
+    if dexcom_username is None or dexcom_password is None:
+        raise ValueError("Les variables d'environnement DEXCOM_USERNAME et DEXCOM_PASSWORD doivent être définies.")
+
+    username_input.send_keys(dexcom_username)
+    password_input.send_keys(dexcom_password)
+
+    # Recherchez le bouton de connexion et cliquez dessus
+    login_button = driver.find_element(By.XPATH, "//input[@type='submit' and @value='Se connecter']")  # Assurez-vous que l'attribut value est correct
+    login_button.click()
+
+    print("Connexion réussie !")
+except Exception as e:
+    print(f"Une erreur s'est produite : {e}")
+
+# Attendez que la page soit entièrement chargée
+wait = WebDriverWait(driver, 15)
 
 ## TODO 6 Demander à l'usager les dates de début et de fin pour les rapports.
-# Attendez que l'icône de téléchargement soit présente et cliquez dessus
-download_icon = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'selector_of_download_icon')))
-download_icon.click()
+# Recherchez les champs de saisie des dates et entrez les nouvelles dates
+try:
+    # Recherchez et cliquez sur le champ de la date de début
+    start_date_input = driver.find_element(By.XPATH, "//input[@placeholder='Date de début']")
+    start_date_input.click()
+    start_date_input.clear()
+    start_date_input.send_keys("01/03/2025")  # Remplacez par la nouvelle date de début
+    start_date_input.send_keys(Keys.RETURN)
+
+    # Recherchez et cliquez sur le champ de la date de fin
+    end_date_input = driver.find_element(By.XPATH, "//input[@placeholder='Date de fin']")
+    end_date_input.click()
+    end_date_input.clear()
+    end_date_input.send_keys("07/03/2025")  # Remplacez par la nouvelle date de fin
+    end_date_input.send_keys(Keys.RETURN)
+    
+    # Recherchez le bouton pour mettre à jour les dates et cliquez dessus (s'il y en a un)
+    update_button = driver.find_element(By.XPATH, "//button[text()='Mettre à jour']")  # Assurez-vous que le texte est correct
+    update_button.click()
+    
+    print("Les dates ont été modifiées avec succès!")
+except Exception as e:
+    print(f"Une erreur s'est produite : {e}")
 
 ##TODO 7 Créer une fonction pour le téléchargement de chacun des rapports et le téléchargement des données brutes
 
 ##TODO 8 Créer une fonction pour la sauvegarde des rapports et des données brutes
 
 # Attendez un peu pour vous assurer que le téléchargement est terminé
-time.sleep(5)
+time.sleep(10)
 
 # Fermez le navigateur
-driver.quit()
+#driver.quit()
