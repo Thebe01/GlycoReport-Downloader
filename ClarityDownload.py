@@ -5,15 +5,16 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-03-07
+#'''Last Modified On : 2025-03-20
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
-#'''Version : 0.0.1
+#'''Version : 0.0.2
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
 #'''0.0.1	2025-03-07    Connectoin à Clarity et authentification
 #''                       Utilisation de Chrome au lieu de Edge
+#'''0.0.2   2025-03-20    Cliquer sur le sélecteur de dates
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -31,6 +32,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import uuid
+
+date_debut = "2025-01-01"
+date_fin = "2025-01-14"
 
 # Chemin vers ChromeDriver (assurez-vous de le modifier en fonction de l'emplacement de votre ChromeDriver)
 #driver_path = 'path_to_chromedriver'
@@ -82,36 +86,39 @@ try:
 
     print("Connexion réussie !")
 except Exception as e:
-    print(f"Une erreur s'est produite : {e}")
+    print(f"Une erreur s'est produite lors de la connexion : {e}")
 
 # Attendez que la page soit entièrement chargée
 wait = WebDriverWait(driver, 15)
 
-## TODO 6 Demander à l'usager les dates de début et de fin pour les rapports.
+## TODO 6 Choisir les dates de début et de fin pour les rapports.
 # Recherchez les champs de saisie des dates et entrez les nouvelles dates
 try:
-    # Recherchez et cliquez sur le champ de la date de début
-    start_date_input = driver.find_element(By.XPATH, "//input[@placeholder='Date de début']")
-    start_date_input.click()
-    start_date_input.clear()
-    start_date_input.send_keys("01/03/2025")  # Remplacez par la nouvelle date de début
-    start_date_input.send_keys(Keys.RETURN)
+    # Attendre que l'élément soit présent
+    date_picker_button = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, "//*[@id='ember12']/div/div/date-range-picker/div"))
+    )
+    # Interagir avec l'élément
+    date_picker_button.click()
 
-    # Recherchez et cliquez sur le champ de la date de fin
-    end_date_input = driver.find_element(By.XPATH, "//input[@placeholder='Date de fin']")
-    end_date_input.click()
-    end_date_input.clear()
-    end_date_input.send_keys("07/03/2025")  # Remplacez par la nouvelle date de fin
-    end_date_input.send_keys(Keys.RETURN)
-    
-    # Recherchez le bouton pour mettre à jour les dates et cliquez dessus (s'il y en a un)
-    update_button = driver.find_element(By.XPATH, "//button[text()='Mettre à jour']")  # Assurez-vous que le texte est correct
-    update_button.click()
-    
-    print("Les dates ont été modifiées avec succès!")
+    if date_debut is None or date_fin is None:
+        raise ValueError("Les variables date_debut et date_fin ne peuvent pas être None. Elles doivent être définies.")
+
+    date_debut_input = driver.find_element(By.NAME, "start_date")
+    date_fin_input = driver.find_element(By.NAME, "end_date")
+    date_debut_input.clear()
+    date_fin_input.clear()
+    date_debut_input.send_keys(date_debut)
+    date_fin_input.send_keys(date_fin)
+
+    # Recherchez le bouton "OK" et cliquez dessus
+    ok_button = driver.find_element(By.XPATH, "//*[@id='ember12']/div/div/date-range-picker/div[2]/p/button[1]")  # Assurez-vous que le texte est correct
+    ok_button.click()
+
+    print("Les dates ont été saisies avec succès !")
+
 except Exception as e:
-    print(f"Une erreur s'est produite : {e}")
-
+    print(f"Une erreur s'est produite lors de la saisie des dates : {e}")
 ##TODO 7 Créer une fonction pour le téléchargement de chacun des rapports et le téléchargement des données brutes
 
 ##TODO 8 Créer une fonction pour la sauvegarde des rapports et des données brutes
