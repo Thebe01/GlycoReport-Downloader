@@ -5,16 +5,17 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-03-20
+#'''Last Modified On : 2025-03-28
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
-#'''Version : 0.0.2
+#'''Version : 0.0.3
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
 #'''0.0.1	2025-03-07    Connectoin à Clarity et authentification
 #''                       Utilisation de Chrome au lieu de Edge
-#'''0.0.2   2025-03-20    Cliquer sur le sélecteur de dates
+#'''0.0.2   2025-03-20    Cliquer sur le sélecteur de dates et choisir la période
+#'''0.0.3   2025-03-28    Ajout du traitement des rapports
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -23,6 +24,7 @@
 ## TODO 2 Ajouter le path \\ADMIN06\Download\Microsoft\EdgeDriver dans la variable d'environnement
 ## TODO 3 Pour désactiver la collecte de données de diagnostic pour Microsoft Edge WebDriver, définissez la variable d’environnement sur MSEDGEDRIVER_TELEMETRY_OPTOUT1
 ## TODO 4 Ajouter le chemin d'environnement: 'C:\Users\thebe\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\Scripts'
+## TODO 9 Convertir à Python 3.13
 
 import os
 from selenium import webdriver
@@ -35,6 +37,7 @@ import uuid
 
 date_debut = "2025-01-01"
 date_fin = "2025-01-14"
+rapports = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP"]
 
 # Chemin vers ChromeDriver (assurez-vous de le modifier en fonction de l'emplacement de votre ChromeDriver)
 #driver_path = 'path_to_chromedriver'
@@ -51,6 +54,88 @@ driver = webdriver.Chrome(service=service, options=options)
 # URL de la page Dexcom Clarity
 ## TODO 5 Ajouter l'url de la page de Login de Clarity
 url = "https://clarity.dexcom.eu/?&locale=fr-CA"
+
+def traitement_rapport_apercu():
+    # Code pour traiter le rapport "Aperçu"
+    print("Traitement du rapport Aperçu")
+    # Ajoutez ici le code spécifique pour traiter le rapport "Aperçu"
+    try:
+        # Attendre que l'élément soit présent
+        selection_rapport_button = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//*[@id="ember7"]/clarity-sidebar/clarity-navigation-list/ul/clarity-navigation-list-item[1]/clarity-button/button"))
+        )
+        # Interagir avec l'élément
+        selection_rapport_button.click()
+    except Exception as e:       
+        print(f"Une erreur s'est produite lors de la saisie des dates : {e}")
+
+
+def traitement_rapport_modeles():
+    # Code pour traiter le rapport "Modèles"
+    print("Traitement du rapport Modèles")
+    # Ajoutez ici le code spécifique pour traiter le rapport "Modèles"
+
+def traitement_rapport_superposition():
+    # Code pour traiter le rapport "Superposition"
+    print("Traitement du rapport Superposition")
+    # Ajoutez ici le code spécifique pour traiter le rapport "Superposition"
+
+def traitement_rapport_quotidien():
+    # Code pour traiter le rapport "Quotidien"
+    print("Traitement du rapport Quotidien")
+    # Ajoutez ici le code spécifique pour traiter le rapport "Quotidien"
+
+def traitement_rapport_comparer():
+    # Code pour traiter le rapport "Comparer"
+    print("Traitement du rapport Comparer")
+    # Ajoutez ici le code spécifique pour traiter le rapport "Comparer"
+
+def traitement_rapport_statistiques():
+    # Code pour traiter le rapport "Statistiques"
+    print("Traitement du rapport Statistiques")
+    # Ajoutez ici le code spécifique pour traiter le rapport "Statistiques"
+
+def traitement_rapport_agp():
+    # Code pour traiter le rapport "AGP"
+    print("Traitement du rapport AGP")
+    # Ajoutez ici le code spécifique pour traiter le rapport "AGP"
+
+def selection_rapport(rapports):
+    # Code pour traiter les rapports
+    for rapport in rapports:
+        print(f"Traitement du rapport : {rapport}")
+        if rapport == "Aperçu":
+            # Code pour traiter le rapport "Aperçu"
+            print("Traitement du rapport Aperçu")
+            traitement_rapport_apercu()
+        elif rapport == "Modèles":
+            # Code pour traiter le rapport "Modèles"
+            print("Traitement du rapport Modèles")
+            traitement_rapport_modeles()
+        elif rapport == "Superposition":
+            # Code pour traiter le rapport "Superposition"
+            print("Traitement du rapport Superposition")
+            traitement_rapport_superposition()
+        elif rapport == "Quotidien":
+            # Code pour traiter le rapport "Quotidien"
+            print("Traitement du rapport Quotidien")
+            traitement_rapport_quotidien()
+        elif rapport == "Comparer":
+            # Code pour traiter le rapport "Comparer"
+            print("Traitement du rapport Comparer")
+            traitement_rapport_comparer()
+        elif rapport == "Statistiques":
+            # Code pour traiter le rapport "Statistiques"
+            print("Traitement du rapport Statistiques")
+            traitement_rapport_statistiques()
+        elif rapport == "AGP":
+            # Code pour traiter le rapport "AGP"
+            print("Traitement du rapport AGP")
+            traitement_rapport_agp()
+
+
+
+# Ouvrir la page de connexion
 driver.get(url)
 
 # Attendez que la page soit entièrement chargée
@@ -120,6 +205,8 @@ try:
 except Exception as e:
     print(f"Une erreur s'est produite lors de la saisie des dates : {e}")
 ##TODO 7 Créer une fonction pour le téléchargement de chacun des rapports et le téléchargement des données brutes
+# Téléchargez les rapports
+selection_rapport(rapports)
 
 ##TODO 8 Créer une fonction pour la sauvegarde des rapports et des données brutes
 
