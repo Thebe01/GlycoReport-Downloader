@@ -5,10 +5,10 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-03-28
+#'''Last Modified On : 2025-04-07
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
-#'''Version : 0.0.3
+#'''Version : 0.0.4
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -16,6 +16,7 @@
 #''                       Utilisation de Chrome au lieu de Edge
 #'''0.0.2   2025-03-20    Cliquer sur le sélecteur de dates et choisir la période
 #'''0.0.3   2025-03-28    Ajout du traitement des rapports
+#'''0.0.4   2025-04-07    Conversion à Python 3.13 et une erreur de syntaxe dans le code de la fonction traitement_rapport_apercu
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -62,7 +63,7 @@ def traitement_rapport_apercu():
     try:
         # Attendre que l'élément soit présent
         selection_rapport_button = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "//*[@id="ember7"]/clarity-sidebar/clarity-navigation-list/ul/clarity-navigation-list-item[1]/clarity-button/button"))
+            EC.presence_of_element_located((By.XPATH, "//*[@id='ember7']/clarity-sidebar/clarity-navigation-list/ul/clarity-navigation-list-item[1]/clarity-button/button"))
         )
         # Interagir avec l'élément
         selection_rapport_button.click()
