@@ -5,10 +5,10 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-04-07
+#'''Last Modified On : 2025-04-11
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
-#'''Version : 0.0.4
+#'''Version : 0.0.5
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -17,10 +17,10 @@
 #'''0.0.2   2025-03-20    Cliquer sur le sélecteur de dates et choisir la période
 #'''0.0.3   2025-03-28    Ajout du traitement des rapports
 #'''0.0.4   2025-04-07    Conversion à Python 3.13 et une erreur de syntaxe dans le code de la fonction traitement_rapport_apercu
+#'''0.0.5   2025-04-11    Ajout de la sélection du rapport Apercu
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
-## TODO 1 Installer edgedriver sur mes 2 ordis. portable et bureau. Version 134.0.3124.39 
 ## TODO 1.1 Installer ChromeDriver sur mes 2 ordis. portable et bureau. Version 110.0.5481.177
 ## TODO 2 Ajouter le path \\ADMIN06\Download\Microsoft\EdgeDriver dans la variable d'environnement
 ## TODO 3 Pour désactiver la collecte de données de diagnostic pour Microsoft Edge WebDriver, définissez la variable d’environnement sur MSEDGEDRIVER_TELEMETRY_OPTOUT1
@@ -36,8 +36,8 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 import uuid
 
-date_debut = "2025-01-01"
-date_fin = "2025-01-14"
+date_debut = "2024-08-19"
+date_fin = "2024-09-01"
 rapports = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP"]
 
 # Chemin vers ChromeDriver (assurez-vous de le modifier en fonction de l'emplacement de votre ChromeDriver)
@@ -53,8 +53,21 @@ options.add_argument(f"--user-data-dir={unique_profile}")
 driver = webdriver.Chrome(service=service, options=options)
 
 # URL de la page Dexcom Clarity
-## TODO 5 Ajouter l'url de la page de Login de Clarity
 url = "https://clarity.dexcom.eu/?&locale=fr-CA"
+
+def telechargement_rapport():
+    # Code pour telecharger le rapport
+    print("Telechargement du rapport")
+    # Ajoutez ici le code spécifique pour telecharger le rapport
+    try:
+        # Attendre que l'élément soit présent
+        selection_rapport_download_button = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "/html/body/div[3]/clarity-application/clarity-application-content/div/clarity-content-row/clarity-content-row-content/main-content/div[1]/div/div/div/report-icon-bar/clarity-icon-list/clarity-icon-button[2]/clarity-tooltip/div[1]/button"))
+        )
+        # Cliquer sur le bouton de téléchargement
+        selection_rapport_download_button.click()
+    except Exception as e:
+        print(f"Une erreur s'est produite lors du téléchargement du rapport : {e}")
 
 def traitement_rapport_apercu():
     # Code pour traiter le rapport "Aperçu"
@@ -69,7 +82,7 @@ def traitement_rapport_apercu():
         selection_rapport_button.click()
     except Exception as e:       
         print(f"Une erreur s'est produite lors de la saisie des dates : {e}")
-
+    telechargement_rapport()
 
 def traitement_rapport_modeles():
     # Code pour traiter le rapport "Modèles"
@@ -104,10 +117,8 @@ def traitement_rapport_agp():
 def selection_rapport(rapports):
     # Code pour traiter les rapports
     for rapport in rapports:
-        print(f"Traitement du rapport : {rapport}")
         if rapport == "Aperçu":
             # Code pour traiter le rapport "Aperçu"
-            print("Traitement du rapport Aperçu")
             traitement_rapport_apercu()
         elif rapport == "Modèles":
             # Code pour traiter le rapport "Modèles"
@@ -146,7 +157,7 @@ wait = WebDriverWait(driver, 10)
 try:
     bouton = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@value='Dexcom Clarity pour les utilisateurs à domicile']")))
     bouton.click()
-    print("Le bouton a été cliqué avec succès!")
+    print("Le bouton pour utilisateurs à domicile été cliqué avec succès!")
 except Exception as e:
     print(f"Une erreur s'est produite : {e}")
 
@@ -177,7 +188,6 @@ except Exception as e:
 # Attendez que la page soit entièrement chargée
 wait = WebDriverWait(driver, 15)
 
-## TODO 6 Choisir les dates de début et de fin pour les rapports.
 # Recherchez les champs de saisie des dates et entrez les nouvelles dates
 try:
     # Attendre que l'élément soit présent
@@ -201,18 +211,19 @@ try:
     ok_button = driver.find_element(By.XPATH, "//*[@id='ember12']/div/div/date-range-picker/div[2]/p/button[1]")  # Assurez-vous que le texte est correct
     ok_button.click()
 
+    print("Date dedébut: ", date_debut)
+    print("Date de fin: ", date_fin)
     print("Les dates ont été saisies avec succès !")
 
 except Exception as e:
     print(f"Une erreur s'est produite lors de la saisie des dates : {e}")
-##TODO 7 Créer une fonction pour le téléchargement de chacun des rapports et le téléchargement des données brutes
 # Téléchargez les rapports
 selection_rapport(rapports)
 
 ##TODO 8 Créer une fonction pour la sauvegarde des rapports et des données brutes
 
 # Attendez un peu pour vous assurer que le téléchargement est terminé
-time.sleep(10)
+time.sleep(20)
 
 # Fermez le navigateur
 #driver.quit()
