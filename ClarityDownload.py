@@ -5,10 +5,10 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-04-11
+#'''Last Modified On : 2025-04-16
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
-#'''Version : 0.0.5
+#'''Version : 0.0.6
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -18,6 +18,9 @@
 #'''0.0.3   2025-03-28    Ajout du traitement des rapports
 #'''0.0.4   2025-04-07    Conversion à Python 3.13 et une erreur de syntaxe dans le code de la fonction traitement_rapport_apercu
 #'''0.0.5   2025-04-11    Ajout de la sélection du rapport Apercu
+#'''0.0.6   2025-04-16    Ajout du code pour télécharger un rapport.
+#'''                        Reste à cliquer sur les boutons télécharger le rapport et
+#'''                        enregistrer sous.
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -31,6 +34,7 @@ import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
@@ -40,16 +44,25 @@ date_debut = "2024-08-19"
 date_fin = "2024-09-01"
 rapports = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP"]
 
-# Chemin vers ChromeDriver (assurez-vous de le modifier en fonction de l'emplacement de votre ChromeDriver)
-#driver_path = 'path_to_chromedriver'
-service = ChromeService()
-options = webdriver.ChromeOptions()
+# Configuration du service ChromeDriver
+service = ChromeService(log_path=os.path.join(os.getcwd(), "chromedriver.log"))
+
+# Configuration des options Chrome
+options = Options()
 options.add_argument("--user-data-dir=C:/Users/thebe/AppData/Local/Google/Chrome/User Data/ClarityDownloadProfile")
+options.add_argument("--disable-gpu")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--disable-background-networking")
+options.add_argument("--disable-client-side-phishing-detection")
+options.add_argument("--disable-default-apps")
+options.add_argument("--disable-hang-monitor")
+options.add_argument("--disable-popup-blocking")
+options.add_argument("--disable-sync")
+options.add_argument("--disable-translate")
+options.add_argument("--disable-features=PaintHolding")
 
-# Ajoutez un argument unique pour éviter les conflits de session
-unique_profile = f"C:/Users/thebe/AppData/Local/Google/Chrome/User Data/ClarityDownloadProfile_{uuid.uuid4()}"
-options.add_argument(f"--user-data-dir={unique_profile}")
-
+# Initialisation du WebDriver
 driver = webdriver.Chrome(service=service, options=options)
 
 # URL de la page Dexcom Clarity
@@ -60,14 +73,38 @@ def telechargement_rapport():
     print("Telechargement du rapport")
     # Ajoutez ici le code spécifique pour telecharger le rapport
     try:
-        # Attendre que l'élément soit présent
-        selection_rapport_download_button = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "/html/body/div[3]/clarity-application/clarity-application-content/div/clarity-content-row/clarity-content-row-content/main-content/div[1]/div/div/div/report-icon-bar/clarity-icon-list/clarity-icon-button[2]/clarity-tooltip/div[1]/button"))
+        # Attendre que l'élément soit recréé
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//*[@id='ember14']/clarity-icon-list/clarity-icon-button[2]/clarity-tooltip/div[1]/button"))
         )
-        # Cliquer sur le bouton de téléchargement
+        selection_rapport_download_button = driver.find_element(By.XPATH, "//*[@id='ember14']/clarity-icon-list/clarity-icon-button[2]/clarity-tooltip/div[1]/button")
         selection_rapport_download_button.click()
+        print("Le bouton de télécharger a été cliqué avec succès!")
     except Exception as e:
-        print(f"Une erreur s'est produite lors du téléchargement du rapport : {e}")
+        print(f"Une erreur s'est produite lors du clique sur le bouton de télécharger : {e}")
+    # Choisir le rapport en couleur
+    try:
+        # Attendre que l'élément soit recréé
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//*[@id='ember66']"))
+        )
+        selection_mode_couleur_button = driver.find_element(By.XPATH, "//*[@id='ember66']")
+        selection_mode_couleur_button.click()
+        print("Le mode couleur a été sélectionné avec succès!")
+    except Exception as e:
+        print(f"Une erreur s'est produite lors de la sélection du mode couleur : {e}")
+
+    # Cliquer sur le bouton Enregistrer le rapport
+    try:
+        # Attendre que l'élément soit recréé
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//button[contains(text(), 'Enregistrer le rapport')]"))
+            )
+        enregistrer_rapport_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Enregistrer le rapport')]")
+        enregistrer_rapport_button.click()
+        print("Le bouton Enregistrer le rapport a été cliqué avec succès!")
+    except Exception as e:
+        print(f"Une erreur s'est produite lors de l'enregistrement du rapport : {e}")
 
 def traitement_rapport_apercu():
     # Code pour traiter le rapport "Aperçu"
@@ -81,7 +118,7 @@ def traitement_rapport_apercu():
         # Interagir avec l'élément
         selection_rapport_button.click()
     except Exception as e:       
-        print(f"Une erreur s'est produite lors de la saisie des dates : {e}")
+        print(f"Une erreur s'est produite lors de la sélection du rapport Aperçu : {e}")
     telechargement_rapport()
 
 def traitement_rapport_modeles():
@@ -145,8 +182,6 @@ def selection_rapport(rapports):
             print("Traitement du rapport AGP")
             traitement_rapport_agp()
 
-
-
 # Ouvrir la page de connexion
 driver.get(url)
 
@@ -159,7 +194,7 @@ try:
     bouton.click()
     print("Le bouton pour utilisateurs à domicile été cliqué avec succès!")
 except Exception as e:
-    print(f"Une erreur s'est produite : {e}")
+    print(f"Une erreur s'est produite au moment de cliquer sur le bouton pour utilisateurs à domicile : {e}")
 
 # Recherchez les champs de saisie pour le courriel/nom d'utilisateur et le mot de passe
 try:
