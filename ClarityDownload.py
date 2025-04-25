@@ -5,10 +5,10 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-04-16
+#'''Last Modified On : 2025-04-24
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
-#'''Version : 0.0.6
+#'''Version : 0.0.7
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -21,6 +21,9 @@
 #'''0.0.6   2025-04-16    Ajout du code pour télécharger un rapport.
 #'''                        Reste à cliquer sur les boutons télécharger le rapport et
 #'''                        enregistrer sous.
+#'''0.0.7   2025-04-24    Retour à Python 3.12. Besoin Tensorflow et il n'est pas supporté par Python 3.13
+#'''                      Cliquer sur le bouton "Enregistrer le rapport"
+#'''                      Enlever la sélection du mode couleur (problème à avoir le bon xpath)
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -31,6 +34,8 @@
 ## TODO 9 Convertir à Python 3.13
 
 import os
+import sys
+import logging
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -39,6 +44,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import uuid
+
+# Définition du log
+logger = logging.getLogger('selenium')
+handler = logging.StreamHandler()
+logger.addHandler(handler)
+logger.setLevel(logging.ERROR)
+
+
 
 date_debut = "2024-08-19"
 date_fin = "2024-09-01"
@@ -69,42 +82,50 @@ driver = webdriver.Chrome(service=service, options=options)
 url = "https://clarity.dexcom.eu/?&locale=fr-CA"
 
 def telechargement_rapport():
+    logger.setLevel(logging.DEBUG)
     # Code pour telecharger le rapport
     print("Telechargement du rapport")
     # Ajoutez ici le code spécifique pour telecharger le rapport
     try:
         # Attendre que l'élément soit recréé
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "//*[@id='ember14']/clarity-icon-list/clarity-icon-button[2]/clarity-tooltip/div[1]/button"))
+        WebDriverWait(driver=driver, timeout=20).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "clarity-icon-button:nth-child(2)"))
         )
-        selection_rapport_download_button = driver.find_element(By.XPATH, "//*[@id='ember14']/clarity-icon-list/clarity-icon-button[2]/clarity-tooltip/div[1]/button")
+        selection_rapport_download_button = driver.find_element(By.CSS_SELECTOR, "clarity-icon-button:nth-child(2)")
         selection_rapport_download_button.click()
-        print("Le bouton de télécharger a été cliqué avec succès!")
+        time.sleep(4)
+        print("Le bouton télécharger a été cliqué avec succès!")
     except Exception as e:
         print(f"Une erreur s'est produite lors du clique sur le bouton de télécharger : {e}")
+        return
     # Choisir le rapport en couleur
-    try:
-        # Attendre que l'élément soit recréé
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "//*[@id='ember66']"))
-        )
-        selection_mode_couleur_button = driver.find_element(By.XPATH, "//*[@id='ember66']")
-        selection_mode_couleur_button.click()
-        print("Le mode couleur a été sélectionné avec succès!")
-    except Exception as e:
-        print(f"Une erreur s'est produite lors de la sélection du mode couleur : {e}")
-
+#    try:
+#        # Attendre que l'élément soit recréé
+#        WebDriverWait(driver=driver, timeout=10).until(
+#            EC.element_to_be_clickable((By.XPATH, "//*[@id='ember95']"))
+#        )
+#        selection_mode_couleur_button = driver.find_element(By.XPATH, "//*[@id='ember95']")
+#        selection_mode_couleur_button.click()
+#        time.sleep(2)
+#        print("Le mode couleur a été sélectionné avec succès!")
+#    except Exception as e:
+#        print(f"Une erreur s'est produite lors de la sélection du mode couleur : {e}")
+#        return
     # Cliquer sur le bouton Enregistrer le rapport
     try:
         # Attendre que l'élément soit recréé
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "//button[contains(text(), 'Enregistrer le rapport')]"))
-            )
-        enregistrer_rapport_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Enregistrer le rapport')]")
+        WebDriverWait(driver=driver, timeout=10).until(
+            EC.element_to_be_clickable((By.XPATH, "//*[@id='ember108']/div/p[4]/button[1]"))
+        )
+        enregistrer_rapport_button = driver.find_element(By.XPATH, "//*[@id='ember108']/div/p[4]/button[1]")
         enregistrer_rapport_button.click()
+        time.sleep(5)
         print("Le bouton Enregistrer le rapport a été cliqué avec succès!")
     except Exception as e:
         print(f"Une erreur s'est produite lors de l'enregistrement du rapport : {e}")
+        return
+
+    logger.setLevel(logging.ERROR)
 
 def traitement_rapport_apercu():
     # Code pour traiter le rapport "Aperçu"
@@ -112,13 +133,15 @@ def traitement_rapport_apercu():
     # Ajoutez ici le code spécifique pour traiter le rapport "Aperçu"
     try:
         # Attendre que l'élément soit présent
-        selection_rapport_button = WebDriverWait(driver, 10).until(
+        selection_rapport_button = WebDriverWait(driver=driver, timeout=10).until(
             EC.presence_of_element_located((By.XPATH, "//*[@id='ember7']/clarity-sidebar/clarity-navigation-list/ul/clarity-navigation-list-item[1]/clarity-button/button"))
         )
         # Interagir avec l'élément
         selection_rapport_button.click()
-    except Exception as e:       
+        time.sleep(2)
+    except Exception as e:
         print(f"Une erreur s'est produite lors de la sélection du rapport Aperçu : {e}")
+        return
     telechargement_rapport()
 
 def traitement_rapport_modeles():
@@ -182,17 +205,20 @@ def selection_rapport(rapports):
             print("Traitement du rapport AGP")
             traitement_rapport_agp()
 
+print(f"Version de Python : {sys.version}")
+
 # Ouvrir la page de connexion
 driver.get(url)
 
 # Attendez que la page soit entièrement chargée
-wait = WebDriverWait(driver, 10)
+wait = WebDriverWait(driver=driver, timeout=10)
 
 # Recherchez et cliquez sur le bouton "Dexcom Clarity pour les utilisateurs à domicile"
 try:
     bouton = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@value='Dexcom Clarity pour les utilisateurs à domicile']")))
     bouton.click()
-    print("Le bouton pour utilisateurs à domicile été cliqué avec succès!")
+    time.sleep(2)
+    print("Le bouton pour utilisateurs à domicile a été cliqué avec succès!")
 except Exception as e:
     print(f"Une erreur s'est produite au moment de cliquer sur le bouton pour utilisateurs à domicile : {e}")
 
@@ -215,22 +241,24 @@ try:
     # Recherchez le bouton de connexion et cliquez dessus
     login_button = driver.find_element(By.XPATH, "//input[@type='submit' and @value='Se connecter']")  # Assurez-vous que l'attribut value est correct
     login_button.click()
+    time.sleep(2)
 
     print("Connexion réussie !")
 except Exception as e:
     print(f"Une erreur s'est produite lors de la connexion : {e}")
 
 # Attendez que la page soit entièrement chargée
-wait = WebDriverWait(driver, 15)
+time.sleep(5)
 
 # Recherchez les champs de saisie des dates et entrez les nouvelles dates
 try:
     # Attendre que l'élément soit présent
-    date_picker_button = WebDriverWait(driver, 10).until(
+    date_picker_button = WebDriverWait(driver=driver, timeout=10).until(
         EC.presence_of_element_located((By.XPATH, "//*[@id='ember12']/div/div/date-range-picker/div"))
     )
     # Interagir avec l'élément
     date_picker_button.click()
+    time.sleep(2)
 
     if date_debut is None or date_fin is None:
         raise ValueError("Les variables date_debut et date_fin ne peuvent pas être None. Elles doivent être définies.")
@@ -245,20 +273,22 @@ try:
     # Recherchez le bouton "OK" et cliquez dessus
     ok_button = driver.find_element(By.XPATH, "//*[@id='ember12']/div/div/date-range-picker/div[2]/p/button[1]")  # Assurez-vous que le texte est correct
     ok_button.click()
+    time.sleep(4)
 
-    print("Date dedébut: ", date_debut)
+    print("Date de début: ", date_debut)
     print("Date de fin: ", date_fin)
     print("Les dates ont été saisies avec succès !")
 
 except Exception as e:
     print(f"Une erreur s'est produite lors de la saisie des dates : {e}")
+
 # Téléchargez les rapports
 selection_rapport(rapports)
 
 ##TODO 8 Créer une fonction pour la sauvegarde des rapports et des données brutes
 
 # Attendez un peu pour vous assurer que le téléchargement est terminé
-time.sleep(20)
+time.sleep(100)
 
 # Fermez le navigateur
-#driver.quit()
+driver.quit()
