@@ -5,10 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-04-24
+#'''Last Modified On : 2025-05-23
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
-#'''Version : 0.0.7
+#'''                Le dossier de téléchargement est : C:\Users\thebe\Downloads\Dexcom_download
+#'''                Le dossier final est C:\Users\thebe\OneDrive\Documents\Santé\Suivie glycémie et pression\AAAA
+#'''Version : 0.0.8
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -24,6 +26,8 @@
 #'''0.0.7   2025-04-24    Retour à Python 3.12. Besoin Tensorflow et il n'est pas supporté par Python 3.13
 #'''                      Cliquer sur le bouton "Enregistrer le rapport"
 #'''                      Enlever la sélection du mode couleur (problème à avoir le bon xpath)
+#'''0.0.8   2025-05-23    Terminé la fonction téléchargement_rapport
+#'''                      Ajout de la fonction deplace_et_renomme_rapport
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -75,16 +79,65 @@ options.add_argument("--disable-sync")
 options.add_argument("--disable-translate")
 options.add_argument("--disable-features=PaintHolding")
 
+download_dir = r"C:\Users\thebe\Downloads\Dexcom_download"  # Mets ici ton dossier cible
+
+prefs = {
+    "download.default_directory": download_dir,  # Dossier de téléchargement
+    "download.prompt_for_download": False,       # Pas de popup de confirmation
+    "directory_upgrade": True,                   # Mise à jour du dossier si déjà ouvert
+    "safebrowsing.enabled": True                 # Désactive l'avertissement de sécurité
+}
+options.add_experimental_option("prefs", prefs)
+
 # Initialisation du WebDriver
 driver = webdriver.Chrome(service=service, options=options)
 
 # URL de la page Dexcom Clarity
 url = "https://clarity.dexcom.eu/?&locale=fr-CA"
 
-def telechargement_rapport():
+def get_last_downloaded_file(download_dir):
     logger.setLevel(logging.DEBUG)
+    """Retourne le chemin du fichier le plus récemment téléchargé dans le dossier donné."""
+    files = [os.path.join(download_dir, f) for f in os.listdir(download_dir)]
+    files = [f for f in files if os.path.isfile(f)]
+    if not files:
+        return None
+    logger.setLevel(logging.ERROR)
+    print(files)
+    return max(files, key=os.path.getctime)
+
+def renomme_prefix(prefix):
+    nom, date, numero = prefix.split("_")
+    nouveau_prefix = nom + "_" + date_fin + "_" + numero
+    print("Nouveau préfix : ", nouveau_prefix)
+    return nouveau_prefix
+
+
+def deplace_et_renomme_rapport(nom_rapport):
+    logger.setLevel(logging.DEBUG)
+    # Code pour deplacer et renommer le rapport
+    print(f"Deplacement et renommage du rapport {nom_rapport}")
+    annee = date_fin[:4]
+    dir_final = r"C:\Users\thebe\OneDrive\Documents\Santé\Suivie glycémie et pression"
+    dir_final = os.path.join(dir_final, annee)
+    chemin_fichier_telecharge = get_last_downloaded_file(download_dir)
+    if chemin_fichier_telecharge:
+        nom_fichier_telecharge = os.path.basename(chemin_fichier_telecharge)
+        prefix, suffix = os.path.splitext(nom_fichier_telecharge)
+        suffix = suffix[1:] if suffix.startswith('.') else suffix
+        nouveau_prefix = renomme_prefix(prefix)
+        nouveau_nom_fichier = nouveau_prefix + "_" + nom_rapport + "." + suffix
+        destination = os.path.join(dir_final, nouveau_nom_fichier)
+        os.rename(chemin_fichier_telecharge, destination)
+        print(f"Le fichier {chemin_fichier_telecharge} a été renommé en {destination}")
+    else:
+        print("Aucun fichier téléchargé trouvé.")
+
+    logger.setLevel(logging.ERROR)
+
+def telechargement_rapport(nom_rapport):
     # Code pour telecharger le rapport
-    print("Telechargement du rapport")
+    print(f"Telechargement du rapport {nom_rapport}")
     # Ajoutez ici le code spécifique pour telecharger le rapport
     try:
         # Attendre que l'élément soit recréé
@@ -114,22 +167,35 @@ def telechargement_rapport():
     # Cliquer sur le bouton Enregistrer le rapport
     try:
         # Attendre que l'élément soit recréé
-        WebDriverWait(driver=driver, timeout=10).until(
-            EC.element_to_be_clickable((By.XPATH, "//*[@id='ember108']/div/p[4]/button[1]"))
+        WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "/html/body/div[3]/clarity-application/clarity-application-content/div/dialog-window/div[2]/div/download-reports-form/div/p[4]/button[1]"))
         )
-        enregistrer_rapport_button = driver.find_element(By.XPATH, "//*[@id='ember108']/div/p[4]/button[1]")
+        enregistrer_rapport_button = driver.find_element(By.XPATH, "/html/body/div[3]/clarity-application/clarity-application-content/div/dialog-window/div[2]/div/download-reports-form/div/p[4]/button[1]")
         enregistrer_rapport_button.click()
         time.sleep(5)
         print("Le bouton Enregistrer le rapport a été cliqué avec succès!")
+        try:
+            # Attendre que l'élément soit recréé
+            WebDriverWait(driver,10).until(
+                EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Fermer')]"))
+            )
+            fermer_fenetre_telechargement_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Fermer')]")
+            fermer_fenetre_telechargement_button.click()
+            time.sleep(5)
+            print("La fenêtre de téléchargement a été fermé.")
+        except Exception as e:
+            print(f"Une erreur s'est produite lors de la fermeture de la fenêtre de téléchargement: {e}")
+            return
     except Exception as e:
         print(f"Une erreur s'est produite lors de l'enregistrement du rapport : {e}")
         return
 
-    logger.setLevel(logging.ERROR)
+    deplace_et_renomme_rapport(nom_rapport)
+    
 
-def traitement_rapport_apercu():
+def traitement_rapport_apercu(nom_rapport):
     # Code pour traiter le rapport "Aperçu"
-    print("Traitement du rapport Aperçu")
+    print(f"Traitement du rapport {nom_rapport}")
     # Ajoutez ici le code spécifique pour traiter le rapport "Aperçu"
     try:
         # Attendre que l'élément soit présent
@@ -140,38 +206,38 @@ def traitement_rapport_apercu():
         selection_rapport_button.click()
         time.sleep(2)
     except Exception as e:
-        print(f"Une erreur s'est produite lors de la sélection du rapport Aperçu : {e}")
+        print(f"Une erreur s'est produite lors de la sélection du rapport {nom_rapport} : {e}")
         return
-    telechargement_rapport()
+    telechargement_rapport(nom_rapport)
 
-def traitement_rapport_modeles():
+def traitement_rapport_modeles(nom_rapport):
     # Code pour traiter le rapport "Modèles"
-    print("Traitement du rapport Modèles")
+    print(f"Traitement du rapport {nom_rapport}")
     # Ajoutez ici le code spécifique pour traiter le rapport "Modèles"
 
-def traitement_rapport_superposition():
+def traitement_rapport_superposition(nom_rapport):
     # Code pour traiter le rapport "Superposition"
-    print("Traitement du rapport Superposition")
+    print(f"Traitement du rapport {nom_rapport}")
     # Ajoutez ici le code spécifique pour traiter le rapport "Superposition"
 
-def traitement_rapport_quotidien():
+def traitement_rapport_quotidien(nom_rapport):
     # Code pour traiter le rapport "Quotidien"
-    print("Traitement du rapport Quotidien")
+    print(f"Traitement du rapport {nom_rapport}")
     # Ajoutez ici le code spécifique pour traiter le rapport "Quotidien"
 
-def traitement_rapport_comparer():
+def traitement_rapport_comparer(nom_rapport):
     # Code pour traiter le rapport "Comparer"
-    print("Traitement du rapport Comparer")
+    print(f"Traitement du rapport {nom_rapport}")
     # Ajoutez ici le code spécifique pour traiter le rapport "Comparer"
 
-def traitement_rapport_statistiques():
+def traitement_rapport_statistiques(nom_rapport):
     # Code pour traiter le rapport "Statistiques"
-    print("Traitement du rapport Statistiques")
+    print(f"Traitement du rapport {nom_rapport}")
     # Ajoutez ici le code spécifique pour traiter le rapport "Statistiques"
 
-def traitement_rapport_agp():
+def traitement_rapport_agp(nom_rapport):
     # Code pour traiter le rapport "AGP"
-    print("Traitement du rapport AGP")
+    print(f"Traitement du rapport {nom_rapport}")
     # Ajoutez ici le code spécifique pour traiter le rapport "AGP"
 
 def selection_rapport(rapports):
@@ -179,31 +245,31 @@ def selection_rapport(rapports):
     for rapport in rapports:
         if rapport == "Aperçu":
             # Code pour traiter le rapport "Aperçu"
-            traitement_rapport_apercu()
+            traitement_rapport_apercu(rapport)
         elif rapport == "Modèles":
             # Code pour traiter le rapport "Modèles"
             print("Traitement du rapport Modèles")
-            traitement_rapport_modeles()
+            traitement_rapport_modeles(rapport)
         elif rapport == "Superposition":
             # Code pour traiter le rapport "Superposition"
             print("Traitement du rapport Superposition")
-            traitement_rapport_superposition()
+            traitement_rapport_superposition(rapport)
         elif rapport == "Quotidien":
             # Code pour traiter le rapport "Quotidien"
             print("Traitement du rapport Quotidien")
-            traitement_rapport_quotidien()
+            traitement_rapport_quotidien(rapport)
         elif rapport == "Comparer":
             # Code pour traiter le rapport "Comparer"
             print("Traitement du rapport Comparer")
-            traitement_rapport_comparer()
+            traitement_rapport_comparer(rapport)
         elif rapport == "Statistiques":
             # Code pour traiter le rapport "Statistiques"
             print("Traitement du rapport Statistiques")
-            traitement_rapport_statistiques()
+            traitement_rapport_statistiques(rapport)
         elif rapport == "AGP":
             # Code pour traiter le rapport "AGP"
             print("Traitement du rapport AGP")
-            traitement_rapport_agp()
+            traitement_rapport_agp(rapport)
 
 print(f"Version de Python : {sys.version}")
 
@@ -288,7 +354,7 @@ selection_rapport(rapports)
 ##TODO 8 Créer une fonction pour la sauvegarde des rapports et des données brutes
 
 # Attendez un peu pour vous assurer que le téléchargement est terminé
-time.sleep(100)
+time.sleep(60)
 
 # Fermez le navigateur
 driver.quit()
