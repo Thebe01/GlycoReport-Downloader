@@ -35,6 +35,9 @@
 #'''                      Dans la fonction deplace_et_renomme_rapport, ne pas tenir compte des fichiers *.log
 #'''0.0.11  2025-07-03    La vérification de la connexion internet ne fonctionne pas avec NordVPN
 #'''                      Ajout du traitement pour le rapport Superposition
+#'''                      Rendre plus robuste le traitement du rapport Aperçu
+#'''                      Ajout du traitement pour le rapport Quotidien
+#'''                      Ajout du traitement pour loe rapport AGP
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -93,8 +96,8 @@ logger.addHandler(console_handler)
 
 date_debut = "2024-08-19"
 date_fin = "2024-09-01"
-#rapports = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP"]
-rapports = ["Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP"]
+rapports = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP"]
+#rapports = ["Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP"]
 
 # Configuration du service ChromeDriver
 service = ChromeService(log_path=os.path.join(os.getcwd(), "chromedriver.log"))
@@ -215,7 +218,7 @@ def telechargement_rapport(nom_rapport):
             # Si le clic classique échoue, essayer un clic JS
             driver.execute_script("arguments[0].click();", bouton)
         time.sleep(5)
-        logger.info("Le bouton Télécharger a été cliqué avec succès!")
+        logger.debug("Le bouton Télécharger a été cliqué avec succès!")
     except Exception as e:
         logger.error(f"Une erreur s'est produite lors du clic sur le bouton Télécharger : {e}")
         return
@@ -234,7 +237,7 @@ def telechargement_rapport(nom_rapport):
             # Si le clic classique échoue (élément masqué), utiliser JS
             driver.execute_script("arguments[0].click();", radio_mode_couleur)
         time.sleep(5)
-        logger.info("Le mode couleur a été sélectionné avec succès!")
+        logger.debug("Le mode couleur a été sélectionné avec succès!")
     except Exception as e:
         logger.error(f"Une erreur s'est produite lors de la sélection du mode couleur : {e}")
         return
@@ -249,7 +252,7 @@ def telechargement_rapport(nom_rapport):
             logger.debug("Bouton 'Enregistrer le rapport' trouvé et cliqué")
         enregistrer_rapport_button.click()
         time.sleep(5)
-        logger.info("Le bouton Enregistrer le rapport a été cliqué avec succès!")
+        logger.debug("Le bouton Enregistrer le rapport a été cliqué avec succès!")
         try:
             # Attendre que l'élément soit recréé
             WebDriverWait(driver,30).until(
@@ -258,7 +261,7 @@ def telechargement_rapport(nom_rapport):
             fermer_fenetre_telechargement_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Fermer')]")
             fermer_fenetre_telechargement_button.click()
             time.sleep(30)
-            logger.info("La fenêtre de téléchargement a été fermée.")
+            logger.debug("La fenêtre de téléchargement a été fermée.")
         except Exception as e:
             logger.error(f"Une erreur s'est produite lors de la fermeture de la fenêtre de téléchargement: {e}")
             return
@@ -267,32 +270,9 @@ def telechargement_rapport(nom_rapport):
         return
     deplace_et_renomme_rapport(nom_rapport)
 
-
-def traitement_rapport_apercu(nom_rapport):
-    # Code pour traiter le rapport "Aperçu"
+def traitement_rapport_standard(nom_rapport):
+    # Ajoutez ici le code générique pour traiter le rapport
     logger.info(f"Traitement du rapport {nom_rapport}")
-    # Ajoutez ici le code spécifique pour traiter le rapport "Aperçu"
-    try:
-        # Attendre que l'élément soit présent
-        selection_rapport_button = WebDriverWait(driver=driver, timeout=10).until(
-            EC.presence_of_element_located((By.XPATH, "//*[@id='ember7']/clarity-sidebar/clarity-navigation-list/ul/clarity-navigation-list-item[1]/clarity-button/button"))
-        )
-        # Interagir avec l'élément
-        selection_rapport_button.click()
-        time.sleep(2)
-        telechargement_rapport(nom_rapport)
-    except Exception as e:
-        logger.error(f"Une erreur s'est produite lors de la sélection du rapport {nom_rapport} : {e}")
-        return
-
-def traitement_rapports_modeles(nom_rapport):
-    # Code pour traiter les rapports "Modèles"
-    # Il y a une possibilité de 3 rapports qui sont téléchargé dans le même PDF
-    logger.info(f"Traitement des rapport {nom_rapport}")
-    # Ajoutez ici le code spécifique pour traiter le rapport "Modèles"
-    # Attendre que le bouton du rapport soit présent et cliquable via un attribut data-test ou le texte du bouton
-
-    # Affichage de la page des rapports modèles
     try:
         # Exemple robuste : sélectionne le bouton par le texte visible (à adapter selon le rapport)
         xpath_rapport = f"//button[normalize-space()='{nom_rapport}']"
@@ -308,20 +288,31 @@ def traitement_rapports_modeles(nom_rapport):
             # Si le clic classique échoue, utiliser JS
             driver.execute_script("arguments[0].click();", selection_rapport_button)
         time.sleep(2)
-        telechargement_rapport("Modeles")
+        telechargement_rapport(nom_rapport)
     except Exception as e:
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
         return
 
+
+def traitement_rapport_apercu(nom_rapport):
+    # Code pour traiter le rapport "Aperçu"
+    traitement_rapport_standard(nom_rapport)
+
+def traitement_rapports_modeles(nom_rapport):
+    # Code pour traiter les rapports "Modèles"
+    # Il y a une possibilité de 3 rapports qui sont téléchargé dans le même PDF
+    
+    traitement_rapport_standard(nom_rapport)
+
 def traitement_rapport_superposition(nom_rapport):
     # Code pour traiter le rapport "Superposition"
-    logger.info(f"Traitement du rapport {nom_rapport}")
-    # Ajoutez ici le code spécifique pour traiter le rapport "Superposition"
+    
+    traitement_rapport_standard(nom_rapport)
 
 def traitement_rapport_quotidien(nom_rapport):
     # Code pour traiter le rapport "Quotidien"
-    logger.info(f"Traitement du rapport {nom_rapport}")
-    # Ajoutez ici le code spécifique pour traiter le rapport "Quotidien"
+    
+    traitement_rapport_standard(nom_rapport)
 
 def traitement_rapport_comparer(nom_rapport):
     # Code pour traiter le rapport "Comparer"
@@ -335,8 +326,7 @@ def traitement_rapport_statistiques(nom_rapport):
 
 def traitement_rapport_agp(nom_rapport):
     # Code pour traiter le rapport "AGP"
-    logger.info(f"Traitement du rapport {nom_rapport}")
-    # Ajoutez ici le code spécifique pour traiter le rapport "AGP"
+    traitement_rapport_standard(nom_rapport)
 
 def selection_rapport(rapports):
     # Code pour traiter les rapports
@@ -349,23 +339,18 @@ def selection_rapport(rapports):
             traitement_rapports_modeles(rapport)
         elif rapport == "Superposition":
             # Code pour traiter le rapport "Superposition"
-            logger.info("Traitement du rapport Superposition")
             traitement_rapport_superposition(rapport)
         elif rapport == "Quotidien":
             # Code pour traiter le rapport "Quotidien"
-            logger.info("Traitement du rapport Quotidien")
             traitement_rapport_quotidien(rapport)
         elif rapport == "Comparer":
             # Code pour traiter le rapport "Comparer"
-            logger.info("Traitement du rapport Comparer")
             traitement_rapport_comparer(rapport)
         elif rapport == "Statistiques":
             # Code pour traiter le rapport "Statistiques"
-            logger.info("Traitement du rapport Statistiques")
             traitement_rapport_statistiques(rapport)
         elif rapport == "AGP":
             # Code pour traiter le rapport "AGP"
-            logger.info("Traitement du rapport AGP")
             traitement_rapport_agp(rapport)
 
 if args.debug:
@@ -494,10 +479,11 @@ selection_rapport(rapports)
 time.sleep(120)
 
 # (optionnel) Derniers diagnostics AVANT de quitter
-boutons = driver.find_elements(By.XPATH, "//button")
-logger.info(f"{len(boutons)} boutons trouvés sur la page")
-for b in boutons:
-    logger.debug(b.get_attribute("outerHTML"))
+if args.debug:
+    boutons = driver.find_elements(By.XPATH, "//button")
+    logger.info(f"{len(boutons)} boutons trouvés sur la page")
+    for b in boutons:
+        logger.debug(b.get_attribute("outerHTML"))
 
 # Fermez le navigateur
 driver.quit()
