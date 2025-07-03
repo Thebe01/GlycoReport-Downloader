@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-07-02
+#'''Last Modified On : 2025-07-03
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
 #'''                Le dossier de téléchargement est : C:\Users\thebe\Downloads\Dexcom_download
 #'''                Le dossier final est C:\Users\thebe\OneDrive\Documents\Santé\Suivie glycémie et pression\AAAA
-#'''Version : 0.0.10
+#'''Version : 0.0.11
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -33,6 +33,8 @@
 #'''                      Ajout de la fonction check_internet pour vérifier la connexion internet
 #'''                      Ajout du traitement pour les rapports Modèles
 #'''                      Dans la fonction deplace_et_renomme_rapport, ne pas tenir compte des fichiers *.log
+#'''0.0.11  2025-07-03    La vérification de la connexion internet ne fonctionne pas avec NordVPN
+#'''                      Ajout du traitement pour le rapport Superposition
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -57,6 +59,7 @@ import uuid
 from selenium.webdriver.common.action_chains import ActionChains
 from datetime import datetime
 import socket
+import urllib.request
 
 # Ajout du parser d'arguments
 parser = argparse.ArgumentParser(description="Téléchargement des rapports Dexcom Clarity")
@@ -90,7 +93,8 @@ logger.addHandler(console_handler)
 
 date_debut = "2024-08-19"
 date_fin = "2024-09-01"
-rapports = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP"]
+#rapports = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP"]
+rapports = ["Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP"]
 
 # Configuration du service ChromeDriver
 service = ChromeService(log_path=os.path.join(os.getcwd(), "chromedriver.log"))
@@ -124,13 +128,12 @@ driver = webdriver.Chrome(service=service, options=options)
 # URL de la page Dexcom Clarity
 url = "https://clarity.dexcom.eu/?&locale=fr-CA"
 
-def check_internet(host="8.8.8.8", port=53, timeout=3):
+def check_internet(url="https://www.google.com", timeout=5):
     """Retourne True si la connexion internet fonctionne, False sinon."""
     try:
-        socket.setdefaulttimeout(timeout)
-        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+        urllib.request.urlopen(url, timeout=timeout)
         return True
-    except Exception as ex:
+    except Exception:
         return False
 
 def get_last_downloaded_file(download_dir):
@@ -155,7 +158,7 @@ def deplace_et_renomme_rapport(nom_rapport):
     annee = date_fin[:4]
     dir_final = r"C:\Users\thebe\OneDrive\Documents\Santé\Suivie glycémie et pression"
     dir_final = os.path.join(dir_final, annee)
-    
+
     # Création du répertoire s'il n'existe pas
     if not os.path.exists(dir_final):
         os.makedirs(dir_final)
@@ -284,11 +287,11 @@ def traitement_rapport_apercu(nom_rapport):
 
 def traitement_rapports_modeles(nom_rapport):
     # Code pour traiter les rapports "Modèles"
-    # Il y a une possibilité de 3 rapports
+    # Il y a une possibilité de 3 rapports qui sont téléchargé dans le même PDF
     logger.info(f"Traitement des rapport {nom_rapport}")
     # Ajoutez ici le code spécifique pour traiter le rapport "Modèles"
     # Attendre que le bouton du rapport soit présent et cliquable via un attribut data-test ou le texte du bouton
-    
+
     # Affichage de la page des rapports modèles
     try:
         # Exemple robuste : sélectionne le bouton par le texte visible (à adapter selon le rapport)
@@ -297,7 +300,7 @@ def traitement_rapports_modeles(nom_rapport):
             EC.element_to_be_clickable((By.XPATH, xpath_rapport))
         )
         # Faire défiler jusqu'au bouton pour s'assurer qu'il est visible
-        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", selection_rapport_button)
+        driver.execute_script("arguments[0].scrollIntoView(true);", selection_rapport_button)
         time.sleep(1)
         try:
             selection_rapport_button.click()
@@ -305,65 +308,9 @@ def traitement_rapports_modeles(nom_rapport):
             # Si le clic classique échoue, utiliser JS
             driver.execute_script("arguments[0].click();", selection_rapport_button)
         time.sleep(2)
+        telechargement_rapport("Modeles")
     except Exception as e:
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
-        return
-    
-    # Traitement du rapport Modèles de base
-    # Exemple robuste : sélectionne le bouton par le texte visible dans le span interne
-    nom_rapport = "Modeles"
-    logger.info(f"Traitement des rapport {nom_rapport}")
-    xpath_rapport = "//a[contains(@href, '/patterns/bestDay')]//button[contains(@class, 'bestDay')]"
-    selection_rapport_button = WebDriverWait(driver, 30).until(
-        EC.element_to_be_clickable((By.XPATH, xpath_rapport))
-    )
-    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", selection_rapport_button)
-    time.sleep(1)
-    try:
-        selection_rapport_button.click()
-    except Exception:
-        driver.execute_script("arguments[0].click();", selection_rapport_button)
-    time.sleep(2)
-
-    # Vérifier que le bouton est bien actif via la classe "active" sur le <a>
-    xpath_actif = "//a[contains(@href, '/patterns/bestDay') and contains(@class, 'active')]"
-    if driver.find_elements(By.XPATH, xpath_actif):
-        logger.info("Le bouton du rapport 'Meilleure journée' est bien actif (en surbrillance). Téléchargement en cours.")
-        telechargement_rapport("Modeles")
-    else:
-        logger.warning("Le bouton du rapport 'Meilleure journée' n'est pas actif après le clic. Téléchargement annulé.")
-
-       # Traitement du rapport Modèles Haut le jour
-    try:
-        # Exemple robuste : sélectionne le bouton par le texte visible (à adapter selon le rapport)
-        nom_rapport = "Modele-Haut-le-Jour"
-        logger.info(f"Traitement du rapport {nom_rapport}")
-        # Sélectionne le bouton par le texte visible dans le span interne
-        # Vérifier l'existence du bouton du rapport "Hauts le jour"
-        xpath_rapport = "//button[contains(@class, 'daytimeHighs') and .//span[@class='mdc-button__label' and normalize-space()='Hauts le jour']]"
-        boutons = driver.find_elements(By.XPATH, xpath_rapport)
-        if boutons:
-            logger.info("Le rapport 'Hauts le jour' existe, traitement en cours.")
-            selection_rapport_button = WebDriverWait(driver, 30).until(
-                EC.element_to_be_clickable((By.XPATH, xpath_rapport))
-            )
-            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", selection_rapport_button)
-            time.sleep(1)
-            try:
-                selection_rapport_button.click()
-            except Exception:
-                driver.execute_script("arguments[0].click();", selection_rapport_button)
-            time.sleep(2)
-            # Vérifier que le bouton est bien en surbrillance (classe CSS 'mdc-button--active' par exemple)
-            if "mdc-button--active" in selection_rapport_button.get_attribute("class"):
-                logger.info("Le bouton du rapport 'Hauts le jour' est bien actif (en surbrillance). Téléchargement en cours.")
-                telechargement_rapport("Modele-Haut-le-Jour")
-            else:
-                logger.warning("Le bouton du rapport 'Hauts le jour' n'est pas actif après le clic. Téléchargement annulé.")
-        else:
-            logger.info("Le rapport 'Hauts le jour' n'existe pas, aucun traitement effectué.")
-    except Exception as e:
-        logger.error(f"Une erreur s'est produite lors de la sélection du rapport 'Hauts le jour' : {e}")
         return
 
 def traitement_rapport_superposition(nom_rapport):
@@ -544,7 +491,7 @@ except Exception as e:
 selection_rapport(rapports)
 
 # Attendez un peu pour vous assurer que le téléchargement est terminé
-time.sleep(120)  # Augmenté à 120s
+time.sleep(120)
 
 # (optionnel) Derniers diagnostics AVANT de quitter
 boutons = driver.find_elements(By.XPATH, "//button")
