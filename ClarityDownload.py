@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-07-03
+#'''Last Modified On : 2025-07-08
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
 #'''                Le dossier de téléchargement est : C:\Users\thebe\Downloads\Dexcom_download
 #'''                Le dossier final est C:\Users\thebe\OneDrive\Documents\Santé\Suivie glycémie et pression\AAAA
-#'''Version : 0.0.11
+#'''Version : 0.0.12
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -28,6 +28,7 @@
 #'''                      Enlever la sélection du mode couleur (problème à avoir le bon xpath)
 #'''0.0.8   2025-05-23    Terminé la fonction téléchargement_rapport
 #'''                      Ajout de la fonction deplace_et_renomme_rapport
+#'''                      Reconversion à Python 3.13
 #'''0.0.9   2025-07-01    Ajout de l'option debug et ajout d'un fichier de log
 #'''0.0.10  2025-07-02    Modification pour tenir compte d'une connexion internet lente et instable (4mb/s)Ajout de la fonction traitement_rapport
 #'''                      Ajout de la fonction check_internet pour vérifier la connexion internet
@@ -37,15 +38,11 @@
 #'''                      Ajout du traitement pour le rapport Superposition
 #'''                      Rendre plus robuste le traitement du rapport Aperçu
 #'''                      Ajout du traitement pour le rapport Quotidien
-#'''                      Ajout du traitement pour loe rapport AGP
+#'''                      Ajout du traitement pour le rapport AGP
+#'''0.0.12  2025-07-08    Ajout du traitement pour le rapport Statistiques
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
-## TODO 1.1 Installer ChromeDriver sur mes 2 ordis. portable et bureau. Version 110.0.5481.177
-## TODO 2 Ajouter le path \\ADMIN06\Download\Microsoft\EdgeDriver dans la variable d'environnement
-## TODO 3 Pour désactiver la collecte de données de diagnostic pour Microsoft Edge WebDriver, définissez la variable d’environnement sur MSEDGEDRIVER_TELEMETRY_OPTOUT1
-## TODO 4 Ajouter le chemin d'environnement: 'C:\Users\thebe\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\Scripts'
-## TODO 9 Convertir à Python 3.13
 
 import os
 import sys
@@ -69,7 +66,7 @@ parser = argparse.ArgumentParser(description="Téléchargement des rapports Dexc
 parser.add_argument('--debug', '-d', action='store_true', help='Activer le mode debug')
 args = parser.parse_args()
 
-download_dir = r"C:\Users\thebe\Downloads\Dexcom_download"  # Mets ici ton dossier cible
+download_dir = r"C:\Users\thebe\Downloads\Dexcom_download"  # dossier cible
 
 # Création du répertoire de téléchargement s'il n'existe pas
 if not os.path.exists(download_dir):
@@ -321,8 +318,80 @@ def traitement_rapport_comparer(nom_rapport):
 
 def traitement_rapport_statistiques(nom_rapport):
     # Code pour traiter le rapport "Statistiques"
-    logger.info(f"Traitement du rapport {nom_rapport}")
-    # Ajoutez ici le code spécifique pour traiter le rapport "Statistiques"
+    logger.info(f"Traitement des rapports {nom_rapport}")
+    try:
+        # Sélectionner le bouton du rapport Statistiques
+        xpath_rapport = f"//button[normalize-space()='{nom_rapport}']"
+        selection_rapport_button = WebDriverWait(driver, 30).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_rapport))
+        )
+        # Faire défiler jusqu'au bouton pour s'assurer qu'il est visible
+        driver.execute_script("arguments[0].scrollIntoView(true);", selection_rapport_button)
+        time.sleep(1)
+        try:
+            selection_rapport_button.click()
+        except Exception:
+            # Si le clic classique échoue, utiliser JS
+            driver.execute_script("arguments[0].click();", selection_rapport_button)
+        time.sleep(2)
+
+        # Cliquer sur la case à cocher "Avancé"
+        xpath_checkbox = "//input[@id='advanced-stats' and @type='checkbox']"
+        checkbox = WebDriverWait(driver, 30).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_checkbox))
+        )
+        if not checkbox.is_selected():
+            driver.execute_script("arguments[0].scrollIntoView(true);", checkbox)
+            time.sleep(1)
+            try:
+                checkbox.click()
+            except Exception:
+                driver.execute_script("arguments[0].click();", checkbox)
+            time.sleep(1)
+            logger.info("La case à cocher 'Avancé' a été activée.")
+        else:
+            logger.info("La case à cocher 'Avancé' était déjà activée.")
+
+        # Sélectionner l'onglet/lien "Quotidien"
+
+        rapport_statistiques = "Statistiques-Quotidiennes"
+        logger.info(f"Traitement du rapport {rapport_statistiques}")
+        xpath_quotidien = "//a[contains(@href, '/statistics/daily') and normalize-space()='Quotidien']"
+        quotidien_link = WebDriverWait(driver, 30).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_quotidien))
+        )
+        driver.execute_script("arguments[0].scrollIntoView(true);", quotidien_link)
+        time.sleep(1)
+        try:
+            quotidien_link.click()
+        except Exception:
+            driver.execute_script("arguments[0].click();", quotidien_link)
+        time.sleep(2)
+
+        # Télécharger le rapport Quotidien
+        telechargement_rapport(rapport_statistiques)
+
+        # Sélectionner l'onglet/lien "Par heure"
+        rapport_statistiques = "Statistiques-Horaires"
+        logger.info(f"Traitement du rapport {rapport_statistiques}")
+        xpath_horaire = "//a[contains(@href, '/statistics/hourly') and normalize-space()='Par heure']"
+        horaire_link = WebDriverWait(driver, 30).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_horaire))
+        )
+        driver.execute_script("arguments[0].scrollIntoView(true);", horaire_link)
+        time.sleep(1)
+        try:
+            horaire_link.click()
+        except Exception:
+            driver.execute_script("arguments[0].click();", horaire_link)
+        time.sleep(2)
+
+        # Télécharger le rapport Horaire
+        telechargement_rapport(rapport_statistiques)
+
+    except Exception as e:
+        logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
+        return
 
 def traitement_rapport_agp(nom_rapport):
     # Code pour traiter le rapport "AGP"
@@ -355,7 +424,8 @@ def selection_rapport(rapports):
 
 if args.debug:
     logger.debug(f"Version de Python : {sys.version}")
-    logger.debug(f"Rapports à traiter : {rapports}")
+
+logger.debug(f"Rapports à traiter : {rapports}")
 
 
 logger.info(f"Dossier de téléchargement : {download_dir}")
@@ -388,7 +458,7 @@ try:
     bouton = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@value='Dexcom Clarity pour les utilisateurs à domicile']")))
     bouton.click()
     time.sleep(5)  # Augmenté à 5s
-    logger.info("Le bouton pour utilisateurs à domicile a été cliqué avec succès!")
+    logger.debug("Le bouton pour utilisateurs à domicile a été cliqué avec succès!")
 except Exception as e:
     if not check_internet():
         logger.error("Perte de connexion internet détectée lors du clic sur le bouton pour utilisateurs à domicile.")
