@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-07-08
+#'''Last Modified On : 2025-07-18
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
 #'''                Le dossier de téléchargement est : C:\Users\thebe\Downloads\Dexcom_download
 #'''                Le dossier final est C:\Users\thebe\OneDrive\Documents\Santé\Suivie glycémie et pression\AAAA
-#'''Version : 0.0.12
+#'''Version : 0.0.14
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -40,6 +40,8 @@
 #'''                      Ajout du traitement pour le rapport Quotidien
 #'''                      Ajout du traitement pour le rapport AGP
 #'''0.0.12  2025-07-08    Ajout du traitement pour le rapport Statistiques
+#"""0.0.13  2025-07-13    Ajout du traitement pour le rapport Comparer"
+#'''0.0.14  2025-07-18    Ajout de l'exportation des données en format csv
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -93,8 +95,8 @@ logger.addHandler(console_handler)
 
 date_debut = "2024-08-19"
 date_fin = "2024-09-01"
-rapports = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP"]
-#rapports = ["Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP"]
+#rapports = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP", "Export"]
+rapports = ["Comparer","Export"]
 
 # Configuration du service ChromeDriver
 service = ChromeService(log_path=os.path.join(os.getcwd(), "chromedriver.log"))
@@ -177,13 +179,23 @@ def deplace_et_renomme_rapport(nom_rapport):
         nom_fichier_telecharge = os.path.basename(chemin_fichier_telecharge)
         prefix, suffix = os.path.splitext(nom_fichier_telecharge)
         suffix = suffix[1:] if suffix.startswith('.') else suffix
-        nouveau_prefix = renomme_prefix(prefix)
-        nouveau_nom_fichier = nouveau_prefix + "_" + nom_rapport + "." + suffix
-        destination = os.path.join(dir_final, nouveau_nom_fichier)
-        # Ajout du log debug avant le renommage
-        logger.debug(f"Renommage du fichier : {chemin_fichier_telecharge} -> {destination}")
-        os.rename(chemin_fichier_telecharge, destination)
-        logger.info(f"Le fichier {chemin_fichier_telecharge} a été renommé en {destination}")
+
+        if nom_rapport == "Export":
+            # Traitement spécifique pour Export : remplacer la date dans le nom
+            # Exemple : Clarity_Exporter_Théberge_Pierre_2025-07-18_173930.csv
+            import re
+            nouveau_nom_fichier = re.sub(r"\d{4}-\d{2}-\d{2}", date_fin, nom_fichier_telecharge, count=1)
+            destination = os.path.join(dir_final, nouveau_nom_fichier)
+            logger.debug(f"Renommage Export : {chemin_fichier_telecharge} -> {destination}")
+            os.rename(chemin_fichier_telecharge, destination)
+            logger.info(f"Le fichier Export {chemin_fichier_telecharge} a été renommé en {destination}")
+        else:
+            nouveau_prefix = renomme_prefix(prefix)
+            nouveau_nom_fichier = nouveau_prefix + "_" + nom_rapport + "." + suffix
+            destination = os.path.join(dir_final, nouveau_nom_fichier)
+            logger.debug(f"Renommage du fichier : {chemin_fichier_telecharge} -> {destination}")
+            os.rename(chemin_fichier_telecharge, destination)
+            logger.info(f"Le fichier {chemin_fichier_telecharge} a été renommé en {destination}")
     else:
         logger.error("Aucun fichier téléchargé trouvé (hors fichiers .log).")
 
@@ -298,23 +310,101 @@ def traitement_rapport_apercu(nom_rapport):
 def traitement_rapports_modeles(nom_rapport):
     # Code pour traiter les rapports "Modèles"
     # Il y a une possibilité de 3 rapports qui sont téléchargé dans le même PDF
-    
+
     traitement_rapport_standard(nom_rapport)
 
 def traitement_rapport_superposition(nom_rapport):
     # Code pour traiter le rapport "Superposition"
-    
+
     traitement_rapport_standard(nom_rapport)
 
 def traitement_rapport_quotidien(nom_rapport):
     # Code pour traiter le rapport "Quotidien"
-    
+
     traitement_rapport_standard(nom_rapport)
 
 def traitement_rapport_comparer(nom_rapport):
     # Code pour traiter le rapport "Comparer"
-    logger.info(f"Traitement du rapport {nom_rapport}")
+    logger.info(f"Traitement des rapports {nom_rapport}")
     # Ajoutez ici le code spécifique pour traiter le rapport "Comparer"
+    try:
+        # Sélectionner le bouton du rapport Statistiques
+        xpath_rapport = f"//button[normalize-space()='{nom_rapport}']"
+        selection_rapport_button = WebDriverWait(driver, 30).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_rapport))
+        )
+        # Faire défiler jusqu'au bouton pour s'assurer qu'il est visible
+        driver.execute_script("arguments[0].scrollIntoView(true);", selection_rapport_button)
+        time.sleep(1)
+        try:
+            selection_rapport_button.click()
+        except Exception:
+            # Si le clic classique échoue, utiliser JS
+            driver.execute_script("arguments[0].click();", selection_rapport_button)
+        time.sleep(2)
+
+        # Sélectionner l'onglet/lien "Tendances"
+        rapport_comparer = "Comparer-Tendances"
+        logger.info(f"Traitement du rapport {rapport_comparer}")
+        xpath_tendances = "//a[contains(@href, '/compare/trends') and contains(@class, 'data-page__report-choice-button--trends') and normalize-space(.//div)='Tendances']"
+        tendances_link = WebDriverWait(driver, 30).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_tendances))
+        )
+        driver.execute_script("arguments[0].scrollIntoView(true);", tendances_link)
+        time.sleep(1)
+        try:
+            tendances_link.click()
+        except Exception:
+            driver.execute_script("arguments[0].click();", tendances_link)
+        time.sleep(2)
+
+        # Télécharger le rapport Tendances
+        telechargement_rapport(rapport_comparer)
+
+        # Sélectionner l'onglet/lien "Superposition"
+        rapport_comparer = "Comparer-Superposition"
+        logger.info(f"Traitement du rapport {rapport_comparer}")
+        xpath_superposition = "//a[contains(@href, '/compare/overlay') and contains(@class, 'data-page__report-choice-button--overlay') and .//div[@title='Superposition' and normalize-space()='Superposition']]"
+        superposition_link = WebDriverWait(driver, 30).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_superposition))
+        )
+        driver.execute_script("arguments[0].scrollIntoView(true);", superposition_link)
+        time.sleep(1)
+
+        # Avant le clic, récupérer le texte actuel de l'élément semaine (si présent)
+        try:
+            semaine_elem = driver.find_element(By.XPATH, "//strong[contains(@class, 'overlay_report__week-number')]")
+            semaine_avant = semaine_elem.text.strip()
+        except Exception:
+            semaine_avant = None
+
+        # Clic sur Superposition
+        try:
+            superposition_link.click()
+        except Exception:
+            driver.execute_script("arguments[0].click();", superposition_link)
+        time.sleep(2)
+
+        # Attendre que le texte de semaine change (ou apparaisse)
+        def semaine_change(driver):
+            try:
+                elem = driver.find_element(By.XPATH, "//strong[contains(@class, 'overlay_report__week-number')]")
+                semaine_apres = elem.text.strip()
+                return semaine_apres and semaine_apres != semaine_avant
+            except Exception:
+                return False
+
+        WebDriverWait(driver, 60).until(semaine_change)
+        logger.debug("Le rapport Superposition est bien affiché (texte semaine changé).")
+
+        # Télécharger le rapport Superposition
+        time.sleep(2)
+        telechargement_rapport(rapport_comparer)
+
+    except Exception as e:
+        logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
+        return
+
 
 def traitement_rapport_statistiques(nom_rapport):
     # Code pour traiter le rapport "Statistiques"
@@ -397,6 +487,51 @@ def traitement_rapport_agp(nom_rapport):
     # Code pour traiter le rapport "AGP"
     traitement_rapport_standard(nom_rapport)
 
+def traitement_export_csv(nom_rapport):
+    logger.info(f"Traitement de l'export csv ")
+    try:
+        # Attendre la disparition d'un overlay éventuel AVANT de cliquer
+        try:
+            WebDriverWait(driver, 60).until_not(
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".overlay, .loader, .spinner"))
+            )
+        except:
+            pass  # Si pas d'overlay, on continue
+
+        # Attendre que le bouton Exporter (icône) soit cliquable
+        xpath_export = "//button[.//img[@src='/i/assets/cui_export.svg' and @alt='Exporter']]"
+        bouton_export = WebDriverWait(driver, 60).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_export))
+        )
+        # Faire défiler jusqu'au bouton pour s'assurer qu'il est visible
+        driver.execute_script("arguments[0].scrollIntoView(true);", bouton_export)
+        time.sleep(2)
+        # Essayer un clic classique
+        try:
+            bouton_export.click()
+        except Exception:
+            # Si le clic classique échoue, essayer un clic JS
+            driver.execute_script("arguments[0].click();", bouton_export)
+        time.sleep(5)
+        logger.debug("Le bouton Exporter a été cliqué avec succès!")
+    except Exception as e:
+        logger.error(f"Une erreur s'est produite lors du clic sur le bouton Exporter : {e}")
+        return
+    # Cliquer sur le bouton Exporter dans la fenêtre modale
+    try:
+        xpath_bouton_export_modal = "//button[contains(@class, 'btn-primary') and contains(@class, 'btn-3d') and normalize-space()='Exporter']"
+        bouton_export_modal = WebDriverWait(driver, 30).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_bouton_export_modal))
+        )
+        driver.execute_script("arguments[0].scrollIntoView(true);", bouton_export_modal)
+        time.sleep(1)
+        bouton_export_modal.click()
+        logger.debug("Le bouton Exporter de la fenêtre modale a été cliqué avec succès!")
+    except Exception as e:
+        logger.error(f"Impossible de cliquer sur le bouton Exporter de la fenêtre modale : {e}")
+        return
+    deplace_et_renomme_rapport(nom_rapport)
+
 def selection_rapport(rapports):
     # Code pour traiter les rapports
     for rapport in rapports:
@@ -421,6 +556,14 @@ def selection_rapport(rapports):
         elif rapport == "AGP":
             # Code pour traiter le rapport "AGP"
             traitement_rapport_agp(rapport)
+        elif rapport == "Export":
+            # Code pour traiter le rapport "Export"
+            traitement_export_csv(rapport)
+        else:
+            logger.error(f"Rapport inconnu : {rapport}. Veuillez vérifier la liste des rapports.")
+
+
+# Affichage de la version de Python si le mode debug est activé
 
 if args.debug:
     logger.debug(f"Version de Python : {sys.version}")
