@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-07-18
+#'''Last Modified On : 2025-07-21
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
 #'''                Le dossier de téléchargement est : C:\Users\thebe\Downloads\Dexcom_download
 #'''                Le dossier final est C:\Users\thebe\OneDrive\Documents\Santé\Suivie glycémie et pression\AAAA
-#'''Version : 0.0.14
+#'''Version : 0.0.15
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -40,11 +40,18 @@
 #'''                      Ajout du traitement pour le rapport Quotidien
 #'''                      Ajout du traitement pour le rapport AGP
 #'''0.0.12  2025-07-08    Ajout du traitement pour le rapport Statistiques
-#"""0.0.13  2025-07-13    Ajout du traitement pour le rapport Comparer"
+#'''0.0.13  2025-07-13    Ajout du traitement pour le rapport Comparer
 #'''0.0.14  2025-07-18    Ajout de l'exportation des données en format csv
+#'''0.0.15  2025-07-21    Terminer la fonction traitement_export_csv
+#'''                        Ajout des sous-rapport pour le rapport Comparer
+#'''                        Les sous-rapports Superposition et Quotidien de comparer ne fonctioone pas.
+#'''                            Ils produisent le même PDF que Tendances.
+#'''                        Ajouter la déconnexion du compte avant de fermer le navigateur
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
+# TODO Réparer le problème avec les rapports Comparer
+# TODO Appliquer la même solution pour obtenir des rapports séparés pour Modèle
 
 import os
 import sys
@@ -96,7 +103,8 @@ logger.addHandler(console_handler)
 date_debut = "2024-08-19"
 date_fin = "2024-09-01"
 #rapports = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP", "Export"]
-rapports = ["Comparer","Export"]
+
+rapports = ["Aperçu"]
 
 # Configuration du service ChromeDriver
 service = ChromeService(log_path=os.path.join(os.getcwd(), "chromedriver.log"))
@@ -181,21 +189,25 @@ def deplace_et_renomme_rapport(nom_rapport):
         suffix = suffix[1:] if suffix.startswith('.') else suffix
 
         if nom_rapport == "Export":
-            # Traitement spécifique pour Export : remplacer la date dans le nom
-            # Exemple : Clarity_Exporter_Théberge_Pierre_2025-07-18_173930.csv
-            import re
-            nouveau_nom_fichier = re.sub(r"\d{4}-\d{2}-\d{2}", date_fin, nom_fichier_telecharge, count=1)
+            # Renommer au format Clarity_Exporter_Théberge_Pierre_AAAA-MM-JJ.csv
+            nouveau_nom_fichier = f"Clarity_Exporter_Théberge_Pierre_{date_fin}.csv"
             destination = os.path.join(dir_final, nouveau_nom_fichier)
             logger.debug(f"Renommage Export : {chemin_fichier_telecharge} -> {destination}")
-            os.rename(chemin_fichier_telecharge, destination)
-            logger.info(f"Le fichier Export {chemin_fichier_telecharge} a été renommé en {destination}")
+            try:
+                os.replace(chemin_fichier_telecharge, destination)
+                logger.info(f"Le fichier Export {chemin_fichier_telecharge} a été renommé en {destination}")
+            except Exception as e:
+                logger.error(f"Erreur lors du renommage du fichier Export : {e}")
         else:
             nouveau_prefix = renomme_prefix(prefix)
             nouveau_nom_fichier = nouveau_prefix + "_" + nom_rapport + "." + suffix
             destination = os.path.join(dir_final, nouveau_nom_fichier)
             logger.debug(f"Renommage du fichier : {chemin_fichier_telecharge} -> {destination}")
-            os.rename(chemin_fichier_telecharge, destination)
-            logger.info(f"Le fichier {chemin_fichier_telecharge} a été renommé en {destination}")
+            try:
+                os.replace(chemin_fichier_telecharge, destination)
+                logger.info(f"Le fichier {chemin_fichier_telecharge} a été renommé en {destination}")
+            except Exception as e:
+                logger.error(f"Erreur lors du renommage du fichier : {e}")
     else:
         logger.error("Aucun fichier téléchargé trouvé (hors fichiers .log).")
 
@@ -323,12 +335,23 @@ def traitement_rapport_quotidien(nom_rapport):
 
     traitement_rapport_standard(nom_rapport)
 
+def attendre_nouveau_bouton_telecharger(driver, bouton_avant, timeout=30):
+    """Attend que le bouton Télécharger soit recréé dans le DOM (nouvelle instance)."""
+    def bouton_a_change(drv):
+        try:
+            nouveau_bouton = drv.find_element(By.XPATH, "//button[.//img[@alt='Télécharger']]")
+            return nouveau_bouton and nouveau_bouton != bouton_avant
+        except Exception:
+            return False
+    WebDriverWait(driver, timeout).until(bouton_a_change)
+
 def traitement_rapport_comparer(nom_rapport):
+    # TODO Réparer le problème avec les rapports Comparer
     # Code pour traiter le rapport "Comparer"
     logger.info(f"Traitement des rapports {nom_rapport}")
     # Ajoutez ici le code spécifique pour traiter le rapport "Comparer"
     try:
-        # Sélectionner le bouton du rapport Statistiques
+        # Sélectionner le bouton desrapports Comparer
         xpath_rapport = f"//button[normalize-space()='{nom_rapport}']"
         selection_rapport_button = WebDriverWait(driver, 30).until(
             EC.element_to_be_clickable((By.XPATH, xpath_rapport))
@@ -384,25 +407,33 @@ def traitement_rapport_comparer(nom_rapport):
         except Exception:
             driver.execute_script("arguments[0].click();", superposition_link)
         time.sleep(2)
+        telechargement_rapport(rapport_comparer)
 
-        # Attendre que le texte de semaine change (ou apparaisse)
-        def semaine_change(driver):
-            try:
-                elem = driver.find_element(By.XPATH, "//strong[contains(@class, 'overlay_report__week-number')]")
-                semaine_apres = elem.text.strip()
-                return semaine_apres and semaine_apres != semaine_avant
-            except Exception:
-                return False
 
-        WebDriverWait(driver, 60).until(semaine_change)
-        logger.debug("Le rapport Superposition est bien affiché (texte semaine changé).")
-
-        # Télécharger le rapport Superposition
+        # --- QUOTIDIEN ---
+        rapport_comparer = "Comparer-Quotidien"
+        logger.info(f"Traitement du rapport {rapport_comparer}")
+        xpath_quotidien = (
+            "//a[contains(@href, '/compare/daily') "
+            "and contains(@class, 'data-page__report-choice-button--daily') "
+            "and .//div[@title='Quotidien' and normalize-space()='Quotidien']]"
+        )
+        quotidien_link = WebDriverWait(driver, 60).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_quotidien))
+        )
+        driver.execute_script("arguments[0].scrollIntoView(true);", quotidien_link)
         time.sleep(2)
+        driver.execute_script("arguments[0].click();", quotidien_link)
+        
+        # Attendre le chargement complet de Quotidien
+        WebDriverWait(driver, 60).until(lambda d: "/compare/daily" in d.current_url)
+        time.sleep(10)  # Attente pour s'assurer que le PDF est mis à jour
         telechargement_rapport(rapport_comparer)
 
     except Exception as e:
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
+        if args.debug:
+            logger.error("Stack trace complète : ", exc_info=True)
         return
 
 
@@ -530,7 +561,26 @@ def traitement_export_csv(nom_rapport):
     except Exception as e:
         logger.error(f"Impossible de cliquer sur le bouton Exporter de la fenêtre modale : {e}")
         return
-    deplace_et_renomme_rapport(nom_rapport)
+
+    # --- Attendre la fin réelle du téléchargement du fichier CSV ---
+    def wait_for_csv_download(download_dir, timeout=120):
+        """Attend qu'un fichier .csv apparaisse dans le dossier et qu'il n'y ait plus de .crdownload."""
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            files = [f for f in os.listdir(download_dir) if f.lower().endswith('.csv')]
+            if files:
+                # Vérifier qu'il n'y a pas de .crdownload
+                crdownloads = [f for f in os.listdir(download_dir) if f.endswith('.crdownload')]
+                if not crdownloads:
+                    return True
+            time.sleep(1)
+        return False
+
+    if wait_for_csv_download(download_dir):
+        logger.info("Fichier CSV exporté détecté et téléchargement terminé.")
+        deplace_et_renomme_rapport(nom_rapport)
+    else:
+        logger.error("Le téléchargement du fichier CSV n'a pas été détecté ou n'est pas terminé après 2 minutes.")
 
 def selection_rapport(rapports):
     # Code pour traiter les rapports
@@ -568,7 +618,7 @@ def selection_rapport(rapports):
 if args.debug:
     logger.debug(f"Version de Python : {sys.version}")
 
-logger.debug(f"Rapports à traiter : {rapports}")
+logger.info(f"Rapports à traiter : {rapports}")
 
 
 logger.info(f"Dossier de téléchargement : {download_dir}")
@@ -689,7 +739,7 @@ except Exception as e:
 selection_rapport(rapports)
 
 # Attendez un peu pour vous assurer que le téléchargement est terminé
-time.sleep(120)
+time.sleep(60)
 
 # (optionnel) Derniers diagnostics AVANT de quitter
 if args.debug:
@@ -697,6 +747,24 @@ if args.debug:
     logger.info(f"{len(boutons)} boutons trouvés sur la page")
     for b in boutons:
         logger.debug(b.get_attribute("outerHTML"))
+
+# Déconnexion avant de fermer le navigateur
+try:
+    # Cliquer sur le nom de l'usager (menu)
+    user_menu = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "//span[contains(@class, 'clarity-menu__primarylabel')]"))
+    )
+    user_menu.click()
+    time.sleep(2)
+    # Cliquer sur le bouton Déconnexion (texte exact à adapter si besoin)
+    logout_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'Déconnexion')]"))
+    )
+    logout_button.click()
+    logger.info("Déconnexion effectuée avec succès.")
+    time.sleep(3)
+except Exception as e:
+    logger.warning(f"Impossible de se déconnecter proprement : {e}")
 
 # Fermez le navigateur
 driver.quit()
