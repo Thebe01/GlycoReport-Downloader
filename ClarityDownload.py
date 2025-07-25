@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-07-21
+#'''Last Modified On : 2025-07-25
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
 #'''                Le dossier de téléchargement est : C:\Users\thebe\Downloads\Dexcom_download
 #'''                Le dossier final est C:\Users\thebe\OneDrive\Documents\Santé\Suivie glycémie et pression\AAAA
-#'''Version : 0.0.15
+#'''Version : 0.0.16
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -47,6 +47,8 @@
 #'''                        Les sous-rapports Superposition et Quotidien de comparer ne fonctioone pas.
 #'''                            Ils produisent le même PDF que Tendances.
 #'''                        Ajouter la déconnexion du compte avant de fermer le navigateur
+#'''0.0.16  2025-07-25    Correction pour la déconnexion du compte
+#'''                        Correction pour le bouton Fermer de la fenêtre modale Exporter
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -104,7 +106,7 @@ date_debut = "2024-08-19"
 date_fin = "2024-09-01"
 #rapports = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP", "Export"]
 
-rapports = ["Aperçu"]
+rapports = ["Export"]
 
 # Configuration du service ChromeDriver
 service = ChromeService(log_path=os.path.join(os.getcwd(), "chromedriver.log"))
@@ -562,6 +564,18 @@ def traitement_export_csv(nom_rapport):
         logger.error(f"Impossible de cliquer sur le bouton Exporter de la fenêtre modale : {e}")
         return
 
+    # Cliquer sur le bouton Fermer de la fenêtre modale si présent
+    try:
+        bouton_fermer = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'btn-primary') and contains(@class, 'btn-3d') and normalize-space()='Fermer']"))
+        )
+        driver.execute_script("arguments[0].scrollIntoView(true);", bouton_fermer)
+        time.sleep(1)
+        bouton_fermer.click()
+        logger.debug("Le bouton Fermer de la fenêtre modale a été cliqué avec succès!")
+    except Exception as e:
+        logger.warning(f"Bouton Fermer non trouvé ou non cliquable dans la fenêtre modale : {e}")
+
     # --- Attendre la fin réelle du téléchargement du fichier CSV ---
     def wait_for_csv_download(download_dir, timeout=120):
         """Attend qu'un fichier .csv apparaisse dans le dossier et qu'il n'y ait plus de .crdownload."""
@@ -748,19 +762,31 @@ if args.debug:
     for b in boutons:
         logger.debug(b.get_attribute("outerHTML"))
 
+# Fonction pour obtenir le bouton du menu utilisateur (robuste, sans dépendre du nom d'utilisateur)
+def get_user_menu_button(driver, timeout=10):
+    try:
+        # XPath principal : flèche + nom d’usager (si jamais tu veux cibler un nom précis)
+        xpath_main = "//button[.//span[@class='clarity-menu__primarylabel' and contains(text(), 'Pierre')] and .//span[@class='clarity-menu__trigger-item-down-arrow']]"
+        return WebDriverWait(driver, timeout).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_main))
+        )
+    except:
+        # Fallback : structure générale du bouton utilisateur (pas de nom requis)
+        xpath_fallback = "//button[.//span[@class='clarity-menu__primarylabel'] and .//span[@class='clarity-menu__trigger-item-down-arrow']]"
+        return WebDriverWait(driver, timeout).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_fallback))
+        )
+
 # Déconnexion avant de fermer le navigateur
 try:
-    # Cliquer sur le nom de l'usager (menu)
-    user_menu = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//span[contains(@class, 'clarity-menu__primarylabel')]"))
-    )
-    user_menu.click()
+    user_menu_button = get_user_menu_button(driver)
+    user_menu_button.click()
     time.sleep(2)
-    # Cliquer sur le bouton Déconnexion (texte exact à adapter si besoin)
-    logout_button = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'Déconnexion')]"))
+    # Cliquer sur le lien Déconnexion (structure <a> fournie)
+    logout_link = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'cui-link__logout') and contains(., 'Déconnexion')]"))
     )
-    logout_button.click()
+    logout_link.click()
     logger.info("Déconnexion effectuée avec succès.")
     time.sleep(3)
 except Exception as e:
