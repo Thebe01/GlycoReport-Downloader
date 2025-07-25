@@ -10,7 +10,7 @@
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
 #'''                Le dossier de téléchargement est : C:\Users\thebe\Downloads\Dexcom_download
 #'''                Le dossier final est C:\Users\thebe\OneDrive\Documents\Santé\Suivie glycémie et pression\AAAA
-#'''Version : 0.0.16
+#'''Version : 0.0.17
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -49,11 +49,23 @@
 #'''                        Ajouter la déconnexion du compte avant de fermer le navigateur
 #'''0.0.16  2025-07-25    Correction pour la déconnexion du compte
 #'''                        Correction pour le bouton Fermer de la fenêtre modale Exporter
+#'''0.0.17  2025-07-25    Correction pour le déconnexion du compte. Éliminer la référence au nom d'utilisateur.
+# '''                        Ajout de TODO pour la correction du code.
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
-# TODO Réparer le problème avec les rapports Comparer
-# TODO Appliquer la même solution pour obtenir des rapports séparés pour Modèle
+# TODO 1 Utilisation de WebDriverWait partout au lieu de time.sleep. Remplace les time.sleep() par des attentes explicites sur les éléments ou les conditions attendues.
+# TODO 2 Gestion des exceptions plus précise. Évite les except: nus. Précise toujours le type d’exception ou loggue l’exception pour le debug.
+# TODO 3 Factorisation des attentes sur les overlays/loaders. Crée une fonction utilitaire pour attendre la disparition des overlays, et utilise-la partout où c’est pertinent.
+# TODO 4 Centralisation des paramètres et chemins. Définis tous les chemins, URLs, et paramètres en haut du script ou dans un fichier de config.
+# TODO 5 Documenter l'utilisation de variables d'environnement pour les credentials.
+# TODO 6 Ajout d’une fonction main()
+# TODO 7  Fermeture du navigateur dans un finally
+# TODO 8 Ajout de docstrings pour toutes les fonctions
+# TODO 9 Logging cohérent. Utilise le logger pour tous les messages (pas de print).
+# TODO 10 Réparer le problème avec les rapports Comparer
+# TODO 11 Exécuter l'application pour produire les rapports Comparer depuis 2024-08-19
+# TODO 12 Appliquer la même solution pour obtenir des rapports séparés pour Modèle
 
 import os
 import sys
@@ -106,7 +118,7 @@ date_debut = "2024-08-19"
 date_fin = "2024-09-01"
 #rapports = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP", "Export"]
 
-rapports = ["Export"]
+rapports = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Statistiques", "AGP", "Export"]
 
 # Configuration du service ChromeDriver
 service = ChromeService(log_path=os.path.join(os.getcwd(), "chromedriver.log"))
@@ -765,17 +777,16 @@ if args.debug:
 # Fonction pour obtenir le bouton du menu utilisateur (robuste, sans dépendre du nom d'utilisateur)
 def get_user_menu_button(driver, timeout=10):
     try:
-        # XPath principal : flèche + nom d’usager (si jamais tu veux cibler un nom précis)
-        xpath_main = "//button[.//span[@class='clarity-menu__primarylabel' and contains(text(), 'Pierre')] and .//span[@class='clarity-menu__trigger-item-down-arrow']]"
+        # XPath qui cible le dernier bouton menu avec le bon contenu
+        xpath = "(//button[.//span[@class='clarity-menu__primarylabel'] and .//span[@class='clarity-menu__trigger-item-down-arrow']])[last()]"
+
+        # Attendre que le bouton soit cliquable et le retourner
         return WebDriverWait(driver, timeout).until(
-            EC.element_to_be_clickable((By.XPATH, xpath_main))
+            EC.element_to_be_clickable((By.XPATH, xpath))
         )
-    except:
-        # Fallback : structure générale du bouton utilisateur (pas de nom requis)
-        xpath_fallback = "//button[.//span[@class='clarity-menu__primarylabel'] and .//span[@class='clarity-menu__trigger-item-down-arrow']]"
-        return WebDriverWait(driver, timeout).until(
-            EC.element_to_be_clickable((By.XPATH, xpath_fallback))
-        )
+    except Exception as e:
+        logger.error(f"Bouton utilisateur introuvable : {e}")
+        raise
 
 # Déconnexion avant de fermer le navigateur
 try:
