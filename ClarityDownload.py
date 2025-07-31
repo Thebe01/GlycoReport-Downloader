@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-07-25
+#'''Last Modified On : 2025-07-30
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
 #'''                Le dossier de téléchargement est : C:\Users\thebe\Downloads\Dexcom_download
 #'''                Le dossier final est C:\Users\thebe\OneDrive\Documents\Santé\Suivie glycémie et pression\AAAA
-#'''Version : 0.0.17
+#'''Version : 0.0.18
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -50,22 +50,24 @@
 #'''0.0.16  2025-07-25    Correction pour la déconnexion du compte
 #'''                        Correction pour le bouton Fermer de la fenêtre modale Exporter
 #'''0.0.17  2025-07-25    Correction pour le déconnexion du compte. Éliminer la référence au nom d'utilisateur.
-# '''                        Ajout de TODO pour la correction du code.
-#'''</summary>
+#'''                        Ajout de TODO pour la correction du code.
+#'''0.0.18  2025-07-30    Gestion des exceptions plus précise. Évite les except: nus. Précise toujours le type d’exception
+#'''                      Factorisation des attentes sur les overlays/loaders. Crée une fonction utilitaire
+#'''                          pour attendre la disparition des overlays, et utilise-la partout où c’est pertinent.
+#'''                      Centralisation des paramètres et chemins. Définis tous les chemins, URLs, et paramètres en haut du script ou dans un fichier de config.
+#'''                      Ajout d’une fonction main()
+#'''                      Fermeture du navigateur dans un finally
+#  </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
-# TODO 1 Utilisation de WebDriverWait partout au lieu de time.sleep. Remplace les time.sleep() par des attentes explicites sur les éléments ou les conditions attendues.
-# TODO 2 Gestion des exceptions plus précise. Évite les except: nus. Précise toujours le type d’exception ou loggue l’exception pour le debug.
-# TODO 3 Factorisation des attentes sur les overlays/loaders. Crée une fonction utilitaire pour attendre la disparition des overlays, et utilise-la partout où c’est pertinent.
-# TODO 4 Centralisation des paramètres et chemins. Définis tous les chemins, URLs, et paramètres en haut du script ou dans un fichier de config.
-# TODO 5 Documenter l'utilisation de variables d'environnement pour les credentials.
-# TODO 6 Ajout d’une fonction main()
-# TODO 7  Fermeture du navigateur dans un finally
+# TODO 4 Centralisation des paramètres et chemins. Définis tous les chemins, URLs, et paramètres dans un fichier de config.
 # TODO 8 Ajout de docstrings pour toutes les fonctions
 # TODO 9 Logging cohérent. Utilise le logger pour tous les messages (pas de print).
-# TODO 10 Réparer le problème avec les rapports Comparer
-# TODO 11 Exécuter l'application pour produire les rapports Comparer depuis 2024-08-19
-# TODO 12 Appliquer la même solution pour obtenir des rapports séparés pour Modèle
+# TODO 10 Passer les dates et la liste de rapports en paramètres.
+# TODO 11 Réparer le problème avec les rapports Comparer
+# TODO 12 Exécuter l'application pour produire les rapports Comparer depuis 2024-08-19
+# TODO 13 Appliquer la même solution pour obtenir des rapports séparés pour Modèle
+# TODO 14 Rendre l'application indépendante de la langue de l'utilisateur.
 
 import os
 import sys
@@ -89,15 +91,31 @@ parser = argparse.ArgumentParser(description="Téléchargement des rapports Dexc
 parser.add_argument('--debug', '-d', action='store_true', help='Activer le mode debug')
 args = parser.parse_args()
 
-download_dir = r"C:\Users\thebe\Downloads\Dexcom_download"  # dossier cible
+# === PARAMÈTRES ET CHEMINS CENTRALISÉS ===
 
-# Création du répertoire de téléchargement s'il n'existe pas
-if not os.path.exists(download_dir):
-    os.makedirs(download_dir)
+# Dossier de téléchargement temporaire
+DOWNLOAD_DIR = r"C:\Users\thebe\Downloads\Dexcom_download"
 
-# Création d'un nom de fichier log unique avec date et heure
-now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-log_file = os.path.join(download_dir, f"clarity_download_{now}.log")
+# Dossier final pour les rapports
+DIR_FINAL_BASE = r"C:\Users\thebe\OneDrive\Documents\Santé\Suivie glycémie et pression"
+
+# Profil Chrome dédié
+CHROME_USER_DATA_DIR = r"C:/Users/thebe/AppData/Local/Google/Chrome/User Data/ClarityDownloadProfile"
+
+# URL Dexcom Clarity
+DEXCOM_URL = "https://clarity.dexcom.eu/?&locale=fr-CA"
+
+# Fichier log ChromeDriver
+CHROMEDRIVER_LOG = os.path.join(os.getcwd(), "chromedriver.log")
+
+# Liste des rapports à traiter
+RAPPORTS = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Statistiques", "AGP", "Export"]
+
+# Dates par défaut (à passer en paramètre idéalement)
+DATE_DEBUT = "2024-12-09"
+DATE_FIN = "2024-12-22"
+
+# ==========================================
 
 # Configuration du logger pour fichier et console
 logger = logging.getLogger('dexcom_clarity')
@@ -105,7 +123,7 @@ logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
 formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
 
 # Handler fichier
-file_handler = logging.FileHandler(log_file)
+file_handler = logging.FileHandler(os.path.join(DOWNLOAD_DIR, f"clarity_download_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log"))
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
@@ -114,18 +132,12 @@ console_handler = logging.StreamHandler()
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
-date_debut = "2024-08-19"
-date_fin = "2024-09-01"
-#rapports = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP", "Export"]
-
-rapports = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Statistiques", "AGP", "Export"]
-
 # Configuration du service ChromeDriver
-service = ChromeService(log_path=os.path.join(os.getcwd(), "chromedriver.log"))
+service = ChromeService(log_path=CHROMEDRIVER_LOG)
 
 # Configuration des options Chrome
 options = Options()
-options.add_argument("--user-data-dir=C:/Users/thebe/AppData/Local/Google/Chrome/User Data/ClarityDownloadProfile")
+options.add_argument(f"--user-data-dir={CHROME_USER_DATA_DIR}")
 options.add_argument("--disable-gpu")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
@@ -139,7 +151,7 @@ options.add_argument("--disable-translate")
 options.add_argument("--disable-features=PaintHolding")
 
 prefs = {
-    "download.default_directory": download_dir,  # Dossier de téléchargement
+    "download.default_directory": DOWNLOAD_DIR,  # Dossier de téléchargement
     "download.prompt_for_download": False,       # Pas de popup de confirmation
     "directory_upgrade": True,                   # Mise à jour du dossier si déjà ouvert
     "safebrowsing.enabled": True                 # Désactive l'avertissement de sécurité
@@ -150,7 +162,7 @@ options.add_experimental_option("prefs", prefs)
 driver = webdriver.Chrome(service=service, options=options)
 
 # URL de la page Dexcom Clarity
-url = "https://clarity.dexcom.eu/?&locale=fr-CA"
+url = DEXCOM_URL
 
 def check_internet(url="https://www.google.com", timeout=5):
     """Retourne True si la connexion internet fonctionne, False sinon."""
@@ -160,9 +172,9 @@ def check_internet(url="https://www.google.com", timeout=5):
     except Exception:
         return False
 
-def get_last_downloaded_file(download_dir):
+def get_last_downloaded_file(DOWNLOAD_DIR):
     """Retourne le chemin du fichier le plus récemment téléchargé dans le dossier donné."""
-    files = [os.path.join(download_dir, f) for f in os.listdir(download_dir)]
+    files = [os.path.join(DOWNLOAD_DIR, f) for f in os.listdir(DOWNLOAD_DIR)]
     files = [f for f in files if os.path.isfile(f)]
     if not files:
         return None
@@ -171,17 +183,35 @@ def get_last_downloaded_file(download_dir):
 
 def renomme_prefix(prefix):
     nom, date, numero = prefix.split("_")
-    nouveau_prefix = nom + "_" + date_fin + "_" + numero
+    nouveau_prefix = nom + "_" + DATE_FIN + "_" + numero
     print("Nouveau préfix : ", nouveau_prefix)
     return nouveau_prefix
 
+def attendre_disparition_overlay(driver, timeout=60):
+    """Attend la disparition des overlays, loaders ou spinners courants."""
+    try:
+        WebDriverWait(driver, timeout).until_not(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".overlay, .loader, .spinner"))
+        )
+    except Exception as e:
+        logger.debug(f"Aucun overlay/loader détecté ou disparition non confirmée : {e}", exc_info=args.debug)
+
+def get_user_menu_button(driver, timeout=10):
+    """Retourne le bouton du menu utilisateur pour la déconnexion."""
+    try:
+        xpath = "(//button[.//span[@class='clarity-menu__primarylabel'] and .//span[@class='clarity-menu__trigger-item-down-arrow']])[last()]"
+        return WebDriverWait(driver, timeout).until(
+            EC.element_to_be_clickable((By.XPATH, xpath))
+        )
+    except Exception as e:
+        logger.error(f"Bouton utilisateur introuvable : {e}", exc_info=args.debug)
+        raise
 
 def deplace_et_renomme_rapport(nom_rapport):
     # Code pour deplacer et renommer le rapport
     logger.info(f"Deplacement et renommage du rapport {nom_rapport}")
-    annee = date_fin[:4]
-    dir_final = r"C:\Users\thebe\OneDrive\Documents\Santé\Suivie glycémie et pression"
-    dir_final = os.path.join(dir_final, annee)
+    annee = DATE_FIN[:4]
+    dir_final = os.path.join(DIR_FINAL_BASE, annee)
 
     # Création du répertoire s'il n'existe pas
     if not os.path.exists(dir_final):
@@ -189,14 +219,14 @@ def deplace_et_renomme_rapport(nom_rapport):
         logger.debug(f"Répertoire créé : {dir_final}")
 
     # Exclure les fichiers .log lors de la recherche du dernier fichier téléchargé
-    def get_last_downloaded_nonlog_file(download_dir):
-        files = [os.path.join(download_dir, f) for f in os.listdir(download_dir)]
+    def get_last_downloaded_nonlog_file(DOWNLOAD_DIR):
+        files = [os.path.join(DOWNLOAD_DIR, f) for f in os.listdir(DOWNLOAD_DIR)]
         files = [f for f in files if os.path.isfile(f) and not f.lower().endswith('.log')]
         if not files:
             return None
         return max(files, key=os.path.getctime)
 
-    chemin_fichier_telecharge = get_last_downloaded_nonlog_file(download_dir)
+    chemin_fichier_telecharge = get_last_downloaded_nonlog_file(DOWNLOAD_DIR)
     if chemin_fichier_telecharge:
         nom_fichier_telecharge = os.path.basename(chemin_fichier_telecharge)
         prefix, suffix = os.path.splitext(nom_fichier_telecharge)
@@ -204,7 +234,7 @@ def deplace_et_renomme_rapport(nom_rapport):
 
         if nom_rapport == "Export":
             # Renommer au format Clarity_Exporter_Théberge_Pierre_AAAA-MM-JJ.csv
-            nouveau_nom_fichier = f"Clarity_Exporter_Théberge_Pierre_{date_fin}.csv"
+            nouveau_nom_fichier = f"Clarity_Exporter_Théberge_Pierre_{DATE_FIN}.csv"
             destination = os.path.join(dir_final, nouveau_nom_fichier)
             logger.debug(f"Renommage Export : {chemin_fichier_telecharge} -> {destination}")
             try:
@@ -226,18 +256,10 @@ def deplace_et_renomme_rapport(nom_rapport):
         logger.error("Aucun fichier téléchargé trouvé (hors fichiers .log).")
 
 def telechargement_rapport(nom_rapport):
-    # Code pour telecharger le rapport
     logger.info(f"Telechargement du rapport {nom_rapport}")
     # Ajoutez ici le code spécifique pour telecharger le rapport
     try:
-        # Attendre la disparition d'un overlay éventuel AVANT de cliquer
-        try:
-            WebDriverWait(driver, 60).until_not(
-                EC.presence_of_element_located((By.CSS_SELECTOR, ".overlay, .loader, .spinner"))
-            )
-        except:
-            pass  # Si pas d'overlay, on continue
-
+        attendre_disparition_overlay(driver, 60)
         # Attendre que le bouton "Télécharger" (icône) soit cliquable
         xpath_bouton = "//button[.//img[@alt='Télécharger']]"
         bouton = WebDriverWait(driver, 60).until(
@@ -255,7 +277,7 @@ def telechargement_rapport(nom_rapport):
         time.sleep(5)
         logger.debug("Le bouton Télécharger a été cliqué avec succès!")
     except Exception as e:
-        logger.error(f"Une erreur s'est produite lors du clic sur le bouton Télécharger : {e}")
+        logger.error(f"Une erreur s'est produite lors du clic sur le bouton Télécharger : {e}", exc_info=args.debug)
         return
     # Choisir le rapport en couleur
     try:
@@ -325,7 +347,7 @@ def traitement_rapport_standard(nom_rapport):
         time.sleep(2)
         telechargement_rapport(nom_rapport)
     except Exception as e:
-        logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
+        logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}", exc_info=args.debug)
         return
 
 
@@ -438,7 +460,7 @@ def traitement_rapport_comparer(nom_rapport):
         driver.execute_script("arguments[0].scrollIntoView(true);", quotidien_link)
         time.sleep(2)
         driver.execute_script("arguments[0].click();", quotidien_link)
-        
+
         # Attendre le chargement complet de Quotidien
         WebDriverWait(driver, 60).until(lambda d: "/compare/daily" in d.current_url)
         time.sleep(10)  # Attente pour s'assurer que le PDF est mis à jour
@@ -535,14 +557,7 @@ def traitement_rapport_agp(nom_rapport):
 def traitement_export_csv(nom_rapport):
     logger.info(f"Traitement de l'export csv ")
     try:
-        # Attendre la disparition d'un overlay éventuel AVANT de cliquer
-        try:
-            WebDriverWait(driver, 60).until_not(
-                EC.presence_of_element_located((By.CSS_SELECTOR, ".overlay, .loader, .spinner"))
-            )
-        except:
-            pass  # Si pas d'overlay, on continue
-
+        attendre_disparition_overlay(driver, 60)
         # Attendre que le bouton Exporter (icône) soit cliquable
         xpath_export = "//button[.//img[@src='/i/assets/cui_export.svg' and @alt='Exporter']]"
         bouton_export = WebDriverWait(driver, 60).until(
@@ -560,7 +575,7 @@ def traitement_export_csv(nom_rapport):
         time.sleep(5)
         logger.debug("Le bouton Exporter a été cliqué avec succès!")
     except Exception as e:
-        logger.error(f"Une erreur s'est produite lors du clic sur le bouton Exporter : {e}")
+        logger.error(f"Une erreur s'est produite lors du clic sur le bouton Exporter : {e}", exc_info=args.debug)
         return
     # Cliquer sur le bouton Exporter dans la fenêtre modale
     try:
@@ -589,28 +604,28 @@ def traitement_export_csv(nom_rapport):
         logger.warning(f"Bouton Fermer non trouvé ou non cliquable dans la fenêtre modale : {e}")
 
     # --- Attendre la fin réelle du téléchargement du fichier CSV ---
-    def wait_for_csv_download(download_dir, timeout=120):
+    def wait_for_csv_download(DOWNLOAD_DIR, timeout=120):
         """Attend qu'un fichier .csv apparaisse dans le dossier et qu'il n'y ait plus de .crdownload."""
         start_time = time.time()
         while time.time() - start_time < timeout:
-            files = [f for f in os.listdir(download_dir) if f.lower().endswith('.csv')]
+            files = [f for f in os.listdir(DOWNLOAD_DIR) if f.lower().endswith('.csv')]
             if files:
                 # Vérifier qu'il n'y a pas de .crdownload
-                crdownloads = [f for f in os.listdir(download_dir) if f.endswith('.crdownload')]
+                crdownloads = [f for f in os.listdir(DOWNLOAD_DIR) if f.endswith('.crdownload')]
                 if not crdownloads:
                     return True
             time.sleep(1)
         return False
 
-    if wait_for_csv_download(download_dir):
+    if wait_for_csv_download(DOWNLOAD_DIR):
         logger.info("Fichier CSV exporté détecté et téléchargement terminé.")
         deplace_et_renomme_rapport(nom_rapport)
     else:
         logger.error("Le téléchargement du fichier CSV n'a pas été détecté ou n'est pas terminé après 2 minutes.")
 
-def selection_rapport(rapports):
+def selection_rapport(RAPPORTS):
     # Code pour traiter les rapports
-    for rapport in rapports:
+    for rapport in RAPPORTS:
         if rapport == "Aperçu":
             # Code pour traiter le rapport "Aperçu"
             traitement_rapport_apercu(rapport)
@@ -639,169 +654,156 @@ def selection_rapport(rapports):
             logger.error(f"Rapport inconnu : {rapport}. Veuillez vérifier la liste des rapports.")
 
 
-# Affichage de la version de Python si le mode debug est activé
-
-if args.debug:
-    logger.debug(f"Version de Python : {sys.version}")
-
-logger.info(f"Rapports à traiter : {rapports}")
-
-
-logger.info(f"Dossier de téléchargement : {download_dir}")
-
-# Vérification de la connexion internet avant d'ouvrir la page
-if not check_internet():
-    logger.error("Perte de connexion internet détectée avant l'ouverture de la page Dexcom Clarity.")
-    logger.info("Arrêt du script suite à une perte de connexion internet.")
+def main():
     try:
-        driver.quit()
-    except Exception:
-        pass
-    sys.exit(0)
+        # Affichage de la version de Python si le mode debug est activé
+        if args.debug:
+            logger.debug(f"Version de Python : {sys.version}")
 
-# Ouvrir la page de connexion
-driver.get(url)
+        logger.info(f"Rapports à traiter : {RAPPORTS}")
+        logger.info(f"Dossier de téléchargement : {DOWNLOAD_DIR}")
 
-# Attendez que la page soit entièrement chargée
-wait = WebDriverWait(driver=driver, timeout=60)  # Augmenté à 60s
+        # Vérification de la connexion internet avant d'ouvrir la page
+        if not check_internet():
+            logger.error("Perte de connexion internet détectée avant l'ouverture de la page Dexcom Clarity.")
+            logger.info("Arrêt du script suite à une perte de connexion internet.")
+            sys.exit(0)
 
-# Vérification de la connexion internet avant de cliquer sur le bouton d'accueil
-if not check_internet():
-    logger.error("Perte de connexion internet détectée avant de cliquer sur le bouton d'accueil.")
-    logger.info("Arrêt du script suite à une perte de connexion internet.")
-    driver.quit()
-    sys.exit(1)
+        # Ouvrir la page de connexion
+        driver.get(DEXCOM_URL)
 
-# Recherchez et cliquez sur le bouton "Dexcom Clarity pour les utilisateurs à domicile"
-try:
-    bouton = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@value='Dexcom Clarity pour les utilisateurs à domicile']")))
-    bouton.click()
-    time.sleep(5)  # Augmenté à 5s
-    logger.debug("Le bouton pour utilisateurs à domicile a été cliqué avec succès!")
-except Exception as e:
-    if not check_internet():
-        logger.error("Perte de connexion internet détectée lors du clic sur le bouton pour utilisateurs à domicile.")
-    logger.error(f"Une erreur s'est produite au moment de cliquer sur le bouton pour utilisateurs à domicile : {e}")
+        # Attendez que la page soit entièrement chargée
+        wait = WebDriverWait(driver=driver, timeout=60)  # Augmenté à 60s
 
-# Recherchez les champs de saisie pour le courriel/nom d'utilisateur et le mot de passe
-try:
-    if not check_internet():
-        logger.error("Perte de connexion internet détectée avant la saisie des identifiants.")
-        raise RuntimeError("Connexion internet requise pour poursuivre.")
+        # Vérification de la connexion internet avant de cliquer sur le bouton d'accueil
+        if not check_internet():
+            logger.error("Perte de connexion internet détectée avant de cliquer sur le bouton d'accueil.")
+            logger.info("Arrêt du script suite à une perte de connexion internet.")
+            sys.exit(1)
 
-    username_input = WebDriverWait(driver, 60).until(
-        EC.presence_of_element_located((By.NAME, "username"))
-    )
-    password_input = WebDriverWait(driver, 60).until(
-        EC.presence_of_element_located((By.NAME, "password"))
-    )
-    dexcom_username = os.getenv("DEXCOM_USERNAME")
-    dexcom_password = os.getenv("DEXCOM_PASSWORD")
-    if dexcom_username is None or dexcom_password is None:
-        raise ValueError("Les variables d'environnement DEXCOM_USERNAME et DEXCOM_PASSWORD doivent être définies.")
+        # Recherchez et cliquez sur le bouton "Dexcom Clarity pour les utilisateurs à domicile"
+        try:
+            bouton = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@value='Dexcom Clarity pour les utilisateurs à domicile']")))
+            bouton.click()
+            time.sleep(5)  # Augmenté à 5s
+            logger.debug("Le bouton pour utilisateurs à domicile a été cliqué avec succès!")
+        except Exception as e:
+            if not check_internet():
+                logger.error("Perte de connexion internet détectée lors du clic sur le bouton pour utilisateurs à domicile.")
+            logger.error(f"Une erreur s'est produite au moment de cliquer sur le bouton pour utilisateurs à domicile : {e}")
 
-    username_input.send_keys(dexcom_username)
-    password_input.send_keys(dexcom_password)
+        # Recherchez les champs de saisie pour le courriel/nom d'utilisateur et le mot de passe
+        try:
+            if not check_internet():
+                logger.error("Perte de connexion internet détectée avant la saisie des identifiants.")
+                raise RuntimeError("Connexion internet requise pour poursuivre.")
 
-    login_button = WebDriverWait(driver, 60).until(
-        EC.element_to_be_clickable((By.XPATH, "//input[@type='submit' and @value='Se connecter']"))
-    )
-    login_button.click()
-    time.sleep(5)  # Augmenté à 5s
+            username_input = WebDriverWait(driver, 60).until(
+                EC.presence_of_element_located((By.NAME, "username"))
+            )
+            password_input = WebDriverWait(driver, 60).until(
+                EC.presence_of_element_located((By.NAME, "password"))
+            )
+            dexcom_username = os.getenv("DEXCOM_USERNAME")
+            dexcom_password = os.getenv("DEXCOM_PASSWORD")
+            if dexcom_username is None or dexcom_password is None:
+                raise ValueError("Les variables d'environnement DEXCOM_USERNAME et DEXCOM_PASSWORD doivent être définies.")
 
-    logger.info("Connexion réussie !")
-except Exception as e:
-    if not check_internet():
-        logger.error("Perte de connexion internet détectée lors de la connexion.")
-    logger.error(f"Une erreur s'est produite lors de la connexion : {e}")
+            username_input.send_keys(dexcom_username)
+            password_input.send_keys(dexcom_password)
 
-# Attendez que la page soit entièrement chargée
-time.sleep(10)  # Augmenté à 10s
+            login_button = WebDriverWait(driver, 60).until(
+                EC.element_to_be_clickable((By.XPATH, "//input[@type='submit' and @value='Se connecter']"))
+            )
+            login_button.click()
+            time.sleep(5)  # Augmenté à 5s
 
-# Recherchez les champs de saisie des dates et entrez les nouvelles dates
-try:
-    if not check_internet():
-        logger.error("Perte de connexion internet détectée avant la sélection des dates.")
-        raise RuntimeError("Connexion internet requise pour poursuivre.")
+            logger.info("Connexion réussie !")
+        except Exception as e:
+            if not check_internet():
+                logger.error("Perte de connexion internet détectée lors de la connexion.")
+            logger.error(f"Une erreur s'est produite lors de la connexion : {e}")
 
-    date_picker_button = WebDriverWait(driver, 60).until(
-        EC.element_to_be_clickable((By.XPATH, "//div[@data-test-date-range-picker-toggle]"))
-    )
-    date_picker_button.click()
-    logger.debug("Bouton du sélecteur de dates trouvé et cliqué.")
-    time.sleep(5)  # Augmenté à 5s
+        # Attendez que la page soit entièrement chargée
+        time.sleep(10)  # Augmenté à 10s
 
-    if date_debut is None or date_fin is None:
-        raise ValueError("Les variables date_debut et date_fin ne peuvent pas être None. Elles doivent être définies.")
+        # Recherchez les champs de saisie des dates et entrez les nouvelles dates
+        try:
+            if not check_internet():
+                logger.error("Perte de connexion internet détectée avant la sélection des dates.")
+                raise RuntimeError("Connexion internet requise pour poursuivre.")
 
-    date_debut_input = WebDriverWait(driver, 60).until(
-        EC.presence_of_element_located((By.NAME, "start_date"))
-    )
-    date_fin_input = WebDriverWait(driver, 60).until(
-        EC.presence_of_element_located((By.NAME, "end_date"))
-    )
-    date_debut_input.clear()
-    date_fin_input.clear()
-    date_debut_input.send_keys(date_debut)
-    date_fin_input.send_keys(date_fin)
+            date_picker_button = WebDriverWait(driver, 60).until(
+                EC.element_to_be_clickable((By.XPATH, "//div[@data-test-date-range-picker-toggle]"))
+            )
+            date_picker_button.click()
+            logger.debug("Bouton du sélecteur de dates trouvé et cliqué.")
+            time.sleep(5)  # Augmenté à 5s
 
-    ok_button = WebDriverWait(driver, 60).until(
-        EC.element_to_be_clickable((By.XPATH, "//button[@data-test-date-range-picker__ok-button]"))
-    )
-    ok_button.click()
-    logger.debug("Bouton OK du sélecteur de dates cliqué.")
-    time.sleep(5)  # Augmenté à 5s
+            if DATE_DEBUT is None or DATE_FIN is None:
+                raise ValueError("Les variables DATE_DEBUT et DATE_FIN ne peuvent pas être None. Elles doivent être définies.")
 
-    logger.info(f"Date de début: {date_debut}")
-    logger.info(f"Date de fin: {date_fin}")
-    logger.info("Les dates ont été saisies avec succès !")
+            date_debut_input = WebDriverWait(driver, 60).until(
+                EC.presence_of_element_located((By.NAME, "start_date"))
+            )
+            date_fin_input = WebDriverWait(driver, 60).until(
+                EC.presence_of_element_located((By.NAME, "end_date"))
+            )
+            date_debut_input.clear()
+            date_fin_input.clear()
+            date_debut_input.send_keys(DATE_DEBUT)
+            date_fin_input.send_keys(DATE_FIN)
 
-except Exception as e:
-    if not check_internet():
-        logger.error("Perte de connexion internet détectée lors de la saisie des dates.")
-    logger.error(f"Une erreur s'est produite lors de la saisie des dates : {e}")
+            ok_button = WebDriverWait(driver, 60).until(
+                EC.element_to_be_clickable((By.XPATH, "//button[@data-test-date-range-picker__ok-button]"))
+            )
+            ok_button.click()
+            logger.debug("Bouton OK du sélecteur de dates cliqué.")
+            time.sleep(5)  # Augmenté à 5s
 
-# Téléchargez les rapports
-selection_rapport(rapports)
+            logger.info(f"Date de début: {DATE_DEBUT}")
+            logger.info(f"Date de fin: {DATE_FIN}")
+            logger.info("Les dates ont été saisies avec succès !")
 
-# Attendez un peu pour vous assurer que le téléchargement est terminé
-time.sleep(60)
+        except Exception as e:
+            if not check_internet():
+                logger.error("Perte de connexion internet détectée lors de la saisie des dates.")
+            logger.error(f"Une erreur s'est produite lors de la saisie des dates : {e}")
 
-# (optionnel) Derniers diagnostics AVANT de quitter
-if args.debug:
-    boutons = driver.find_elements(By.XPATH, "//button")
-    logger.info(f"{len(boutons)} boutons trouvés sur la page")
-    for b in boutons:
-        logger.debug(b.get_attribute("outerHTML"))
+        # Téléchargez les rapports
+        selection_rapport(RAPPORTS)
 
-# Fonction pour obtenir le bouton du menu utilisateur (robuste, sans dépendre du nom d'utilisateur)
-def get_user_menu_button(driver, timeout=10):
-    try:
-        # XPath qui cible le dernier bouton menu avec le bon contenu
-        xpath = "(//button[.//span[@class='clarity-menu__primarylabel'] and .//span[@class='clarity-menu__trigger-item-down-arrow']])[last()]"
+        # Attendez un peu pour vous assurer que le téléchargement est terminé
+        time.sleep(60)
 
-        # Attendre que le bouton soit cliquable et le retourner
-        return WebDriverWait(driver, timeout).until(
-            EC.element_to_be_clickable((By.XPATH, xpath))
-        )
-    except Exception as e:
-        logger.error(f"Bouton utilisateur introuvable : {e}")
-        raise
+        # (optionnel) Derniers diagnostics AVANT de quitter
+        if args.debug:
+            boutons = driver.find_elements(By.XPATH, "//button")
+            logger.info(f"{len(boutons)} boutons trouvés sur la page")
+            for b in boutons:
+                logger.debug(b.get_attribute("outerHTML"))
 
-# Déconnexion avant de fermer le navigateur
-try:
-    user_menu_button = get_user_menu_button(driver)
-    user_menu_button.click()
-    time.sleep(2)
-    # Cliquer sur le lien Déconnexion (structure <a> fournie)
-    logout_link = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'cui-link__logout') and contains(., 'Déconnexion')]"))
-    )
-    logout_link.click()
-    logger.info("Déconnexion effectuée avec succès.")
-    time.sleep(3)
-except Exception as e:
-    logger.warning(f"Impossible de se déconnecter proprement : {e}")
+        # Déconnexion avant de fermer le navigateur
+        try:
+            user_menu_button = get_user_menu_button(driver)
+            user_menu_button.click()
+            time.sleep(2)
+            # Cliquer sur le lien Déconnexion (structure <a> fournie)
+            logout_link = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'cui-link__logout') and contains(., 'Déconnexion')]"))
+            )
+            logout_link.click()
+            logger.info("Déconnexion effectuée avec succès.")
+            time.sleep(3)
+        except Exception as e:
+            logger.warning(f"Impossible de se déconnecter proprement : {e}", exc_info=args.debug)
 
-# Fermez le navigateur
-driver.quit()
+    finally:
+        # Fermez le navigateur dans tous les cas
+        try:
+            driver.quit()
+        except Exception as e:
+            logger.warning(f"Erreur lors de la fermeture du navigateur : {e}", exc_info=args.debug)
+
+if __name__ == "__main__":
+    main()
