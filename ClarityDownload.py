@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-07-30
+#'''Last Modified On : 2025-08-04
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
 #'''                Le dossier de téléchargement est : C:\Users\thebe\Downloads\Dexcom_download
 #'''                Le dossier final est C:\Users\thebe\OneDrive\Documents\Santé\Suivie glycémie et pression\AAAA
-#'''Version : 0.0.18
+#'''Version : 0.0.19
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -57,12 +57,12 @@
 #'''                      Centralisation des paramètres et chemins. Définis tous les chemins, URLs, et paramètres en haut du script ou dans un fichier de config.
 #'''                      Ajout d’une fonction main()
 #'''                      Fermeture du navigateur dans un finally
+#'''0.0.19  2025-08-04    Ajout de docstrings pour toutes les fonctions
+#'''                      Logging cohérent. Utilise le logger pour tous les messages (pas de print).
 #  </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # TODO 4 Centralisation des paramètres et chemins. Définis tous les chemins, URLs, et paramètres dans un fichier de config.
-# TODO 8 Ajout de docstrings pour toutes les fonctions
-# TODO 9 Logging cohérent. Utilise le logger pour tous les messages (pas de print).
 # TODO 10 Passer les dates et la liste de rapports en paramètres.
 # TODO 11 Réparer le problème avec les rapports Comparer
 # TODO 12 Exécuter l'application pour produire les rapports Comparer depuis 2024-08-19
@@ -112,8 +112,8 @@ CHROMEDRIVER_LOG = os.path.join(os.getcwd(), "chromedriver.log")
 RAPPORTS = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Statistiques", "AGP", "Export"]
 
 # Dates par défaut (à passer en paramètre idéalement)
-DATE_DEBUT = "2024-12-09"
-DATE_FIN = "2024-12-22"
+DATE_DEBUT = "2025-02-03"
+DATE_FIN = "2025-02-16"
 
 # ==========================================
 
@@ -165,7 +165,16 @@ driver = webdriver.Chrome(service=service, options=options)
 url = DEXCOM_URL
 
 def check_internet(url="https://www.google.com", timeout=5):
-    """Retourne True si la connexion internet fonctionne, False sinon."""
+    """
+    Vérifie la connexion internet en tentant d'ouvrir l'URL spécifiée.
+
+    Args:
+        url (str): URL à tester (par défaut Google).
+        timeout (int): Durée maximale en secondes pour la tentative.
+
+    Returns:
+        bool: True si la connexion fonctionne, False sinon.
+    """
     try:
         urllib.request.urlopen(url, timeout=timeout)
         return True
@@ -173,22 +182,46 @@ def check_internet(url="https://www.google.com", timeout=5):
         return False
 
 def get_last_downloaded_file(DOWNLOAD_DIR):
-    """Retourne le chemin du fichier le plus récemment téléchargé dans le dossier donné."""
+    """
+    Retourne le chemin du fichier le plus récemment téléchargé dans le dossier donné.
+
+    Args:
+        DOWNLOAD_DIR (str): Chemin du dossier de téléchargement.
+
+    Returns:
+        str or None: Chemin du fichier le plus récent, ou None si aucun fichier.
+    """
     files = [os.path.join(DOWNLOAD_DIR, f) for f in os.listdir(DOWNLOAD_DIR)]
     files = [f for f in files if os.path.isfile(f)]
     if not files:
+        logger.warning("Aucun fichier téléchargé trouvé dans le dossier.")
         return None
-    print(files)
+    logger.debug(f"Fichiers trouvés : {files}")
     return max(files, key=os.path.getctime)
 
 def renomme_prefix(prefix):
+    """
+    Renomme le préfixe du fichier téléchargé en ajoutant la date de fin.
+
+    Args:
+        prefix (str): Préfixe original du fichier.
+
+    Returns:
+        str: Nouveau préfixe formaté.
+    """
     nom, date, numero = prefix.split("_")
     nouveau_prefix = nom + "_" + DATE_FIN + "_" + numero
-    print("Nouveau préfix : ", nouveau_prefix)
+    logger.debug(f"Nouveau préfix : {nouveau_prefix}")
     return nouveau_prefix
 
 def attendre_disparition_overlay(driver, timeout=60):
-    """Attend la disparition des overlays, loaders ou spinners courants."""
+    """
+    Attend la disparition des overlays, loaders ou spinners courants.
+
+    Args:
+        driver (WebDriver): Instance du navigateur Selenium.
+        timeout (int): Durée maximale d'attente en secondes.
+    """
     try:
         WebDriverWait(driver, timeout).until_not(
             EC.presence_of_element_located((By.CSS_SELECTOR, ".overlay, .loader, .spinner"))
@@ -197,7 +230,19 @@ def attendre_disparition_overlay(driver, timeout=60):
         logger.debug(f"Aucun overlay/loader détecté ou disparition non confirmée : {e}", exc_info=args.debug)
 
 def get_user_menu_button(driver, timeout=10):
-    """Retourne le bouton du menu utilisateur pour la déconnexion."""
+    """
+    Retourne le bouton du menu utilisateur pour la déconnexion.
+
+    Args:
+        driver (WebDriver): Instance du navigateur Selenium.
+        timeout (int): Durée maximale d'attente en secondes.
+
+    Returns:
+        WebElement: Bouton du menu utilisateur.
+
+    Raises:
+        Exception: Si le bouton n'est pas trouvé ou cliquable.
+    """
     try:
         xpath = "(//button[.//span[@class='clarity-menu__primarylabel'] and .//span[@class='clarity-menu__trigger-item-down-arrow']])[last()]"
         return WebDriverWait(driver, timeout).until(
@@ -208,7 +253,12 @@ def get_user_menu_button(driver, timeout=10):
         raise
 
 def deplace_et_renomme_rapport(nom_rapport):
-    # Code pour deplacer et renommer le rapport
+    """
+    Déplace et renomme le rapport téléchargé dans le dossier final.
+
+    Args:
+        nom_rapport (str): Nom du rapport à traiter.
+    """
     logger.info(f"Deplacement et renommage du rapport {nom_rapport}")
     annee = DATE_FIN[:4]
     dir_final = os.path.join(DIR_FINAL_BASE, annee)
@@ -218,8 +268,16 @@ def deplace_et_renomme_rapport(nom_rapport):
         os.makedirs(dir_final)
         logger.debug(f"Répertoire créé : {dir_final}")
 
-    # Exclure les fichiers .log lors de la recherche du dernier fichier téléchargé
     def get_last_downloaded_nonlog_file(DOWNLOAD_DIR):
+        """
+        Retourne le dernier fichier téléchargé (hors .log) dans le dossier donné.
+
+        Args:
+            DOWNLOAD_DIR (str): Chemin du dossier de téléchargement.
+
+        Returns:
+            str or None: Chemin du fichier le plus récent, ou None si aucun fichier.
+        """
         files = [os.path.join(DOWNLOAD_DIR, f) for f in os.listdir(DOWNLOAD_DIR)]
         files = [f for f in files if os.path.isfile(f) and not f.lower().endswith('.log')]
         if not files:
@@ -256,6 +314,12 @@ def deplace_et_renomme_rapport(nom_rapport):
         logger.error("Aucun fichier téléchargé trouvé (hors fichiers .log).")
 
 def telechargement_rapport(nom_rapport):
+    """
+    Télécharge le rapport spécifié et le déplace dans le dossier final.
+
+    Args:
+        nom_rapport (str): Nom du rapport à télécharger.
+    """
     logger.info(f"Telechargement du rapport {nom_rapport}")
     # Ajoutez ici le code spécifique pour telecharger le rapport
     try:
@@ -328,7 +392,12 @@ def telechargement_rapport(nom_rapport):
     deplace_et_renomme_rapport(nom_rapport)
 
 def traitement_rapport_standard(nom_rapport):
-    # Ajoutez ici le code générique pour traiter le rapport
+    """
+    Traite le rapport standard en cliquant sur le bouton correspondant et en lançant le téléchargement.
+
+    Args:
+        nom_rapport (str): Nom du rapport à traiter.
+    """
     logger.info(f"Traitement du rapport {nom_rapport}")
     try:
         # Exemple robuste : sélectionne le bouton par le texte visible (à adapter selon le rapport)
@@ -350,29 +419,52 @@ def traitement_rapport_standard(nom_rapport):
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}", exc_info=args.debug)
         return
 
-
 def traitement_rapport_apercu(nom_rapport):
-    # Code pour traiter le rapport "Aperçu"
+    """
+    Traite le rapport Aperçu.
+
+    Args:
+        nom_rapport (str): Nom du rapport à traiter.
+    """
     traitement_rapport_standard(nom_rapport)
 
 def traitement_rapports_modeles(nom_rapport):
-    # Code pour traiter les rapports "Modèles"
-    # Il y a une possibilité de 3 rapports qui sont téléchargé dans le même PDF
+    """
+    Code pour traiter les rapports "Modèles"
+    Il y a une possibilité de 3 rapports qui sont téléchargés dans le même PDF
 
+    Args:
+        nom_rapport (str): Nom du rapport à traiter.
+    """
     traitement_rapport_standard(nom_rapport)
 
 def traitement_rapport_superposition(nom_rapport):
-    # Code pour traiter le rapport "Superposition"
+    """
+    Traite le rapport Superposition.
 
+    Args:
+        nom_rapport (str): Nom du rapport à traiter.
+    """
     traitement_rapport_standard(nom_rapport)
 
 def traitement_rapport_quotidien(nom_rapport):
-    # Code pour traiter le rapport "Quotidien"
+    """
+    Traite le rapport Quotidien.
 
+    Args:
+        nom_rapport (str): Nom du rapport à traiter.
+    """
     traitement_rapport_standard(nom_rapport)
 
 def attendre_nouveau_bouton_telecharger(driver, bouton_avant, timeout=30):
-    """Attend que le bouton Télécharger soit recréé dans le DOM (nouvelle instance)."""
+    """
+    Attend que le bouton Télécharger soit recréé dans le DOM (nouvelle instance).
+
+    Args:
+        driver (WebDriver): Instance du navigateur Selenium.
+        bouton_avant (WebElement): Ancienne instance du bouton.
+        timeout (int): Durée maximale d'attente en secondes.
+    """
     def bouton_a_change(drv):
         try:
             nouveau_bouton = drv.find_element(By.XPATH, "//button[.//img[@alt='Télécharger']]")
@@ -382,6 +474,12 @@ def attendre_nouveau_bouton_telecharger(driver, bouton_avant, timeout=30):
     WebDriverWait(driver, timeout).until(bouton_a_change)
 
 def traitement_rapport_comparer(nom_rapport):
+    """
+    Traite le rapport Comparer et ses sous-rapports.
+
+    Args:
+        nom_rapport (str): Nom du rapport à traiter.
+    """
     # TODO Réparer le problème avec les rapports Comparer
     # Code pour traiter le rapport "Comparer"
     logger.info(f"Traitement des rapports {nom_rapport}")
@@ -474,7 +572,12 @@ def traitement_rapport_comparer(nom_rapport):
 
 
 def traitement_rapport_statistiques(nom_rapport):
-    # Code pour traiter le rapport "Statistiques"
+    """
+    Traite le rapport Statistiques et ses sous-rapports.
+
+    Args:
+        nom_rapport (str): Nom du rapport à traiter.
+    """
     logger.info(f"Traitement des rapports {nom_rapport}")
     try:
         # Sélectionner le bouton du rapport Statistiques
@@ -551,10 +654,21 @@ def traitement_rapport_statistiques(nom_rapport):
         return
 
 def traitement_rapport_agp(nom_rapport):
-    # Code pour traiter le rapport "AGP"
+    """
+    Traite le rapport AGP.
+
+    Args:
+        nom_rapport (str): Nom du rapport à traiter.
+    """
     traitement_rapport_standard(nom_rapport)
 
 def traitement_export_csv(nom_rapport):
+    """
+    Traite l'export CSV du rapport.
+
+    Args:
+        nom_rapport (str): Nom du rapport à traiter.
+    """
     logger.info(f"Traitement de l'export csv ")
     try:
         attendre_disparition_overlay(driver, 60)
@@ -624,6 +738,12 @@ def traitement_export_csv(nom_rapport):
         logger.error("Le téléchargement du fichier CSV n'a pas été détecté ou n'est pas terminé après 2 minutes.")
 
 def selection_rapport(RAPPORTS):
+    """
+    Sélectionne et traite chaque rapport de la liste.
+
+    Args:
+        RAPPORTS (list): Liste des rapports à traiter.
+    """
     # Code pour traiter les rapports
     for rapport in RAPPORTS:
         if rapport == "Aperçu":
@@ -655,6 +775,10 @@ def selection_rapport(RAPPORTS):
 
 
 def main():
+    """
+    Fonction principale du script Dexcom Clarity Reports Downloader.
+    Gère la connexion, la sélection des dates, le téléchargement des rapports et la déconnexion.
+    """
     try:
         # Affichage de la version de Python si le mode debug est activé
         if args.debug:
