@@ -60,5 +60,4 @@ if not DATE_DEBUT:
     date_fin_obj = datetime.strptime(DATE_FIN, "%Y-%m-%d")
     DATE_DEBUT = (date_fin_obj - timedelta(days=14 - 1)).strftime("%Y-%m-%d")
 
-CHROMEDRIVER_LOG = os.path.join(os.getcwd(), "chromedriver.log")
 NOW_STR = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
