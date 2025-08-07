@@ -10,7 +10,11 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--debug"]
+            "args": [
+                "--debug",
+                "--date_debut", "2025-05-12",
+                "--date_fin", "2025-05-25"
+            ]
         }
     ]
 }

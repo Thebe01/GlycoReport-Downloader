@@ -47,6 +47,15 @@ Vous pouvez les modifier selon vos besoins :
 - `RAPPORTS` : Liste des rapports à traiter
 - `DATE_DEBUT`, `DATE_FIN` : Période des rapports
 
+## Configuration
+
+1. Copiez `config_example.yaml` en `config.yaml` et adaptez les chemins, rapports, etc.
+2. Copiez `.env.example` en `.env` et renseignez vos identifiants Dexcom.
+3. Pour les besoins courants, utilisez les options CLI :
+   - `--days 14` pour les 14 derniers jours
+   - `--date_debut` et `--date_fin` pour des dates précises
+   - `--rapports` pour choisir les rapports à générer
+
 ---
 
 ## Utilisation des credentials (identifiants)
@@ -124,3 +133,17 @@ python ClarityDownload.py --debug
 - Merci de respecter les droits d'auteur et de ne pas redistribuer ce code sans autorisation.
 - Ce script est fourni "tel quel" sans garantie d'aucune sorte. Utilisez-le à vos propres risques.
 - Pour toute question ou contribution, n'hésitez pas à ouvrir une issue sur GitHub.
+
+## Gestion des dates par défaut
+
+- **Par défaut**, si aucune date n'est fournie en argument ou dans le fichier `config.yaml`, la période utilisée sera les **14 derniers jours jusqu'à hier**.
+- Vous pouvez surcharger ce comportement :
+  - en passant `--days 7`, `--days 14`, `--days 30` ou `--days 90` en argument,
+  - ou en définissant explicitement `date_debut` et `date_fin` dans `config.yaml`,
+  - ou encore en passant `--date_debut` et `--date_fin` en argument.
+
+Exemple :
+
+- Si nous sommes le 2025-08-06 et que vous ne passez aucun paramètre, la période sera du 2025-07-24 au 2025-08-05.
+
+---

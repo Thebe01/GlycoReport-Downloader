@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-08-05
+#'''Last Modified On : 2025-08-06
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
 #'''                Le dossier de téléchargement est : C:\Users\thebe\Downloads\Dexcom_download
 #'''                Le dossier final est C:\Users\thebe\OneDrive\Documents\Santé\Suivie glycémie et pression\AAAA
-#'''Version : 0.0.20
+#'''Version : 0.0.21
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -62,8 +62,9 @@
 #'''0.0.20  2025-08-05    Ajout d'une validation pour la présende des variables d'environnement nécessaires
 #'''                      Crée un fichier config.py pour centraliser tous les paramètres, chemins, URLs, etc.
 #'''                      Crée un fichier utils.py pour toutes les fonctions utilitaires (connexion internet, overlay, renommage, etc.).
-#'''                      Ajout d'un fichier rapports.py pour le traitement des rapports
-#  </summary>
+#'''                      Crée un fichier rapports.py pour le traitement des rapports
+#'''0.0.21  2025-08-06    Ajout d'un exemple de fichier de configuration "config_example.yaml"
+#''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # TODO 4 Centralisation des paramètres et chemins. Définis tous les chemins, URLs, et paramètres dans un fichier de config.
@@ -78,7 +79,7 @@ import sys
 import logging
 import argparse
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -88,7 +89,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from config import (
     DOWNLOAD_DIR, DIR_FINAL_BASE, CHROME_USER_DATA_DIR, DEXCOM_URL,
-    CHROMEDRIVER_LOG, RAPPORTS, DATE_DEBUT, DATE_FIN, NOW_STR
+    CHROMEDRIVER_LOG, RAPPORTS, NOW_STR
 )
 from utils import (
     check_internet,
@@ -103,7 +104,30 @@ from rapports import selection_rapport
 # Ajout du parser d'arguments
 parser = argparse.ArgumentParser(description="Téléchargement des rapports Dexcom Clarity")
 parser.add_argument('--debug', '-d', action='store_true', help='Activer le mode debug')
+parser.add_argument('--days', type=int, choices=[7, 14, 30, 90], help='Nombre de jours à inclure dans le rapport (7, 14, 30, 90)')
+parser.add_argument('--date_debut', type=str, help='Date de début (AAAA-MM-JJ)')
+parser.add_argument('--date_fin', type=str, help='Date de fin (AAAA-MM-JJ)')
+parser.add_argument('--rapports', nargs='+', help='Liste des rapports à traiter')
 args = parser.parse_args()
+
+# Gestion intelligente des dates
+if args.days:
+    date_fin = datetime.today() - timedelta(days=1)  # Date de fin = hier
+    date_debut = date_fin - timedelta(days=args.days - 1)
+    DATE_DEBUT = date_debut.strftime("%Y-%m-%d")
+    DATE_FIN = date_fin.strftime("%Y-%m-%d")
+elif args.date_debut and args.date_fin:
+    DATE_DEBUT = args.date_debut
+    DATE_FIN = args.date_fin
+else:
+    # Par défaut, 14 derniers jours
+    date_fin = datetime.today() - timedelta(days=1)
+    date_debut = date_fin - timedelta(days=14 - 1)
+    DATE_DEBUT = date_debut.strftime("%Y-%m-%d")
+    DATE_FIN = date_fin.strftime("%Y-%m-%d")
+
+if args.rapports:
+    RAPPORTS = args.rapports
 
 # Configuration du logger pour fichier et console
 logger = logging.getLogger('dexcom_clarity')

@@ -5,40 +5,60 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-08-05
+#'''Last Modified On : 2025-08-06
 #'''CopyRights : Innovations Performances Technologies inc
-#'''Description : Sous-module contenant toutes es variables.
-#'''Version : 0.0.0
+#'''Description : Sous-module contenant toutes les variables.
+#'''Version : 0.1.0
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-08-05    Version initiale.
-#  </summary>
+#'''0.1.0	2025-08-06    Ajout de la gestion des paramètres de configuration via un fichier YAML.
+#''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
+import yaml
+import logging
 
-# Dossier de téléchargement temporaire
-DOWNLOAD_DIR = r"C:\Users\thebe\Downloads\Dexcom_download"
+# Prépare le logger minimal pour ce module
+logger = logging.getLogger("config")
+if not logger.hasHandlers():
+    logging.basicConfig(level=logging.INFO)
 
-# Dossier final pour les rapports
-DIR_FINAL_BASE = r"C:\Users\thebe\OneDrive\Documents\Santé\Suivie glycémie et pression"
+# Charger les secrets
+load_dotenv()
 
-# Profil Chrome dédié
-CHROME_USER_DATA_DIR = r"C:/Users/thebe/AppData/Local/Google/Chrome/User Data/ClarityDownloadProfile"
+# Charger la config YAML utilisateur (gérer le cas où le fichier n'existe pas)
+CONFIG_PATH = os.environ.get("CLARITY_CONFIG", "config.yaml")
+if os.path.exists(CONFIG_PATH):
+    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+        config = yaml.safe_load(f) or {}
+else:
+    logger.warning(f"Fichier de configuration '{CONFIG_PATH}' non trouvé. Les valeurs par défaut seront utilisées.")
+    config = {}
 
-# URL Dexcom Clarity
-DEXCOM_URL = "https://clarity.dexcom.eu/?&locale=fr-CA"
+# Fonctions d'accès aux paramètres (avec fallback)
+def get_param(name, default=None):
+    return config.get(name, default)
 
-# Fichier log ChromeDriver
+DOWNLOAD_DIR = get_param("download_dir", "./downloads")
+DIR_FINAL_BASE = get_param("output_dir", "./output")
+CHROME_USER_DATA_DIR = get_param("chrome_user_data_dir", "./chrome_profile")
+DEXCOM_URL = get_param("dexcom_url", "https://clarity.dexcom.eu/?&locale=fr-CA")
+CHROMEDRIVER_LOG = get_param("chromedriver_log", "./chromedriver.log")
+RAPPORTS = get_param("rapports", ["Aperçu", "Modèles", "Superposition", "Quotidien", "Statistiques", "AGP", "Export"])
+
+# Gestion des dates par défaut : si non spécifiées, la date de fin est hier, la date de début est 14 jours avant
+DATE_FIN = get_param("date_fin")
+DATE_DEBUT = get_param("date_debut")
+
+if not DATE_FIN:
+    DATE_FIN = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+if not DATE_DEBUT:
+    date_fin_obj = datetime.strptime(DATE_FIN, "%Y-%m-%d")
+    DATE_DEBUT = (date_fin_obj - timedelta(days=14 - 1)).strftime("%Y-%m-%d")
+
 CHROMEDRIVER_LOG = os.path.join(os.getcwd(), "chromedriver.log")
-
-# Liste des rapports à traiter
-RAPPORTS = ["Aperçu", "Modèles", "Superposition", "Quotidien", "Statistiques", "AGP", "Export"]
-
-# Dates par défaut (à passer en paramètre idéalement)
-DATE_DEBUT = "2025-04-28"
-DATE_FIN = "2025-05-11"
-
-# Date/heure pour le nommage des logs (optionnel)
 NOW_STR = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
