@@ -1,7 +1,16 @@
+#/////////////////////////////////////////////////////////////////////////////////////////////////////
+# Fichier : config_example.yaml
+# Description : Exemple de configuration pour Dexcom Clarity Reports Downloader.
+#               Sert de modèle pour générer un config.yaml utilisateur.
+#               Tous les paramètres nécessaires sont présents avec des valeurs portables (~ et /).
+# Auteur : Pierre Théberge
+# Dernière modification : 2025-08-13
+#/////////////////////////////////////////////////////////////////////////////////////////////////////
+
 # config_example.yaml
-download_dir: "~/Downloads"
+download_dir: "~/Downloads/Dexcom_download"
 output_dir: "~/Downloads/Dexcom_download"
 dexcom_url: "https://clarity.dexcom.eu"
-chromedriver_log: os.path.join(os.getcwd(), "chromedriver.log")
-chrome_user_data_dir: "~/ClarityDownloadProfile"
+chromedriver_log: "~/Downloads/Dexcom_download/clarity_chromedriver.log"
+chrome_user_data_dir: "~/Chrome_Clarity_Profile"
 rapports: ["Aperçu", "Modèles", "Superposition", "Quotidien", "Statistiques", "AGP", "Export"]

@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-08-06
+#'''Last Modified On : 2025-08-13
 #'''CopyRights : Innovations Performances Technologies inc
-#'''Description : Programme pour télécharger les différents rapports provenant de Clarity ainsi que les relevés bruts
-#'''                Le dossier de téléchargement est : C:\Users\thebe\Downloads\Dexcom_download
-#'''                Le dossier final est C:\Users\thebe\OneDrive\Documents\Santé\Suivie glycémie et pression\AAAA
-#'''Version : 0.0.21
+#'''Description : Script principal pour l'automatisation du téléchargement des rapports Dexcom Clarity.
+#'''              Centralisation de la configuration, gestion CLI avancée, robustesse accrue,
+#'''              logs détaillés (console, fichier, JS), gestion des exceptions et de la déconnexion.
+#'''Version : 0.0.22
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -64,11 +64,12 @@
 #'''                      Crée un fichier utils.py pour toutes les fonctions utilitaires (connexion internet, overlay, renommage, etc.).
 #'''                      Crée un fichier rapports.py pour le traitement des rapports
 #'''0.0.21  2025-08-06    Ajout d'un exemple de fichier de configuration "config_example.yaml"
+#'''0.0.22  2025-08-13    Centralisation et normalisation des chemins, gestion CLI améliorée,
+#'''                      logs JS navigateur, robustesse accrue sur la gestion des erreurs,
+#'''                      factorisation des utilitaires, gestion propre des exceptions et de la déconnexion.
 #''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
-# TODO 4 Centralisation des paramètres et chemins. Définis tous les chemins, URLs, et paramètres dans un fichier de config.
-# TODO 10 Passer les dates et la liste de rapports en paramètres.
 # TODO 11 Réparer le problème avec les rapports Comparer
 # TODO 12 Exécuter l'application pour produire les rapports Comparer depuis 2024-08-19
 # TODO 13 Appliquer la même solution pour obtenir des rapports séparés pour Modèle
@@ -89,7 +90,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from config import (
     DOWNLOAD_DIR, DIR_FINAL_BASE, CHROME_USER_DATA_DIR, DEXCOM_URL,
-    CHROMEDRIVER_LOG, RAPPORTS, NOW_STR
+    CHROMEDRIVER_LOG, RAPPORTS, NOW_STR, DATE_DEBUT, DATE_FIN
 )
 from utils import (
     check_internet,
@@ -116,18 +117,13 @@ if args.days:
     date_debut = date_fin - timedelta(days=args.days - 1)
     DATE_DEBUT = date_debut.strftime("%Y-%m-%d")
     DATE_FIN = date_fin.strftime("%Y-%m-%d")
-elif args.date_debut and args.date_fin:
-    DATE_DEBUT = args.date_debut
-    DATE_FIN = args.date_fin
 else:
-    # Par défaut, 14 derniers jours
-    date_fin = datetime.today() - timedelta(days=1)
-    date_debut = date_fin - timedelta(days=14 - 1)
-    DATE_DEBUT = date_debut.strftime("%Y-%m-%d")
-    DATE_FIN = date_fin.strftime("%Y-%m-%d")
+    DATE_DEBUT = args.date_debut or DATE_DEBUT  # DATE_DEBUT de config.py
+    DATE_FIN = args.date_fin or DATE_FIN        # DATE_FIN de config.py
 
-if args.rapports:
-    RAPPORTS = args.rapports
+RAPPORTS = args.rapports or RAPPORTS  # RAPPORTS de config.py
+
+DEBUG_MODE = args.debug
 
 # Configuration du logger pour fichier et console
 logger = logging.getLogger('dexcom_clarity')
@@ -135,10 +131,9 @@ logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
 formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
 
 # Handler fichier
-if not os.path.exists(DOWNLOAD_DIR):
-    os.makedirs(DOWNLOAD_DIR)
-
-file_handler = logging.FileHandler(os.path.join(DOWNLOAD_DIR, f"clarity_download_{NOW_STR}.log"))
+log_dir = os.path.dirname(CHROMEDRIVER_LOG)
+os.makedirs(log_dir, exist_ok=True)
+file_handler = logging.FileHandler(os.path.join(log_dir, f"clarity_download_{NOW_STR}.log"))
 file_handler.setLevel(logging.DEBUG if args.debug else logging.INFO)
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
@@ -172,7 +167,11 @@ prefs = {
 options.add_experimental_option("prefs", prefs)
 
 # Service ChromeDriver
-service = ChromeService(log_path=CHROMEDRIVER_LOG)
+chromedriver_service_args = ["--verbose"] if args.debug else []
+service = ChromeService(
+    log_path=CHROMEDRIVER_LOG,
+    service_args=chromedriver_service_args
+)
 
 # Initialisation du WebDriver
 driver = webdriver.Chrome(service=service, options=options)
@@ -199,13 +198,32 @@ def get_user_menu_button(driver, logger, args, timeout=10):
     """
     try:
         xpath = ("(//button[.//span[@class='clarity-menu__primarylabel'] "
-                 "and .//span[@class='clarity-menu__trigger-item-down-arrow']])[last()]")
+                "and .//span[@class='clarity-menu__trigger-item-down-arrow']])[last()]")
         return WebDriverWait(driver, timeout).until(
             EC.element_to_be_clickable((By.XPATH, xpath))
         )
     except Exception as e:
         logger.error(f"Bouton utilisateur introuvable : {e}", exc_info=args.debug)
         raise
+
+
+def click_home_user_button(driver, logger, timeout=10):
+    """
+    Clique sur le bouton 'Dexcom Clarity for Home Users' sur la page d'accueil.
+    Arrête le script en cas d'échec.
+    """
+    try:
+        xpath = "//input[@type='submit' and contains(@class, 'landing-page--button')]"
+        button = WebDriverWait(driver, timeout).until(
+            EC.element_to_be_clickable((By.XPATH, xpath))
+        )
+        driver.execute_script("arguments[0].scrollIntoView(true);", button)
+        button.click()
+        logger.debug("Le bouton 'Dexcom Clarity for Home Users' a été cliqué avec succès!")
+    except Exception as e:
+        logger.error(f"Une erreur s'est produite au moment de cliquer sur le bouton 'Dexcom Clarity for Home Users' : {e}")
+        logger.info("Arrêt du script suite à une erreur sur le bouton d'accueil.")
+        sys.exit(1)
 
 
 def main():
@@ -239,16 +257,17 @@ def main():
             logger.info("Arrêt du script suite à une perte de connexion internet.")
             sys.exit(1)
 
-        # Recherchez et cliquez sur le bouton "Dexcom Clarity pour les utilisateurs à domicile"
+        # Recherchez et cliquez sur le bouton "Dexcom Clarity for Home Users"
         try:
-            bouton = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@value='Dexcom Clarity pour les utilisateurs à domicile']")))
-            bouton.click()
+            click_home_user_button(driver, logger)
             time.sleep(5)  # Augmenté à 5s
-            logger.debug("Le bouton pour utilisateurs à domicile a été cliqué avec succès!")
+            logger.debug("Le bouton 'Dexcom Clarity for Home Users' a été cliqué avec succès!")
         except Exception as e:
             if not check_internet():
-                logger.error("Perte de connexion internet détectée lors du clic sur le bouton pour utilisateurs à domicile.")
-            logger.error(f"Une erreur s'est produite au moment de cliquer sur le bouton pour utilisateurs à domicile : {e}")
+                logger.error("Perte de connexion internet détectée lors du clic sur le bouton 'Dexcom Clarity for Home Users'.")
+            logger.error(f"Une erreur s'est produite au moment de cliquer sur le bouton 'Dexcom Clarity for Home Users' : {e}")
+            logger.info("Arrêt du script suite à une erreur sur le bouton 'Dexcom Clarity for Home Users'.")
+            sys.exit(1)
 
         # Recherchez les champs de saisie pour le courriel/nom d'utilisateur et le mot de passe
         try:

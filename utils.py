@@ -5,14 +5,17 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-08-05
+#'''Last Modified On : 2025-08-13
 #'''CopyRights : Innovations Performances Technologies inc
-#'''Description : Sous-module contenant des fonctions utilitaires pour la gestion des téléchargements, 
-#                   des overlays et des fichiers.
-#'''Version : 0.0.0
+#'''Description : Fonctions utilitaires pour le projet Dexcom Clarity Reports Downloader.
+#'''              Connexion internet, overlay, renommage, détection du dernier fichier téléchargé,
+#'''              logging détaillé, robustesse accrue pour le renommage, logs JS navigateur.
+#'''Version : 0.0.1
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-08-05    Version initiale.
+#'''0.0.1   2025-08-13    Ajout du logging détaillé, robustesse sur le renommage,
+#'''                      récupération et logging des erreurs JS du navigateur.
 #  </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -86,12 +89,13 @@ def get_last_downloaded_file(download_dir, logger=None):
     return max(files, key=os.path.getctime)
 
 
-def get_last_downloaded_nonlog_file(download_dir):
+def get_last_downloaded_nonlog_file(download_dir, logger=None):
     """
     Retourne le dernier fichier téléchargé (hors .log) dans le dossier donné.
 
     Args:
         download_dir (str): Dossier à analyser.
+        logger (Logger, optionnel): Logger pour les messages.
 
     Returns:
         str or None: Chemin du fichier le plus récent hors .log, ou None si aucun fichier.
@@ -100,23 +104,28 @@ def get_last_downloaded_nonlog_file(download_dir):
     files = [f for f in files if os.path.isfile(f) and not f.lower().endswith('.log')]
     if not files:
         return None
-    return max(files, key=os.path.getctime)
+    last_file = max(files, key=os.path.getctime)
+    if logger:
+        logger.debug(f"[get_last_downloaded_nonlog_file] Dernier fichier non-log trouvé : {last_file}")
+    return last_file
 
 
 def renomme_prefix(prefix, date_fin, logger=None):
     """
     Renomme le préfixe du fichier téléchargé en ajoutant la date de fin.
-
-    Args:
-        prefix (str): Préfixe original du fichier.
-        date_fin (str): Date à ajouter.
-        logger (Logger, optionnel): Logger pour les messages.
-
-    Returns:
-        str: Nouveau préfixe.
+    Gère les cas où le préfixe ne contient pas 3 parties.
     """
-    nom, date, numero = prefix.split("_")
-    nouveau_prefix = nom + "_" + date_fin + "_" + numero
+    if logger:
+        logger.debug(f"[renomme_prefix] Préfixe reçu : {prefix}")
+    parts = prefix.split("_")
+    if len(parts) == 3:
+        nom, date, numero = parts
+        nouveau_prefix = f"{nom}_{date_fin}_{numero}"
+    else:
+        # Cas inattendu : on ajoute la date à la fin du préfixe
+        nouveau_prefix = f"{prefix}_{date_fin}"
+        if logger:
+            logger.warning(f"Format de préfixe inattendu pour '{prefix}'. Utilisation d'un format alternatif : '{nouveau_prefix}'")
     if logger:
         logger.debug(f"Nouveau préfix : {nouveau_prefix}")
     return nouveau_prefix

@@ -5,13 +5,18 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-08-05
+#'''Last Modified On : 2025-08-13
 #'''CopyRights : Innovations Performances Technologies inc
-#'''Description : Sous-module pour le traitement des rapports.
-#'''Version : 0.0.0
+#'''Description : Traitement et gestion des rapports Dexcom Clarity.
+#'''              Utilisation des chemins et paramètres centralisés, logging détaillé,
+#'''              robustesse pour la détection et gestion des fichiers téléchargés,
+#'''              logging des erreurs JS lors du déplacement/renommage.
+#'''Version : 0.0.1
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-08-05    Version initiale.
+#'''0.0.1   2025-08-13    Logging JS navigateur, robustesse accrue sur la gestion des fichiers,
+#'''                      utilisation systématique des chemins centralisés.
 #  </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -43,7 +48,7 @@ def wait_for_csv_download(DOWNLOAD_DIR, timeout=120):
         time.sleep(1)
     return False
 
-def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN):
+def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, driver=None):
     """
     Déplace et renomme le rapport téléchargé dans le dossier final.
 
@@ -88,6 +93,17 @@ def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE
                 logger.error(f"Erreur lors du renommage du fichier : {e}")
     else:
         logger.error("Aucun fichier téléchargé trouvé (hors fichiers .log).")
+
+    # Log des erreurs JS du navigateur si driver est fourni
+    if driver is not None:
+        try:
+            for entry in driver.get_log('browser'):
+                if entry.get('level') == 'SEVERE':
+                    logger.error(f"JS Browser Error: {entry}")
+                else:
+                    logger.debug(f"JS Browser Log: {entry}")
+        except Exception as e:
+            logger.warning(f"Impossible de récupérer les logs du navigateur : {e}")
 
 def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args):
     """
@@ -159,7 +175,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
     except Exception as e:
         logger.error(f"Une erreur s'est produite lors de l'enregistrement du rapport : {e}")
         return
-    deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN)
+    deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, driver)
 
 def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args):
     """
