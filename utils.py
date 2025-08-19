@@ -5,17 +5,21 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-08-13
+#'''Last Modified On : 2025-08-18
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Fonctions utilitaires pour le projet Dexcom Clarity Reports Downloader.
 #'''              Connexion internet, overlay, renommage, détection du dernier fichier téléchargé,
 #'''              logging détaillé, robustesse accrue pour le renommage, logs JS navigateur.
-#'''Version : 0.0.1
+#'''Version : 0.0.3
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-08-05    Version initiale.
 #'''0.0.1   2025-08-13    Ajout du logging détaillé, robustesse sur le renommage,
 #'''                      récupération et logging des erreurs JS du navigateur.
+#'''0.0.2   2025-08-13    Centralisation de capture_screenshot, ajout du délai avant capture,
+#'''                      préparation pour tests unitaires de toutes les fonctions utilitaires.
+#'''0.0.3   2025-08-18    Centralisation de normalize_path, centralisation de capture_screenshot,
+#'''                      ajout du délai avant capture, préparation et couverture par tests unitaires.
 #  </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -154,3 +158,22 @@ def attendre_nouveau_bouton_telecharger(driver, bouton_avant, timeout=30):
             return False
 
     WebDriverWait(driver, timeout).until(bouton_a_change)
+
+
+def capture_screenshot(driver, logger, step, log_dir, now_str):
+    """
+    Capture une capture d'écran du navigateur pour le diagnostic.
+    """
+    try:
+        screenshot_path = os.path.join(log_dir, f"screenshot_{step}_{now_str}.png")
+        driver.save_screenshot(screenshot_path)
+        logger.info(f"Capture d'écran enregistrée : {screenshot_path}")
+    except Exception as e:
+        logger.warning(f"Impossible de prendre une capture d'écran : {e}")
+
+
+def normalize_path(path):
+    """
+    Normalise un chemin en développant ~ et en le rendant absolu.
+    """
+    return os.path.abspath(os.path.expanduser(path))

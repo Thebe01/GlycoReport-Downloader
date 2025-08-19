@@ -11,21 +11,24 @@
 #'''              Utilisation des chemins et paramètres centralisés, logging détaillé,
 #'''              robustesse pour la détection et gestion des fichiers téléchargés,
 #'''              logging des erreurs JS lors du déplacement/renommage.
-#'''Version : 0.0.1
+#'''Version : 0.0.2
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-08-05    Version initiale.
 #'''0.0.1   2025-08-13    Logging JS navigateur, robustesse accrue sur la gestion des fichiers,
 #'''                      utilisation systématique des chemins centralisés.
+#'''0.0.2   2025-08-13    Utilisation de capture_screenshot centralisée (utils.py) avec délai,
+#'''                      ajout de logs pour le diagnostic.
 #  </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import os
 import time
+import glob
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from utils import attendre_disparition_overlay, get_last_downloaded_nonlog_file, renomme_prefix, check_internet
+from utils import attendre_disparition_overlay, get_last_downloaded_nonlog_file, renomme_prefix, check_internet, capture_screenshot
 
 def wait_for_csv_download(DOWNLOAD_DIR, timeout=120):
     """
@@ -48,7 +51,7 @@ def wait_for_csv_download(DOWNLOAD_DIR, timeout=120):
         time.sleep(1)
     return False
 
-def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, driver=None):
+def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, driver=None, log_dir=None, now_str=None):
     """
     Déplace et renomme le rapport téléchargé dans le dossier final.
 
@@ -93,6 +96,9 @@ def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE
                 logger.error(f"Erreur lors du renommage du fichier : {e}")
     else:
         logger.error("Aucun fichier téléchargé trouvé (hors fichiers .log).")
+        if driver is not None and log_dir is not None and now_str is not None:
+            time.sleep(2)
+            capture_screenshot(driver, logger, "deplace_et_renomme_rapport_error", log_dir, now_str)
 
     # Log des erreurs JS du navigateur si driver est fourni
     if driver is not None:

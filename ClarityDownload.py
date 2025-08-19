@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-08-13
+#'''Last Modified On : 2025-08-18
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Script principal pour l'automatisation du téléchargement des rapports Dexcom Clarity.
 #'''              Centralisation de la configuration, gestion CLI avancée, robustesse accrue,
 #'''              logs détaillés (console, fichier, JS), gestion des exceptions et de la déconnexion.
-#'''Version : 0.0.22
+#'''Version : 0.1.00
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -67,6 +67,11 @@
 #'''0.0.22  2025-08-13    Centralisation et normalisation des chemins, gestion CLI améliorée,
 #'''                      logs JS navigateur, robustesse accrue sur la gestion des erreurs,
 #'''                      factorisation des utilitaires, gestion propre des exceptions et de la déconnexion.
+#'''0.0.23  2025-08-13    Capture d’écran centralisée via utils.py, délai avant capture,
+#'''                      suppression des duplications de code, ajout de logs pour le diagnostic.
+#'''0.1.0   2025-08-18    Robustesse saisie identifiant : sélection usernameLogin, vérification visibilité/interactivité,
+#'''                      captures d’écran uniquement en mode debug, gestion du bouton 'Pas maintenant' après connexion,
+#'''                      adaptation aux changements d’interface Dexcom, logs détaillés pour le diagnostic.
 #''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -87,6 +92,8 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import glob
+import re
 
 from config import (
     DOWNLOAD_DIR, DIR_FINAL_BASE, CHROME_USER_DATA_DIR, DEXCOM_URL,
@@ -98,7 +105,8 @@ from utils import (
     get_last_downloaded_file,
     get_last_downloaded_nonlog_file,
     renomme_prefix,
-    attendre_nouveau_bouton_telecharger
+    attendre_nouveau_bouton_telecharger,
+    capture_screenshot
 )
 from rapports import selection_rapport
 
@@ -221,9 +229,175 @@ def click_home_user_button(driver, logger, timeout=10):
         button.click()
         logger.debug("Le bouton 'Dexcom Clarity for Home Users' a été cliqué avec succès!")
     except Exception as e:
+        time.sleep(2)
+        capture_screenshot(driver, logger, "home_user_button_error", log_dir, NOW_STR)
         logger.error(f"Une erreur s'est produite au moment de cliquer sur le bouton 'Dexcom Clarity for Home Users' : {e}")
         logger.info("Arrêt du script suite à une erreur sur le bouton d'accueil.")
         sys.exit(1)
+
+
+def saisir_identifiants(driver, logger, log_dir, NOW_STR):
+    """
+    Saisit les identifiants de connexion (nom d'utilisateur et mot de passe) sur la page Dexcom Clarity.
+
+    Args:
+        driver (WebDriver): Instance du navigateur Selenium.
+        logger (Logger): Logger à utiliser pour les messages d'erreur.
+        log_dir (str): Répertoire des logs.
+        NOW_STR (str): Timestamp actuel sous forme de chaîne.
+
+    Raises:
+        SystemExit: Si une erreur critique se produit (ex: variables d'environnement manquantes).
+    """
+    try:
+        if not check_internet():
+            logger.error("Perte de connexion internet détectée avant la saisie des identifiants.")
+            raise RuntimeError("Connexion internet requise pour poursuivre.")
+
+        # Récupération des identifiants
+        dexcom_username = os.getenv("DEXCOM_USERNAME")
+        dexcom_password = os.getenv("DEXCOM_PASSWORD")
+        if not dexcom_username or not dexcom_password:
+            logger.error("Les variables d'environnement DEXCOM_USERNAME et/ou DEXCOM_PASSWORD ne sont pas définies.")
+            raise SystemExit(1)
+
+        # Détection du type d'identifiant
+        is_phone = re.fullmatch(r"\+?[1-9]\d{9,14}", dexcom_username.strip()) is not None
+
+        if is_phone:
+            # Accès au mode téléphone (indépendant de la langue)
+            phone_link = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((
+                    By.XPATH,
+                    "//a[contains(@href, 'phone') or contains(@class, 'phone') or contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'téléphone') or contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'phone')]"
+                ))
+            )
+            phone_link.click()
+
+            # Champs téléphone
+            country_code_input = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.ID, "countryCode"))
+            )
+            phone_number_input = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.ID, "phoneNumber"))
+            )
+
+            country_code = os.getenv("DEXCOM_COUNTRY_CODE")
+            phone_number = os.getenv("DEXCOM_PHONE_NUMBER")
+            if not country_code or not phone_number:
+                logger.error("Variables DEXCOM_COUNTRY_CODE et DEXCOM_PHONE_NUMBER requises.")
+                raise SystemExit(1)
+
+            country_code_input.clear()
+            country_code_input.send_keys(country_code)
+            phone_number_input.clear()
+            phone_number_input.send_keys(phone_number)
+
+        else:
+            # Sélection du mode courriel/nom d'utilisateur
+            radio_buttons = WebDriverWait(driver, 30).until(
+                EC.presence_of_all_elements_located((By.CLASS_NAME, "radio-outer-circle"))
+            )
+            if radio_buttons:
+                driver.execute_script("arguments[0].click();", radio_buttons[0])
+                time.sleep(1)
+
+            # Capture avant la recherche du champ username (en mode debug uniquement)
+            if logger.isEnabledFor(logging.DEBUG):
+                capture_screenshot(driver, logger, "avant_username_input", log_dir, NOW_STR)
+
+            # Attendre que le champ soit présent
+            try:
+                username_input = WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.ID, "usernameLogin"))
+                )
+            except Exception as e:
+                logger.error("Champ usernameLogin introuvable après sélection du mode courriel/nom d'utilisateur.")
+                if logger.isEnabledFor(logging.DEBUG):
+                    capture_screenshot(driver, logger, "erreur_username_input", log_dir, NOW_STR)
+                raise SystemExit(1)
+
+            # Vérifier que le champ est visible et interactif
+            try:
+                WebDriverWait(driver, 10).until(EC.visibility_of(username_input))
+                WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "usernameLogin")))
+            except Exception as e:
+                logger.error("Champ usernameLogin non visible ou non interactif.")
+                if logger.isEnabledFor(logging.DEBUG):
+                    capture_screenshot(driver, logger, "username_non_interactif", log_dir, NOW_STR)
+                raise SystemExit(1)
+
+            # Scroll jusqu'au champ pour le rendre visible
+            driver.execute_script("arguments[0].scrollIntoView(true);", username_input)
+            time.sleep(0.5)
+
+            # Clic dans le champ pour déclencher les scripts JS
+            try:
+                username_input.click()
+            except Exception:
+                driver.execute_script("arguments[0].click();", username_input)
+            time.sleep(0.5)
+
+            # Saisie classique
+            username_input.clear()
+            username_input.send_keys(dexcom_username)
+            time.sleep(0.5)
+
+            # Vérification et saisie forcée si nécessaire
+            if username_input.get_attribute("value") != dexcom_username:
+                logger.warning("La saisie classique a échoué, tentative via JavaScript.")
+                driver.execute_script("arguments[0].value = arguments[1];", username_input, dexcom_username)
+
+            # Déclencher un événement 'input' pour que le champ soit reconnu
+            driver.execute_script("""
+                arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
+                arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
+            """, username_input)
+
+            if logger.isEnabledFor(logging.DEBUG):
+                capture_screenshot(driver, logger, "apres_saisie_username", log_dir, NOW_STR)
+
+        # Bouton suivant
+        next_button = WebDriverWait(driver, 30).until(
+            EC.element_to_be_clickable((By.XPATH, "//input[@type='submit' and @value]"))
+        )
+        next_button.click()
+        time.sleep(2)
+
+        # Saisie du mot de passe
+        password_input = WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.ID, "password"))
+        )
+        password_input.send_keys(dexcom_password)
+
+        login_button = WebDriverWait(driver, 30).until(
+            EC.element_to_be_clickable((By.XPATH, "//input[@type='submit' and @value]"))
+        )
+        login_button.click()
+        time.sleep(5)
+
+        logger.info("Connexion réussie !")
+        time.sleep(2)
+        if logger.isEnabledFor(logging.DEBUG):
+            capture_screenshot(driver, logger, "apres_connexion", log_dir, NOW_STR)
+
+        # Après la connexion réussie, avant d'aller plus loin...
+        try:
+            # Attendre la présence éventuelle du bouton "Pas maintenant" (notNowButton)
+            not_now_button = WebDriverWait(driver, 5).until(
+                EC.element_to_be_clickable((By.ID, "notNowButton"))
+            )
+            driver.execute_script("arguments[0].scrollIntoView(true);", not_now_button)
+            not_now_button.click()
+            logger.info("Bouton 'Pas maintenant' détecté et cliqué.")
+            time.sleep(2)
+        except Exception:
+            # Si le bouton n'est pas présent, on continue simplement
+            logger.debug("Aucun bouton 'Pas maintenant' à cliquer, poursuite du script.")
+
+    except Exception as e:
+        logger.error(f"Erreur lors de la saisie des identifiants ou de la connexion : {e}")
+        raise SystemExit(1)
 
 
 def main():
@@ -263,44 +437,19 @@ def main():
             time.sleep(5)  # Augmenté à 5s
             logger.debug("Le bouton 'Dexcom Clarity for Home Users' a été cliqué avec succès!")
         except Exception as e:
-            if not check_internet():
-                logger.error("Perte de connexion internet détectée lors du clic sur le bouton 'Dexcom Clarity for Home Users'.")
+            time.sleep(2)
+            capture_screenshot(driver, logger, "home_user_button_error", log_dir, NOW_STR)
             logger.error(f"Une erreur s'est produite au moment de cliquer sur le bouton 'Dexcom Clarity for Home Users' : {e}")
-            logger.info("Arrêt du script suite à une erreur sur le bouton 'Dexcom Clarity for Home Users'.")
+            logger.info("Arrêt du script suite à une erreur sur le bouton d'accueil.")
             sys.exit(1)
 
-        # Recherchez les champs de saisie pour le courriel/nom d'utilisateur et le mot de passe
+        # Recherchez les champs de saisie pour le courriel/nom d'utilisateur ou le numéro de téléphone
         try:
-            if not check_internet():
-                logger.error("Perte de connexion internet détectée avant la saisie des identifiants.")
-                raise RuntimeError("Connexion internet requise pour poursuivre.")
+            saisir_identifiants(driver, logger, log_dir, NOW_STR)
 
-            username_input = WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located((By.NAME, "username"))
-            )
-            password_input = WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located((By.NAME, "password"))
-            )
-            dexcom_username = os.getenv("DEXCOM_USERNAME")
-            dexcom_password = os.getenv("DEXCOM_PASSWORD")
-            if not dexcom_username or not dexcom_password:
-                logger.error("Les variables d'environnement DEXCOM_USERNAME et/ou DEXCOM_PASSWORD ne sont pas définies. Veuillez les renseigner avant d'exécuter le script.")
-                sys.exit(1)
-
-            username_input.send_keys(dexcom_username)
-            password_input.send_keys(dexcom_password)
-
-            login_button = WebDriverWait(driver, 60).until(
-                EC.element_to_be_clickable((By.XPATH, "//input[@type='submit' and @value='Se connecter']"))
-            )
-            login_button.click()
-            time.sleep(5)  # Augmenté à 5s
-
-            logger.info("Connexion réussie !")
         except Exception as e:
-            if not check_internet():
-                logger.error("Perte de connexion internet détectée lors de la connexion.")
-            logger.error(f"Une erreur s'est produite lors de la connexion : {e}")
+            logger.error(f"Erreur lors de la saisie des identifiants ou de la connexion : {e}")
+            sys.exit(1)
 
         # Attendez que la page soit entièrement chargée
         time.sleep(10)  # Augmenté à 10s
@@ -391,6 +540,10 @@ def main():
             driver.quit()
         except Exception as e:
             logger.warning(f"Erreur lors de la fermeture du navigateur : {e}", exc_info=args.debug)
+
+        import glob
+        files = glob.glob(os.path.join(DOWNLOAD_DIR, '*'))
+        logger.info(f"Fichiers présents dans le dossier de téléchargement après la demande : {files}")
 
 if __name__ == "__main__":
     main()

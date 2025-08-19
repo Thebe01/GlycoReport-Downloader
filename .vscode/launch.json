@@ -12,8 +12,8 @@
             "console": "integratedTerminal",
             "args": [
                 "--debug",
-                "--date_debut", "2025-05-12",
-                "--date_fin", "2025-05-25"
+                "--date_debut", "2025-08-04",
+                "--date_fin", "2025-08-17"
             ]
         }
     ]
