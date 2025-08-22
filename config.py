@@ -5,14 +5,14 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-08-18
+#'''Last Modified On : 2025-08-22
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Centralisation et sécurisation de la configuration du projet Dexcom Clarity Reports Downloader.
 #'''              Lecture de tous les paramètres depuis config.yaml, normalisation systématique des chemins
 #'''              (via utils.py), gestion des erreurs et des droits d'accès, validation stricte des types,
 #'''              génération interactive de config.yaml, protection contre les vulnérabilités courantes
 #'''              (injection, mauvaise gestion des secrets, etc.).
-#'''Version : 0.1.4
+#'''Version : 0.1.6
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0     2025-08-05    Version initiale.
@@ -25,7 +25,10 @@
 #'''0.1.4     2025-08-18    Sécurisation du chargement de la configuration : utilisation stricte de yaml.safe_load,
 #'''                        validation des types et de la présence des paramètres, vérification des droits d'accès,
 #'''                        protection contre l'exposition de secrets et contre l'injection de code.
-#''' </summary>
+#'''0.1.5     2025-08-22    Ajout du paramètre chromedriver_path configurable via config.yaml,
+#'''                        valeur par défaut : "./chromedriver.exe" (même dossier que l'exécutable).
+#'''0.1.6     2025-08-22    Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
+#'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import os
@@ -34,7 +37,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import yaml
 import logging
-from utils import normalize_path
+from utils import normalize_path, resource_path
 
 # Prépare le logger minimal pour ce module
 logger = logging.getLogger("config")
@@ -66,48 +69,18 @@ def validate_config(config):
             logger.error(f"Le paramètre '{key}' doit être de type {typ.__name__}.")
             sys.exit(1)
 
-# Création interactive si config.yaml absent
 if not os.path.exists(CONFIG_PATH):
-    if os.path.exists(EXAMPLE_CONFIG_PATH):
-        with open(EXAMPLE_CONFIG_PATH, "r", encoding="utf-8") as f:
-            example_config = yaml.safe_load(f) or {}
-
-        # Demander à l'usager les valeurs pour output_dir et chromedriver_log
-        annee = (datetime.today() - timedelta(days=1)).strftime("%Y")
-        default_output_dir = f"{os.path.expanduser('~')}/Downloads/Dexcom_download/{annee}"
-        default_chromedriver_log = f"{os.path.expanduser('~')}/Downloads/Dexcom_download/clarity_chromedriver.log"
-
-        output_dir = input(f"Répertoire final pour les rapports ? (défaut: {default_output_dir})\n> ").strip() or default_output_dir
-        chromedriver_log = input(f"Chemin du log ChromeDriver ? (défaut: {default_chromedriver_log})\n> ").strip() or default_chromedriver_log
-
-        # Mettre à jour la config d'exemple
-        example_config["output_dir"] = output_dir
-        example_config["chromedriver_log"] = chromedriver_log
-
-        # Sauvegarder le nouveau config.yaml
-        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-            yaml.safe_dump(example_config, f, allow_unicode=True)
-        print(f"Fichier de configuration '{CONFIG_PATH}' créé avec vos paramètres.")
-    else:
-        logger.error(f"Impossible de trouver '{EXAMPLE_CONFIG_PATH}' pour créer '{CONFIG_PATH}'. Arrêt du script.")
-        sys.exit(1)
-
-# Charger la config YAML utilisateur
-if os.path.exists(CONFIG_PATH):
-    if not os.access(CONFIG_PATH, os.R_OK):
-        logger.error(f"Le fichier de configuration '{CONFIG_PATH}' n'est pas lisible. Vérifiez les droits d'accès.")
-        sys.exit(1)
-    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-        config = yaml.safe_load(f) or {}
-    validate_config(config)
-else:
-    logger.error(f"Impossible de charger le fichier de configuration '{CONFIG_PATH}'. Arrêt du script.")
+    print(f"Impossible de trouver '{CONFIG_PATH}'. Arrêt du script.")
     sys.exit(1)
+
+with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+    config = yaml.safe_load(f) or {}
+validate_config(config)
 
 def get_param(name, required=True):
     value = config.get(name)
     if value is None and required:
-        logger.error(f"Le paramètre obligatoire '{name}' est manquant dans config.yaml. Arrêt du script.")
+        print(f"Le paramètre obligatoire '{name}' est manquant dans config.yaml. Arrêt du script.")
         sys.exit(1)
     return value
 
@@ -115,7 +88,7 @@ DOWNLOAD_DIR = normalize_path(get_param("download_dir"))
 OUTPUT_DIR = normalize_path(get_param("output_dir"))
 CHROME_USER_DATA_DIR = normalize_path(get_param("chrome_user_data_dir"))
 CHROMEDRIVER_LOG = normalize_path(get_param("chromedriver_log"))
-
+CHROMEDRIVER_PATH = resource_path(get_param("chromedriver_path", required=False) or "./chromedriver-win64/chromedriver.exe")
 DEXCOM_URL = get_param("dexcom_url")
 RAPPORTS = get_param("rapports")
 

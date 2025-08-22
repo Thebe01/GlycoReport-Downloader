@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-08-18
+#'''Last Modified On : 2025-08-22
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Fonctions utilitaires pour le projet Dexcom Clarity Reports Downloader.
 #'''              Connexion internet, overlay, renommage, détection du dernier fichier téléchargé,
 #'''              logging détaillé, robustesse accrue pour le renommage, logs JS navigateur.
-#'''Version : 0.0.3
+#'''Version : 0.1.6
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-08-05    Version initiale.
@@ -20,12 +20,14 @@
 #'''                      préparation pour tests unitaires de toutes les fonctions utilitaires.
 #'''0.0.3   2025-08-18    Centralisation de normalize_path, centralisation de capture_screenshot,
 #'''                      ajout du délai avant capture, préparation et couverture par tests unitaires.
-#  </summary>
+#'''0.1.6   2025-08-22    Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
+#'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import os
 import urllib.request
 import time
+import sys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -177,3 +179,14 @@ def normalize_path(path):
     Normalise un chemin en développant ~ et en le rendant absolu.
     """
     return os.path.abspath(os.path.expanduser(path))
+
+
+def resource_path(relative_path):
+    """
+    Retourne le chemin absolu vers un fichier de ressource, compatible PyInstaller et exécution normale.
+    """
+    if hasattr(sys, '_MEIPASS'):
+        # PyInstaller : les fichiers sont extraits dans _MEIPASS
+        return os.path.join(sys._MEIPASS, relative_path)
+    # Exécution normale : chemin relatif depuis le dossier courant
+    return os.path.join(os.path.abspath("."), relative_path)

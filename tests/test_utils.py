@@ -5,17 +5,18 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-13
-#'''Last Modified On : 2025-08-18
+#'''Last Modified On : 2025-08-22
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Tests unitaires pour toutes les fonctions utilitaires du projet Dexcom Clarity Reports Downloader.
 #'''              Vérifie la robustesse et la portabilité des fonctions (normalisation des chemins, capture d’écran, etc.).
-#'''Version : 0.0.1
+#'''Version : 0.1.6
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0    2025-08-13    Version initiale
 #'''0.0.1    2025-08-18    Ajout de tests unitaires pour toutes les fonctions utilitaires,
 #'''                       adaptation pour la centralisation de normalize_path dans utils.py,
 #'''                       vérification de la robustesse et de la portabilité des utilitaires.
+#'''0.1.6    2025-08-22    Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
 #''' </summary>
 #'''////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -1,0 +1,44 @@
+Voici la liste de toutes tes demandes pour aujourd’hui :
+
+Relis tout le code et mets à jour read.me
+Donne-moi les changements à apporter dans un seul extrait de code que je peux appliquer
+Comment créer un release, ".exe" autonome
+Cela est-il équivalent à créer un release dans github ?
+Quelle est la variable qui définit l'emplacement du chrome driver et dans quel module ce trouve-t-elle ?
+Ajoute un paramètre pour le chemin du binaire
+Configurable à partir du fichier yaml
+Le chromedriver_path devrait être le même que celui ou se trouvera l'exécutable
+Modifie le bloc commentaires dans claritydownload et config pour inclure les changements d'aujourd'hui
+Les commentaires doivent ajouter une nouvelle version et changer la date de dernière modification (plusieurs fois)
+Explique les bonnes pratiques pour les numéros de version dans un projet multi-modules
+Dois-je synchroniser les versions dans tous les modules à chaque changement ?
+Explique les différents choix pour stocker la version globale
+Quelle est la meilleure pratique : __init__.py ou version.py ?
+Si je devais utiliser une seule façon de faire pour tous mes projets python, __init__.py ou version.py ?
+Github lit-il automatiquement version.py ou init.py ?
+Existe-t-il une façon de synchroniser les numéros de version dans mon bloc commentaires du début des différents modules
+Changements à faire : synchronisation version, création version.py, log version
+Erreur YAML à cause des antislashs dans config.yaml
+Erreur JS Browser Error lors de l’exécution Selenium
+Relis tous les fichiers pour prendre en compte les changements manuels apportés
+Ajoute la version dans readme.md
+Mettre à jour l'information dans readme.md concernant chromedriver: sous-répertoire du projet et path dans config_example.yaml
+Ajouter une précision qu'une version de chromedriver pour windows 64 bits est fournie dans le répertoire "./chromedriver-win64" et modifier l'example de chromedriver_path
+Modifier le readme.md pour indiquer qu'un release est disponible
+Donne-moi les instructions détaillées pour créer un exécutable autonome comprenant toutes les dépendances
+Donne-moi la commande pyinstaller complète, incluant --windowed et les --add pour .env.example, config_example.yaml et readme.md
+Pourquoi rien ne semble se produire lorsque j’exécute l’exécutable PyInstaller
+Rien n'est affiché dans la console
+Erreur : Impossible de trouver 'config_example.yaml' pour créer 'config.yaml'.
+Commande PyInstaller avec backtick, mais toujours erreur de fichier manquant
+Donne-moi les corrections requises pour que le tout fonctionne avec ou sans pyinstaller
+J'ai ajouté la méthode resource_path. Donne-moi le code pour les autres corrections
+Assure-toi que :
+le programme utilise config.yaml et le crée si absent
+le programme utilise .env pour les credentials et demande à l’usager si absent
+modifie les blocs commentaires pour ajouter ces changements et version.py
+Tu as oublié le contexte. Le contexte est tout le répertoire dexcom-clarity-reports
+Refait la correction. tu ne dois pas enlever les commentaires existants
+Retourne à la version 0.1.6. Tu sembles perdu. On va reprendre de là après.
+Tu oublies le contexte. Retourne à la version 0.1.6 pour tous les modules
+doone-moi une liste de toutes mes demandes pour aujourd'hui, s.v.p.

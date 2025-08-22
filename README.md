@@ -1,5 +1,7 @@
 # Dexcom Clarity Reports Downloader
 
+## Version : 0.1.6 — 22 août 2025
+
 ## Description
 
 Dexcom Clarity Reports Downloader est un outil automatisé permettant de télécharger, organiser et archiver les rapports Dexcom Clarity pour un suivi glycémique efficace.
@@ -7,8 +9,19 @@ Le projet est conçu pour être portable, configurable et robuste, avec une gest
 
 ---
 
-## Nouveautés et changements récents (18 août 2025)
+## Release disponible
 
+Une version exécutable prête à l’emploi est disponible dans la section [Releases](https://github.com/<ton-utilisateur>/<ton-repo>/releases) du projet GitHub.
+Téléchargez le fichier `.exe` pour Windows ainsi que les fichiers nécessaires (voir instructions ci-dessous).
+
+---
+
+## Nouveautés et changements récents (22 août 2025)
+
+- **Synchronisation des versions dans tous les modules** : Bloc commentaires de version mis à jour dans tous les fichiers principaux.
+- **Ajout du module `version.py`** : Source unique de vérité pour la version de l’application.
+- **Log de la version exécutée** : La version de l’application est affichée dans les logs au démarrage.
+- **Correction des chemins YAML** : Utilisation systématique de `/` pour éviter les erreurs d’échappement.
 - **Compatibilité interface Dexcom août 2025** : adaptation à la nouvelle page intermédiaire ("Pas maintenant") après connexion.
 - **Robustesse saisie identifiant** : sélection fiable du champ `usernameLogin`, vérification visibilité/interactivité, gestion des overlays et délais.
 - **Captures d’écran** : désormais uniquement en mode debug pour éviter l’encombrement.
@@ -52,7 +65,15 @@ Le projet est conçu pour être portable, configurable et robuste, avec une gest
 
 3. **Configurer ChromeDriver**
    - Téléchargez [ChromeDriver](https://chromedriver.chromium.org/downloads) correspondant à votre version de Chrome.
-   - Placez `chromedriver.exe` dans le dossier du projet ou dans un dossier inclus dans votre `PATH`.
+   - **Une version de ChromeDriver pour Windows 64 bits est déjà fournie dans le sous-répertoire `./chromedriver-win64` du projet.**
+   - Placez `chromedriver.exe` dans ce dossier ou utilisez votre propre version si besoin.
+   - Le chemin vers le binaire doit être défini dans `config.yaml` ou `config_example.yaml` via la clé :
+
+     ```yaml
+     chromedriver_path: "./chromedriver-win64/chromedriver.exe"
+     ```
+
+   - Par défaut, le script s’attend à trouver `chromedriver.exe` dans ce sous-répertoire ou à l’emplacement indiqué par `chromedriver_path`.
 
 4. **Configurer le fichier `.env`**
    - Renommez `.env.example` en `.env`.
@@ -173,8 +194,7 @@ pip install pytest
 
 ## Auteur
 
-Pierre Théberge  
-Innovations Performances Technologies inc
+Pierre Théberge
 
 ---
 
