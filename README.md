@@ -1,12 +1,14 @@
 # Dexcom Clarity Reports Downloader
 
-## Version : 0.1.7 — 25 août 2025
+## Version : 0.1.8 — 27 août 2025
 
 ### Nouveautés
 
-- Création automatique de `config.yaml` à partir de `config_example.yaml` si absent
-- Gestion interactive des credentials si `.env` absent (demande à l'utilisateur, non conservé)
-- Précision sur la présence de `chromedriver-win64` fourni
+- Configuration interactive avancée pour `config.yaml` et `.env` lors du premier lancement.
+- Copie minimale du profil Chrome lors de la configuration initiale.
+- Ajout du paramètre `log_retention_days` (0 = conservation illimitée).
+- Nettoyage automatique des logs selon la durée de rétention.
+- Messages utilisateurs colorés et validation renforcée des paramètres.
 
 ### Architecture
 
@@ -28,19 +30,33 @@ Téléchargez le fichier `.exe` pour Windows ainsi que les fichiers nécessaires
 
 ---
 
-## Nouveautés et changements récents (22 août 2025)
+## Historique des versions
 
-- **Synchronisation des versions dans tous les modules** : Bloc commentaires de version mis à jour dans tous les fichiers principaux.
-- **Ajout du module `version.py`** : Source unique de vérité pour la version de l’application.
-- **Log de la version exécutée** : La version de l’application est affichée dans les logs au démarrage.
-- **Correction des chemins YAML** : Utilisation systématique de `/` pour éviter les erreurs d’échappement.
-- **Compatibilité interface Dexcom août 2025** : adaptation à la nouvelle page intermédiaire ("Pas maintenant") après connexion.
-- **Robustesse saisie identifiant** : sélection fiable du champ `usernameLogin`, vérification visibilité/interactivité, gestion des overlays et délais.
-- **Captures d’écran** : désormais uniquement en mode debug pour éviter l’encombrement.
-- **Logs détaillés** : diagnostics enrichis pour chaque étape critique (présence champ, clics, erreurs Selenium, etc.).
-- **Gestion du bouton "Pas maintenant"** : détection et clic automatique, indépendant de la langue.
-- **Sélecteurs robustes** : prise en charge des changements d’ID ou de structure HTML pour les champs de connexion.
-- **Gestion avancée des erreurs** : captures et logs lors de toute anomalie, arrêt propre du script.
+### 0.1.8 — 27 août 2025
+
+- Configuration interactive avancée pour `config.yaml` et `.env` lors du premier lancement.
+- Copie minimale du profil Chrome lors de la configuration initiale.
+- Ajout du paramètre `log_retention_days` (0 = conservation illimitée).
+- Nettoyage automatique des logs selon la durée de rétention.
+- Messages utilisateurs colorés et validation renforcée des paramètres.
+
+### 0.1.7 — 25 août 2025
+
+- Création automatique de `config.yaml` à partir de `config_example.yaml` si absent
+- Gestion interactive des credentials si `.env` absent (demande à l'utilisateur, non conservé)
+- Précision sur la présence de `chromedriver-win64` fourni
+
+### 0.1.6 — 22 août 2025
+
+- Synchronisation des versions dans tous les modules (bloc commentaires de version à jour)
+- Ajout du module `version.py` (source unique de vérité pour la version)
+- Log de la version exécutée au démarrage
+- Correction des chemins YAML (utilisation systématique de `/`)
+- Compatibilité interface Dexcom août 2025 (gestion de la page "Pas maintenant")
+- Robustesse saisie identifiant et gestion avancée des erreurs
+- Captures d’écran uniquement en mode debug
+- Logs détaillés pour chaque étape critique
+- Sélecteurs robustes pour les champs de connexion
 
 ---
 
@@ -60,71 +76,18 @@ Téléchargez le fichier `.exe` pour Windows ainsi que les fichiers nécessaires
 
 ---
 
-## Installation
+## Installation et utilisation
 
-1. **Cloner le dépôt**
-
-   ```sh
-   git clone <url_du_depot>
-   cd Dexcom-Clarity-Reports
-   ```
-
-2. **Installer les dépendances**
-
-   ```sh
-   pip install -r requirements.txt
-   ```
-
-3. **Configurer ChromeDriver**
-   - Téléchargez [ChromeDriver](https://chromedriver.chromium.org/downloads) correspondant à votre version de Chrome.
-   - **Une version de ChromeDriver pour Windows 64 bits est déjà fournie dans le sous-répertoire `./chromedriver-win64` du projet.**
-   - Placez `chromedriver.exe` dans ce dossier ou utilisez votre propre version si besoin.
-   - Le chemin vers le binaire doit être défini dans `config.yaml` via la clé :
-
-     ```yaml
-     chromedriver_path: "./chromedriver-win64/chromedriver.exe"
-     ```
-
-   - Par défaut, le script s’attend à trouver `chromedriver.exe` dans ce sous-répertoire ou à l’emplacement indiqué par `chromedriver_path`.
-
-4. **Configurer le fichier `.env`**
-   - Renommez `.env.example` en `.env`.
-   - Remplissez vos identifiants Dexcom Clarity :
-
-     ```env
-     DEXCOM_USERNAME=mon_email@example.com
-     DEXCOM_PASSWORD=mon_mot_de_passe
-     # Pour l'authentification par téléphone, ajoutez aussi :
-     DEXCOM_COUNTRY_CODE=+1
-     DEXCOM_PHONE_NUMBER=5141234567
-     ```
-
-   - Si vous utilisez l’authentification par téléphone, les variables `DEXCOM_COUNTRY_CODE` et `DEXCOM_PHONE_NUMBER` sont obligatoires.
-
----
-
-## Utilisation
-
-Pour exécuter le script avec les paramètres par défaut :
-
-```sh
-python ClarityDownload.py
-```
-
-### Options de ligne de commande
-
-- `--days` : Nombre de jours à télécharger (ex: `--days 7`)
-- `--date_debut` et `--date_fin` : Définir une période précise
-- `--rapports` : Choisir les rapports à générer (ex: `--rapports Aperçu,Statistiques`)
-- `--debug` : Activer le mode debug pour des logs détaillés et les captures d’écran
-
-Exemple pour télécharger les rapports des 7 derniers jours en mode debug :
-
-```sh
-python ClarityDownload.py --days 7 --debug
-```
-
-- Si vous utilisez un numéro de téléphone pour vous connecter, assurez-vous que les variables `DEXCOM_COUNTRY_CODE` et `DEXCOM_PHONE_NUMBER` sont bien renseignées dans votre `.env`.
+1. **Téléchargez l’archive ZIP du release** depuis la page Releases du projet.
+2. **Décompressez tout le contenu du ZIP** dans un dossier de votre choix (ex : `C:\DexcomClarityDownloader`).
+   - Le dossier doit contenir :
+     - `DexcomClarityDownloader.exe`
+     - `config_example.yaml`
+     - `.env.example`
+     - le dossier `chromedriver-win64`
+3. **Lancez `DexcomClarityDownloader.exe`** en double-cliquant ou via le terminal.
+4. **Lors du premier lancement**, si les fichiers `config.yaml` ou `.env` sont absents, l’application vous informera et lancera la configuration initiale.
+5. **Les fichiers de configuration seront créés dans le même dossier que l’exécutable.**
 
 ---
 

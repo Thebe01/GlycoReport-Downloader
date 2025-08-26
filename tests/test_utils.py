@@ -9,6 +9,7 @@
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Tests unitaires pour toutes les fonctions utilitaires du projet Dexcom Clarity Reports Downloader.
 #'''              Vérifie la robustesse et la portabilité des fonctions (normalisation des chemins, capture d’écran, etc.).
+#'''              Pour exécuter les tests, utilisez la commande : pytest tests/test_utils.py
 #'''Version : 0.1.6
 #'''Modifications :
 #'''Version   Date          Description
@@ -35,7 +36,8 @@ from utils import (
     get_last_downloaded_nonlog_file,
     renomme_prefix,
     attendre_nouveau_bouton_telecharger,
-    capture_screenshot
+    capture_screenshot,
+    cleanup_logs
 )
 
 # Dummy classes for Selenium objects
@@ -131,4 +133,31 @@ def test_attendre_nouveau_bouton_telecharger_signature():
     try:
         attendre_nouveau_bouton_telecharger(DummyDriver(), DummyWebElement(), timeout=1)
     except Exception:
-        pass  # On accepte que la fonction lève une exception ici, car il n'y a pas de vrai
+        pass  # On accepte que la fonction lève une exception ici, car il n'y a pas de vrai test à faire
+
+def test_cleanup_logs_removes_old_logs(tmp_path):
+    # Crée un dossier temporaire pour les logs
+    log_dir = tmp_path
+    # Crée deux fichiers logs : un ancien et un récent
+    old_log = log_dir / "old.log"
+    recent_log = log_dir / "recent.log"
+    old_log.write_text("ancien log")
+    recent_log.write_text("log récent")
+    # Modifie la date de modification de l'ancien log pour qu'il soit vieux de 2 jours
+    old_time = time.time() - (2 * 86400)
+    os.utime(old_log, (old_time, old_time))
+    # Appelle cleanup_logs avec une rétention de 1 jour
+    cleanup_logs(str(log_dir), retention_days=1)
+    # Vérifie que l'ancien log a été supprimé et que le récent existe toujours
+    assert not old_log.exists()
+    assert recent_log.exists()
+
+def test_cleanup_logs_retention_zero(tmp_path):
+    # Crée un dossier temporaire pour les logs
+    log_dir = tmp_path
+    log_file = log_dir / "test.log"
+    log_file.write_text("log à conserver")
+    # Appelle cleanup_logs avec une rétention illimitée
+    cleanup_logs(str(log_dir), retention_days=0)
+    # Vérifie que le log n'a pas été supprimé
+    assert log_file.exists()

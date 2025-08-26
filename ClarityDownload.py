@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-08-25
+#'''Last Modified On : 2025-08-27
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Script principal pour l'automatisation du téléchargement des rapports Dexcom Clarity.
 #'''              Centralisation de la configuration, gestion CLI avancée, robustesse accrue,
 #'''              logs détaillés (console, fichier, JS), gestion des exceptions et de la déconnexion.
-#'''Version : 0.1.7
+#'''Version : 0.1.8
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -77,7 +77,12 @@
 #'''                      Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
 #'''                      Utilisation centralisée de get_dexcom_credentials depuis config.py.
 #'''                      Plus d'accès direct à os.getenv dans ce module.
-#'''</summary>
+#'''0.1.8   2025-08-27    Configuration interactive avancée pour config.yaml et .env.
+#'''                      Copie minimale du profil Chrome lors de la configuration.
+#'''                      Ajout du paramètre log_retention_days (0 = conservation illimitée).
+#'''                      Nettoyage automatique des logs selon la rétention.
+#'''                      Messages utilisateurs colorés et validation renforcée.
+# #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # TODO 11 Réparer le problème avec les rapports Comparer
@@ -105,6 +110,7 @@ import traceback
 from config import (
     DOWNLOAD_DIR, DIR_FINAL_BASE, CHROME_USER_DATA_DIR, DEXCOM_URL,
     CHROMEDRIVER_LOG, RAPPORTS, NOW_STR, DATE_DEBUT, DATE_FIN,
+    LOG_RETENTION_DAYS,
     get_dexcom_credentials
 )
 from utils import (
@@ -115,10 +121,15 @@ from utils import (
     renomme_prefix,
     attendre_nouveau_bouton_telecharger,
     capture_screenshot,
-    pause_on_error
+    pause_on_error,
+    cleanup_logs
 )
 from rapports import selection_rapport
 from version import __version__
+
+# Déduire le dossier de logs à partir du chemin du fichier log
+log_dir = os.path.dirname(CHROMEDRIVER_LOG) or "."
+cleanup_logs(log_dir, LOG_RETENTION_DAYS)
 
 # Ajout du parser d'arguments
 parser = argparse.ArgumentParser(description="Téléchargement des rapports Dexcom Clarity")

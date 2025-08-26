@@ -18,3 +18,4 @@ chromedriver_log: "~/Downloads/Dexcom_download/clarity_chromedriver.log"
 chrome_user_data_dir: "~/Chrome_Clarity_Profile"
 chromedriver_path: "./chromedriver-win64/chromedriver.exe"
 rapports: ["Aperçu", "Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP", "Export"]
+log_retention_days: 15
