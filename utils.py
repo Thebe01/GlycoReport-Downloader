@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-08-22
+#'''Last Modified On : 2025-08-25
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Fonctions utilitaires pour le projet Dexcom Clarity Reports Downloader.
 #'''              Connexion internet, overlay, renommage, détection du dernier fichier téléchargé,
 #'''              logging détaillé, robustesse accrue pour le renommage, logs JS navigateur.
-#'''Version : 0.1.6
+#'''Version : 0.1.7
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-08-05    Version initiale.
@@ -21,6 +21,8 @@
 #'''0.0.3   2025-08-18    Centralisation de normalize_path, centralisation de capture_screenshot,
 #'''                      ajout du délai avant capture, préparation et couverture par tests unitaires.
 #'''0.1.6   2025-08-22    Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
+#'''0.1.7   2025-08-25    Création automatique de config.yaml à partir de config_example.yaml si absent.
+#'''                      Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -33,7 +35,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
 
-def check_internet(url="https://www.google.com", timeout=5):
+def check_internet(url="https://clarity.dexcom.eu", timeout=5):
     """
     Vérifie la connexion internet en tentant d'ouvrir l'URL spécifiée.
 
@@ -190,3 +192,15 @@ def resource_path(relative_path):
         return os.path.join(sys._MEIPASS, relative_path)
     # Exécution normale : chemin relatif depuis le dossier courant
     return os.path.join(os.path.abspath("."), relative_path)
+
+
+def pause_on_error():
+    """
+    Affiche un message et attend que l'utilisateur appuie sur Entrée avant de fermer la fenêtre du terminal.
+    Utile pour garder la console ouverte en cas d'erreur lors d'une exécution en double-cliquant sur l'exécutable.
+    """
+    try:
+        if sys.stdin.isatty():
+            input("\nAppuyez sur Entrée pour fermer...")
+    except Exception:
+        pass

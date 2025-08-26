@@ -5,14 +5,14 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-08-22
+#'''Last Modified On : 2025-08-25
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Centralisation et sécurisation de la configuration du projet Dexcom Clarity Reports Downloader.
 #'''              Lecture de tous les paramètres depuis config.yaml, normalisation systématique des chemins
 #'''              (via utils.py), gestion des erreurs et des droits d'accès, validation stricte des types,
 #'''              génération interactive de config.yaml, protection contre les vulnérabilités courantes
 #'''              (injection, mauvaise gestion des secrets, etc.).
-#'''Version : 0.1.6
+#'''Version : 0.1.7
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0     2025-08-05    Version initiale.
@@ -28,6 +28,8 @@
 #'''0.1.5     2025-08-22    Ajout du paramètre chromedriver_path configurable via config.yaml,
 #'''                        valeur par défaut : "./chromedriver.exe" (même dossier que l'exécutable).
 #'''0.1.6     2025-08-22    Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
+#'''0.1.7     2025-08-25    Création automatique de config.yaml à partir de config_example.yaml si absent.
+#'''                        Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -37,7 +39,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import yaml
 import logging
-from utils import normalize_path, resource_path
+from utils import normalize_path, resource_path, pause_on_error
 
 # Prépare le logger minimal pour ce module
 logger = logging.getLogger("config")
@@ -48,8 +50,8 @@ if not logger.hasHandlers():
 load_dotenv()
 
 # Charger la config YAML utilisateur (gérer le cas où le fichier n'existe pas)
-CONFIG_PATH = os.environ.get("CLARITY_CONFIG", "config.yaml")
-EXAMPLE_CONFIG_PATH = "config_example.yaml"
+CONFIG_PATH = resource_path("config.yaml")
+EXAMPLE_CONFIG_PATH = resource_path("config_example.yaml")
 
 def validate_config(config):
     """Valide la présence et le type des paramètres essentiels."""
@@ -70,10 +72,17 @@ def validate_config(config):
             sys.exit(1)
 
 if not os.path.exists(CONFIG_PATH):
-    print(f"Impossible de trouver '{CONFIG_PATH}'. Arrêt du script.")
-    sys.exit(1)
+    if os.path.exists(EXAMPLE_CONFIG_PATH):
+        with open(EXAMPLE_CONFIG_PATH, "r", encoding="utf-8") as src, \
+             open(CONFIG_PATH, "w", encoding="utf-8") as dst:
+            dst.write(src.read())
+        print(f"Le fichier {CONFIG_PATH} a été créé à partir de {EXAMPLE_CONFIG_PATH}.")
+    else:
+        print(f"Impossible de trouver '{EXAMPLE_CONFIG_PATH}' pour créer '{CONFIG_PATH}'. Arrêt du script.")
+        pause_on_error()
+        sys.exit(1)
 
-with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+with open(resource_path(CONFIG_PATH), "r", encoding="utf-8") as f:
     config = yaml.safe_load(f) or {}
 validate_config(config)
 
@@ -104,3 +113,24 @@ if not DATE_DEBUT:
     DATE_DEBUT = (date_fin_obj - timedelta(days=14 - 1)).strftime("%Y-%m-%d")
 
 NOW_STR = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+
+import re
+from getpass import getpass
+
+def get_dexcom_credentials():
+    username = os.getenv("DEXCOM_USERNAME")
+    password = os.getenv("DEXCOM_PASSWORD")
+    country_code = os.getenv("DEXCOM_COUNTRY_CODE")
+    phone_number = os.getenv("DEXCOM_PHONE_NUMBER")
+    if username and password:
+        return username, password, country_code, phone_number
+    print("Le fichier .env est absent ou incomplet. Veuillez saisir vos identifiants Dexcom (ils ne seront pas conservés).")
+    username = input("Adresse courriel ou numéro de téléphone Dexcom : ").strip()
+    password = getpass("Mot de passe Dexcom : ").strip()
+    if re.fullmatch(r"\+?[1-9]\d{9,14}", username):
+        country_code = input("Code pays (ex : +1) : ").strip()
+        phone_number = input("Numéro de téléphone (sans code pays) : ").strip()
+    else:
+        country_code = None
+        phone_number = None
+    return username, password, country_code, phone_number

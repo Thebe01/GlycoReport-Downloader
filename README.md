@@ -1,6 +1,18 @@
 # Dexcom Clarity Reports Downloader
 
-## Version : 0.1.6 — 22 août 2025
+## Version : 0.1.7 — 25 août 2025
+
+### Nouveautés
+
+- Création automatique de `config.yaml` à partir de `config_example.yaml` si absent
+- Gestion interactive des credentials si `.env` absent (demande à l'utilisateur, non conservé)
+- Précision sur la présence de `chromedriver-win64` fourni
+
+### Architecture
+
+- `config.py` : centralise la configuration et les credentials
+- `utils.py` : fonctions utilitaires
+- `ClarityDownload.py` : script principal, utilise uniquement les variables/fonctions exposées par les modules
 
 ## Description
 
@@ -36,7 +48,7 @@ Téléchargez le fichier `.exe` pour Windows ainsi que les fichiers nécessaires
 
 - Téléchargement automatisé de tous les rapports Dexcom Clarity sélectionnés
 - Configuration centralisée via un fichier `config.yaml` (non versionné)
-- Création interactive de `config.yaml` si absent (basé sur `config_example.yaml`)
+- Exemple de configuration fourni dans `config_example.yaml`
 - Prise en charge des chemins portables (`~` et `/`), normalisés automatiquement
 - Prise en charge de l’authentification par courriel/nom d’usager **ou** par numéro de téléphone (avec code pays et numéro, via variables d’environnement)
 - Gestion avancée des logs (application, navigateur, logs JS)
@@ -67,7 +79,7 @@ Téléchargez le fichier `.exe` pour Windows ainsi que les fichiers nécessaires
    - Téléchargez [ChromeDriver](https://chromedriver.chromium.org/downloads) correspondant à votre version de Chrome.
    - **Une version de ChromeDriver pour Windows 64 bits est déjà fournie dans le sous-répertoire `./chromedriver-win64` du projet.**
    - Placez `chromedriver.exe` dans ce dossier ou utilisez votre propre version si besoin.
-   - Le chemin vers le binaire doit être défini dans `config.yaml` ou `config_example.yaml` via la clé :
+   - Le chemin vers le binaire doit être défini dans `config.yaml` via la clé :
 
      ```yaml
      chromedriver_path: "./chromedriver-win64/chromedriver.exe"

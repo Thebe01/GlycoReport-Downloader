@@ -5,13 +5,13 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-08-22
+#'''Last Modified On : 2025-08-25
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Traitement et gestion des rapports Dexcom Clarity.
 #'''              Utilisation des chemins et paramètres centralisés, logging détaillé,
 #'''              robustesse pour la détection et gestion des fichiers téléchargés,
 #'''              logging des erreurs JS lors du déplacement/renommage.
-#'''Version : 0.1.6
+#'''Version : 0.1.7
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-08-05    Version initiale.
@@ -20,6 +20,8 @@
 #'''0.0.2   2025-08-13    Utilisation de capture_screenshot centralisée (utils.py) avec délai,
 #'''                      ajout de logs pour le diagnostic.
 #'''0.1.6   2025-08-22    Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
+#'''0.1.7   2025-08-25    Création automatique de config.yaml à partir de config_example.yaml si absent.
+#'''                      Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 

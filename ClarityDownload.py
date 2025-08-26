@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-08-18
+#'''Last Modified On : 2025-08-25
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Script principal pour l'automatisation du téléchargement des rapports Dexcom Clarity.
 #'''              Centralisation de la configuration, gestion CLI avancée, robustesse accrue,
 #'''              logs détaillés (console, fichier, JS), gestion des exceptions et de la déconnexion.
-#'''Version : 0.1.00
+#'''Version : 0.1.7
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -72,7 +72,12 @@
 #'''0.1.0   2025-08-18    Robustesse saisie identifiant : sélection usernameLogin, vérification visibilité/interactivité,
 #'''                      captures d’écran uniquement en mode debug, gestion du bouton 'Pas maintenant' après connexion,
 #'''                      adaptation aux changements d’interface Dexcom, logs détaillés pour le diagnostic.
-#''' </summary>
+#'''0.1.6   2025-08-22    Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
+#'''0.1.7   2025-08-25    Création automatique de config.yaml à partir de config_example.yaml si absent.
+#'''                      Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
+#'''                      Utilisation centralisée de get_dexcom_credentials depuis config.py.
+#'''                      Plus d'accès direct à os.getenv dans ce module.
+#'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # TODO 11 Réparer le problème avec les rapports Comparer
@@ -94,10 +99,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import glob
 import re
+from getpass import getpass
+import traceback
 
 from config import (
     DOWNLOAD_DIR, DIR_FINAL_BASE, CHROME_USER_DATA_DIR, DEXCOM_URL,
-    CHROMEDRIVER_LOG, RAPPORTS, NOW_STR, DATE_DEBUT, DATE_FIN
+    CHROMEDRIVER_LOG, RAPPORTS, NOW_STR, DATE_DEBUT, DATE_FIN,
+    get_dexcom_credentials
 )
 from utils import (
     check_internet,
@@ -106,9 +114,11 @@ from utils import (
     get_last_downloaded_nonlog_file,
     renomme_prefix,
     attendre_nouveau_bouton_telecharger,
-    capture_screenshot
+    capture_screenshot,
+    pause_on_error
 )
 from rapports import selection_rapport
+from version import __version__
 
 # Ajout du parser d'arguments
 parser = argparse.ArgumentParser(description="Téléchargement des rapports Dexcom Clarity")
@@ -254,17 +264,21 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
             logger.error("Perte de connexion internet détectée avant la saisie des identifiants.")
             raise RuntimeError("Connexion internet requise pour poursuivre.")
 
-        # Récupération des identifiants
-        dexcom_username = os.getenv("DEXCOM_USERNAME")
-        dexcom_password = os.getenv("DEXCOM_PASSWORD")
+        # Récupération des identifiants via config.py
+        dexcom_username, dexcom_password, dexcom_country_code, dexcom_phone_number = get_dexcom_credentials()
         if not dexcom_username or not dexcom_password:
-            logger.error("Les variables d'environnement DEXCOM_USERNAME et/ou DEXCOM_PASSWORD ne sont pas définies.")
+            logger.error("Les identifiants Dexcom sont manquants.")
             raise SystemExit(1)
 
         # Détection du type d'identifiant
         is_phone = re.fullmatch(r"\+?[1-9]\d{9,14}", dexcom_username.strip()) is not None
 
         if is_phone:
+            country_code = dexcom_country_code
+            phone_number = dexcom_phone_number
+            if not country_code or not phone_number:
+                logger.error("Variables DEXCOM_COUNTRY_CODE et DEXCOM_PHONE_NUMBER requises.")
+                raise SystemExit(1)
             # Accès au mode téléphone (indépendant de la langue)
             phone_link = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((
@@ -281,12 +295,6 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
             phone_number_input = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, "phoneNumber"))
             )
-
-            country_code = os.getenv("DEXCOM_COUNTRY_CODE")
-            phone_number = os.getenv("DEXCOM_PHONE_NUMBER")
-            if not country_code or not phone_number:
-                logger.error("Variables DEXCOM_COUNTRY_CODE et DEXCOM_PHONE_NUMBER requises.")
-                raise SystemExit(1)
 
             country_code_input.clear()
             country_code_input.send_keys(country_code)
@@ -400,6 +408,14 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
         raise SystemExit(1)
 
 
+def pause_on_error():
+    """
+    Affiche un message et attend que l'utilisateur appuie sur Entrée avant de fermer la fenêtre du terminal.
+    """
+    if sys.stdin.isatty():
+        input("\nAppuyez sur Entrée pour fermer...")
+
+
 def main():
     """
     Fonction principale du script Dexcom Clarity Reports Downloader.
@@ -409,7 +425,7 @@ def main():
         # Affichage de la version de Python si le mode debug est activé
         if args.debug:
             logger.debug(f"Version de Python : {sys.version}")
-
+        logger.info(f"Version de l'application exécutée : {__version__}")
         logger.info(f"Rapports à traiter : {RAPPORTS}")
         logger.info(f"Dossier de téléchargement : {DOWNLOAD_DIR}")
 
@@ -534,6 +550,11 @@ def main():
         except Exception as e:
             logger.warning(f"Impossible de se déconnecter proprement : {e}", exc_info=args.debug)
 
+    except Exception as e:
+        logger.error(f"Erreur inattendue dans le script principal : {e}")
+        traceback.print_exc()
+        pause_on_error()
+        sys.exit(1)
     finally:
         # Fermez le navigateur dans tous les cas
         try:
@@ -546,4 +567,12 @@ def main():
         logger.info(f"Fichiers présents dans le dossier de téléchargement après la demande : {files}")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"Erreur critique lors de l'exécution du script : {e}")
+        import traceback
+        traceback.print_exc()
+        pause_on_error()
+        sys.exit(1)
+
