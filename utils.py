@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-08-25
+#'''Last Modified On : 2025-08-28
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Fonctions utilitaires pour le projet Dexcom Clarity Reports Downloader.
 #'''              Connexion internet, overlay, renommage, détection du dernier fichier téléchargé,
 #'''              logging détaillé, robustesse accrue pour le renommage, logs JS navigateur.
-#'''Version : 0.1.7
+#'''Version : 0.1.10
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-08-05    Version initiale.
@@ -28,8 +28,13 @@
 #'''                      Ajout du paramètre log_retention_days (0 = conservation illimitée).
 #'''                      Nettoyage automatique des logs selon la rétention.
 #'''                      Messages utilisateurs colorés et validation renforcée.
+#'''0.1.9   2025-08-28    Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
+#'''                      Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
+#'''                      Correction de la robustesse de la configuration initiale.
+#'''0.1.10  2025-08-28    Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
+#'''                      Chaque suppression de log est loggée.
 #'''</summary>
-#'''/////////////////////////////////////////////////////////////////////////////////////////////////////
+#'''////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import os
 import sys
@@ -142,12 +147,13 @@ def pause_on_error() -> None:
     except Exception:
         pass
 
-def cleanup_logs(log_dir: str, retention_days: int, logger=None) -> None:
+def cleanup_logs(log_dir, retention_days, logger=None):
     """
     Supprime les fichiers logs plus vieux que retention_days dans le dossier log_dir.
     Si retention_days vaut 0, aucun ménage n'est effectué (conservation illimitée).
     Logge les suppressions si un logger est fourni.
     """
+ 
     if retention_days == 0:
         msg = "Aucun ménage des logs n'est effectué (conservation illimitée)."
         print(Fore.CYAN + msg)
@@ -155,7 +161,7 @@ def cleanup_logs(log_dir: str, retention_days: int, logger=None) -> None:
             logger.info(msg)
         return
     now = time.time()
-    retention_seconds = retention_days * ONE_DAY_SECONDS
+    retention_seconds = retention_days * 86400
     if not os.path.isdir(log_dir):
         msg = f"Le dossier de logs '{log_dir}' n'existe pas."
         print(Fore.YELLOW + msg)

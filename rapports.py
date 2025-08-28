@@ -5,13 +5,13 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-08-27
+#'''Last Modified On : 2025-08-28
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Traitement et gestion des rapports Dexcom Clarity.
 #'''              Utilisation des chemins et paramètres centralisés, logging détaillé,
 #'''              robustesse pour la détection et gestion des fichiers téléchargés,
 #'''              logging des erreurs JS lors du déplacement/renommage.
-#'''Version : 0.1.8
+#'''Version : 0.1.10
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-08-05    Version initiale.
@@ -27,6 +27,11 @@
 #'''                      Ajout du paramètre log_retention_days (0 = conservation illimitée).
 #'''                      Nettoyage automatique des logs selon la rétention.
 #'''                      Messages utilisateurs colorés et validation renforcée.
+#'''0.1.9   2025-08-28    Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
+#'''                      Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
+#'''                      Correction de la robustesse de la configuration initiale.
+#'''0.1.10  2025-08-28    Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
+#'''                      Chaque suppression de log est loggée.
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 

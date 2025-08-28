@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-08-27
+#'''Last Modified On : 2025-08-28
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Script principal pour l'automatisation du téléchargement des rapports Dexcom Clarity.
 #'''              Centralisation de la configuration, gestion CLI avancée, robustesse accrue,
 #'''              logs détaillés (console, fichier, JS), gestion des exceptions et de la déconnexion.
-#'''Version : 0.1.8
+#'''Version : 0.1.10
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -82,6 +82,11 @@
 #'''                      Ajout du paramètre log_retention_days (0 = conservation illimitée).
 #'''                      Nettoyage automatique des logs selon la rétention.
 #'''                      Messages utilisateurs colorés et validation renforcée.
+#'''0.1.9   2025-08-28    Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
+#'''                      Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
+#'''                      Correction de la robustesse de la configuration initiale.
+#'''0.1.10  2025-08-28    Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
+#'''                      Chaque suppression de log est loggée.
 # #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -89,6 +94,7 @@
 # TODO 12 Exécuter l'application pour produire les rapports Comparer depuis 2024-08-19
 # TODO 13 Appliquer la même solution pour obtenir des rapports séparés pour Modèle
 # TODO 14 Rendre l'application indépendante de la langue de l'utilisateur.
+# TODO 15 Améliorer le help
 
 import os
 import sys
@@ -126,10 +132,6 @@ from utils import (
 )
 from rapports import selection_rapport
 from version import __version__
-
-# Déduire le dossier de logs à partir du chemin du fichier log
-log_dir = os.path.dirname(CHROMEDRIVER_LOG) or "."
-cleanup_logs(log_dir, LOG_RETENTION_DAYS)
 
 # Ajout du parser d'arguments
 parser = argparse.ArgumentParser(description="Téléchargement des rapports Dexcom Clarity")
@@ -171,6 +173,14 @@ logger.addHandler(file_handler)
 console_handler = logging.StreamHandler()
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
+
+# Ménage des logs (après activation du logging)
+from config import CHROMEDRIVER_LOG, LOG_RETENTION_DAYS
+from utils import cleanup_logs
+import os
+
+log_dir = os.path.dirname(CHROMEDRIVER_LOG) or "."
+cleanup_logs(log_dir, LOG_RETENTION_DAYS, logger)
 
 # Options Chrome
 options = Options()
@@ -408,7 +418,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
             )
             driver.execute_script("arguments[0].scrollIntoView(true);", not_now_button)
             not_now_button.click()
-            logger.info("Bouton 'Pas maintenant' détecté et cliqué.")
+            logger.debug("Bouton 'Pas maintenant' détecté et cliqué.")
             time.sleep(2)
         except Exception:
             # Si le bouton n'est pas présent, on continue simplement

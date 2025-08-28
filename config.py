@@ -5,14 +5,14 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-08-27
+#'''Last Modified On : 2025-08-28
 #'''CopyRights : Innovations Performances Technologies inc
 #'''Description : Centralisation et sécurisation de la configuration du projet Dexcom Clarity Reports Downloader.
 #'''              Lecture de tous les paramètres depuis config.yaml, normalisation systématique des chemins
 #'''              (via utils.py), gestion des erreurs et des droits d'accès, validation stricte des types,
 #'''              génération interactive de config.yaml, protection contre les vulnérabilités courantes
 #'''              (injection, mauvaise gestion des secrets, etc.).
-#'''Version : 0.1.8
+#'''Version : 0.1.10
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0     2025-08-05    Version initiale.
@@ -35,6 +35,11 @@
 #'''                        Ajout du paramètre log_retention_days (0 = conservation illimitée).
 #'''                        Nettoyage automatique des logs selon la rétention.
 #'''                        Messages utilisateurs colorés et validation renforcée. 
+#'''0.1.9     2025-08-28    Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
+#'''                        Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
+#'''                        Correction de la robustesse de la configuration initiale.
+#'''0.1.10    2025-08-28    Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
+#'''                        Chaque suppression de log est loggée.
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -159,10 +164,33 @@ def interactive_config():
             prompt = (
                 f"{Fore.CYAN}Entrez la valeur pour '{key}' [{value}] (0 = conservation illimitée) : {Style.RESET_ALL}"
             )
+        elif key == "chromedriver_log":
+            prompt = (
+                f"{Fore.CYAN}Entrez le chemin complet du fichier log pour ChromeDriver "
+                f"[{value}] : {Style.RESET_ALL}"
+            )
         else:
             prompt = f"{Fore.CYAN}Entrez la valeur pour '{key}' [{value}] : {Style.RESET_ALL}"
         user_input = input(prompt).strip()
         final_value = value if user_input == "" else type(value)(user_input)
+
+        # Vérification spécifique pour chromedriver_log
+        if key == "chromedriver_log":
+            # On vérifie que ce n'est pas un dossier
+            expanded = os.path.expanduser(final_value)
+            if os.path.isdir(expanded) or expanded.endswith(("/", "\\")):
+                print_error("Le chemin du log doit être un fichier, pas un dossier. Exemple : C:/.../clarity_chromedriver.log")
+                logger.error("L'utilisateur a saisi un dossier au lieu d'un fichier pour chromedriver_log.")
+                # Redemande la saisie
+                while True:
+                    user_input = input(
+                        f"{Fore.CYAN}Veuillez entrer un chemin de fichier log valide pour ChromeDriver : {Style.RESET_ALL}"
+                    ).strip()
+                    expanded = os.path.expanduser(user_input)
+                    if not os.path.isdir(expanded) and not expanded.endswith(("/", "\\")):
+                        final_value = user_input
+                        break
+
         user_config[key] = final_value
         logger.info(f"Clé '{key}' définie sur : {final_value!r}")
 

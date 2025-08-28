@@ -1,14 +1,12 @@
 # Dexcom Clarity Reports Downloader
 
-## Version : 0.1.8 — 27 août 2025
+## Version : 0.1.10 — 28 août 2025
 
 ### Nouveautés
 
-- Configuration interactive avancée pour `config.yaml` et `.env` lors du premier lancement.
-- Copie minimale du profil Chrome lors de la configuration initiale.
-- Ajout du paramètre `log_retention_days` (0 = conservation illimitée).
-- Nettoyage automatique des logs selon la durée de rétention.
-- Messages utilisateurs colorés et validation renforcée des paramètres.
+- Vérification interactive de la clé `chromedriver_log` lors de la création de `config.yaml`.
+- Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
+- Correction de la robustesse de la configuration initiale.
 
 ### Architecture
 
@@ -31,6 +29,17 @@ Téléchargez le fichier `.exe` pour Windows ainsi que les fichiers nécessaires
 ---
 
 ## Historique des versions
+
+### 0.1.10 — 28 août 2025
+
+- Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
+- Chaque suppression de log est loggée.
+
+### 0.1.9 — 28 août 2025
+
+- Vérification interactive de la clé `chromedriver_log` lors de la création de `config.yaml`.
+- Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
+- Correction de la robustesse de la configuration initiale.
 
 ### 0.1.8 — 27 août 2025
 
