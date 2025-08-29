@@ -6,7 +6,7 @@
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-13
 #'''Last Modified On : 2025-08-22
-#'''CopyRights : Innovations Performances Technologies inc
+#'''CopyRights : Informatique Pierre Théberge IPT inc
 #'''Description : Tests unitaires pour toutes les fonctions utilitaires du projet Dexcom Clarity Reports Downloader.
 #'''              Vérifie la robustesse et la portabilité des fonctions (normalisation des chemins, capture d’écran, etc.).
 #'''              Pour exécuter les tests, utilisez la commande : pytest tests/test_utils.py

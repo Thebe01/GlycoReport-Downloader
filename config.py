@@ -6,7 +6,7 @@
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
 #'''Last Modified On : 2025-08-28
-#'''CopyRights : Innovations Performances Technologies inc
+#'''CopyRights : Informatique Pierre Théberge IPT inc.
 #'''Description : Centralisation et sécurisation de la configuration du projet Dexcom Clarity Reports Downloader.
 #'''              Lecture de tous les paramètres depuis config.yaml, normalisation systématique des chemins
 #'''              (via utils.py), gestion des erreurs et des droits d'accès, validation stricte des types,

@@ -1,4 +1,6 @@
-# Dexcom Clarity Reports Downloader
+# GlycoReport Downloader
+
+An English version of this text follows the French text.
 
 ## Version : 0.2.0 — 28 août 2025
 
@@ -17,7 +19,7 @@
 
 ## Description
 
-Dexcom Clarity Reports Downloader est un outil automatisé permettant de télécharger, organiser et archiver les rapports Dexcom Clarity pour un suivi glycémique efficace.
+GlycoReport Downloader est un outil automatisé permettant de télécharger, organiser et archiver les rapports Dexcom Clarity pour un suivi glycémique efficace.
 Le projet est conçu pour être portable, configurable et robuste, avec une gestion avancée des logs, des erreurs et de la sécurité.
 
 ---
@@ -26,6 +28,17 @@ Le projet est conçu pour être portable, configurable et robuste, avec une gest
 
 Une version exécutable prête à l’emploi est disponible dans la section [Releases](https://github.com/<ton-utilisateur>/<ton-repo>/releases) du projet GitHub.
 Téléchargez le fichier `.exe` pour Windows ainsi que les fichiers nécessaires (voir instructions ci-dessous).
+
+---
+
+## Limitations et avertissements
+
+- Ce projet n’est ni affilié, ni supporté, ni approuvé par Dexcom, Inc.
+- L’utilisation de cet outil se fait à vos risques et périls : respectez les conditions d’utilisation du service Dexcom Clarity.
+- Ne partagez jamais votre clé d’encryption ou vos identifiants.
+- Toute utilisation commerciale est strictement interdite sans autorisation écrite préalable.
+
+Pour plus d’informations sur Dexcom Clarity : [https://clarity.dexcom.eu](https://clarity.dexcom.eu)
 
 ---
 
@@ -95,16 +108,38 @@ Téléchargez le fichier `.exe` pour Windows ainsi que les fichiers nécessaires
 
 ## Installation et utilisation
 
+### Prérequis
+
+- Windows 10 ou supérieur
+- [Python 3.10+](https://www.python.org/downloads/) (pour l’utilisation en mode script)
+- Google Chrome installé
+- Droits administrateur pour définir la variable d’environnement système
+
+### Procédure
+
 1. **Téléchargez l’archive ZIP du release** depuis la page Releases du projet.
-2. **Décompressez tout le contenu du ZIP** dans un dossier de votre choix (ex : `C:\DexcomClarityDownloader`).
+2. **Décompressez tout le contenu du ZIP** dans un dossier de votre choix (ex : `C:\GlycoReportDownloader`).
    - Le dossier doit contenir :
-     - `DexcomClarityDownloader.exe`
+     - `GlycoReportDownloader.exe`
      - `config_example.yaml`
      - `.env.example`
      - le dossier `chromedriver-win64`
-3. **Lancez `DexcomClarityDownloader.exe`** en double-cliquant ou via le terminal.
+3. **Lancez `GlycoReportDownloader.exe`** en double-cliquant ou via le terminal.
 4. **Lors du premier lancement**, si les fichiers `config.yaml` ou `.env` sont absents, l’application vous informera et lancera la configuration initiale.
 5. **Les fichiers de configuration seront créés dans le même dossier que l’exécutable.**
+
+---
+
+## Création de l'exécutable Windows
+
+Pour générer l'exécutable à partir du code source, utilisez la commande suivante :
+
+```sh
+pyinstaller --onefile --hidden-import=yaml --name "GlycoReportDownloader" ClarityDownload.py
+```
+
+- L'option `--hidden-import=yaml` est nécessaire pour inclure le module PyYAML dans l'exécutable.
+- L'exécutable sera généré dans le dossier `dist/` sous le nom `GlycoReportDownloader.exe`.
 
 ---
 
@@ -133,13 +168,13 @@ Tous les chemins utilisés dans le projet (dossiers de téléchargement, profils
 **Exemple dans `config.yaml` :**
 
 ```yaml
-chrome_user_data_dir: C:\Users\????????\Downloads\DexcomClarityDownloader\Profile
-chromedriver_log: C:\Users\????????\Downloads\DexcomClarityDownloader\clarity_chromedriver.log
+chrome_user_data_dir: C:\Users\????????\Downloads\GlycoReportDownloader\Profile
+chromedriver_log: C:\Users\????????\Downloads\GlycoReportDownloader\clarity_chromedriver.log
 chromedriver_path: ./chromedriver-win64/chromedriver.exe
 dexcom_url: "https://clarity.dexcom.eu"
-download_dir: C:\Users\????????\Downloads\DexcomClarityDownloader
+download_dir: C:\Users\????????\Downloads\GlycoReportDownloader
 log_retention_days: 15
-output_dir: C:\Users\????????\Downloads\DexcomClarityDownloader
+output_dir: C:\Users\????????\Downloads\GlycoReportDownloader
 rapports: ["Aperçu"]
 ```
 
@@ -155,10 +190,12 @@ rapports: ["Aperçu"]
 
 ## Procédure de première utilisation
 
-1. Lancez le script. Une clé d’encryption sera générée et une commande PowerShell s’affichera.
+1. Lancez le script. Une clé d’encryption sera générée et une commande PowerShell à copier/coller s’affichera.
 2. Collez cette commande dans la fenêtre PowerShell qui s’ouvre, puis tapez `Exit`.
 3. Relancez le script pour poursuivre la configuration.
 4. Lors de la création du `.env`, les informations saisies seront chiffrées automatiquement.
+
+---
 
 ## Tests unitaires
 
@@ -180,18 +217,6 @@ pip install pytest
 
 ---
 
----
-
-## Création de l'exécutable Windows
-
-Pour générer l'exécutable à partir du code source, utilisez la commande suivante :
-
-```sh
-pyinstaller --onefile --hidden-import=yaml --name "DexcomClarityDownloader" [ClarityDownload.py](http://_vscodecontentref_/1)
-```
-
-**(http://_vscodecontentref_/2) pour que la procédure soit complète et fidèle à la réalité de ton projet.**
-
 ## Notes
 
 - Les rapports sont organisés par année dans le dossier de destination.
@@ -203,10 +228,16 @@ pyinstaller --onefile --hidden-import=yaml --name "DexcomClarityDownloader" [Cla
 
 ## Auteur
 
-Pierre Théberge
+Pierre Théberge  
+Informatique Pierre Théberge IPT inc.
 
 ---
 
 ## Licence
 
-Projet privé, tous droits réservés.
+Ce projet est distribué sous licence [Creative Commons Attribution - Pas d’Utilisation Commerciale 4.0 International (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr).
+
+Vous êtes autorisé à partager et adapter ce projet à des fins **non commerciales**, à condition de créditer l’auteur.  
+**Toute utilisation commerciale est strictement interdite sans autorisation écrite préalable.**
+
+Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).

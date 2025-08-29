@@ -6,7 +6,7 @@
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
 #'''Last Modified On : 2025-08-28
-#'''CopyRights : Innovations Performances Technologies inc
+#'''CopyRights : Informatique Pierre Théberge IPT inc
 #'''Description : Fonctions utilitaires pour le projet Dexcom Clarity Reports Downloader.
 #'''              Connexion internet, overlay, renommage, détection du dernier fichier téléchargé,
 #'''              logging détaillé, robustesse accrue pour le renommage, logs JS navigateur.
