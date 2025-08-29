@@ -1,4 +1,7 @@
+
 # GlycoReport Downloader
+
+[![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr) [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/) ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey) ![Version](https://img.shields.io/badge/version-0.2.1-blue)
 
 An English version of this text follows the French text.
 
