@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-08-28
+#'''Last Modified On : 2025-08-29
 #'''CopyRights : Informatique Pierre Théberge IPT inc.
 #'''Description : Script principal pour l'automatisation du téléchargement des rapports Dexcom Clarity.
 #'''              Centralisation de la configuration, gestion CLI avancée, robustesse accrue,
 #'''              logs détaillés (console, fichier, JS), gestion des exceptions et de la déconnexion.
-#'''Version : 0.2.0
+#'''Version : 0.2.1
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-03-03    Version initiale.
@@ -90,6 +90,7 @@
 #'''0.2.0   2025-08-28    Prise en charge du chiffrement/déchiffrement du fichier .env via config.py.
 #'''                      Les identifiants Dexcom sont lus uniquement via get_dexcom_credentials (plus de saisie interactive ici).
 #'''                      Sécurisation de la gestion des identifiants et des logs.
+#'''0.2.1   2025-08-29    Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 

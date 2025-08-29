@@ -2,10 +2,11 @@
 
 An English version of this text follows the French text.
 
-## Version : 0.2.0 — 28 août 2025
+## Version : 0.2.1 — 29 août 2025
 
 ### Nouveautés
 
+- Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
 - Le fichier `.env` est désormais chiffré à l’écriture et déchiffré à la volée lors de la lecture.
 - La clé d’encryption est stockée dans une variable d’environnement système `ENV_DEXCOM_KEY`.
 - Suppression de la saisie interactive des identifiants Dexcom : le script s’arrête si les identifiants sont absents ou incomplets.
@@ -15,7 +16,7 @@ An English version of this text follows the French text.
 
 - `config.py` : centralise la configuration et les credentials
 - `utils.py` : fonctions utilitaires
-- `ClarityDownload.py` : script principal, utilise uniquement les variables/fonctions exposées par les modules
+- `GlycoDownload.py` : script principal, utilise uniquement les variables/fonctions exposées par les modules
 
 ## Description
 
@@ -26,8 +27,8 @@ Le projet est conçu pour être portable, configurable et robuste, avec une gest
 
 ## Release disponible
 
-Une version exécutable prête à l’emploi est disponible dans la section [Releases](https://github.com/<ton-utilisateur>/<ton-repo>/releases) du projet GitHub.
-Téléchargez le fichier `.exe` pour Windows ainsi que les fichiers nécessaires (voir instructions ci-dessous).
+Une archive ZIP prête à l’emploi est disponible dans la section [Releases](https://github.com/<ton-utilisateur>/<ton-repo>/releases) du projet GitHub.
+Téléchargez l’archive `.zip` pour Windows, puis décompressez-la pour obtenir tous les fichiers nécessaires (voir instructions ci-dessous).
 
 ---
 
@@ -43,6 +44,10 @@ Pour plus d’informations sur Dexcom Clarity : [https://clarity.dexcom.eu](ht
 ---
 
 ## Historique des versions
+
+### 0.2.1 — 29 août 2025
+
+- Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
 
 ### 0.2.0 — 28 août 2025
 
@@ -118,13 +123,13 @@ Pour plus d’informations sur Dexcom Clarity : [https://clarity.dexcom.eu](ht
 ### Procédure
 
 1. **Téléchargez l’archive ZIP du release** depuis la page Releases du projet.
-2. **Décompressez tout le contenu du ZIP** dans un dossier de votre choix (ex : `C:\GlycoReportDownloader`).
+2. **Décompressez tout le contenu du ZIP** dans un dossier de votre choix (ex : `C:\GlycoReport-Downloader`).
    - Le dossier doit contenir :
-     - `GlycoReportDownloader.exe`
+     - `GlycoReport-Downloader.exe`
      - `config_example.yaml`
      - `.env.example`
      - le dossier `chromedriver-win64`
-3. **Lancez `GlycoReportDownloader.exe`** en double-cliquant ou via le terminal.
+3. **Lancez `GlycoReport-Downloader.exe`** en double-cliquant ou via le terminal.
 4. **Lors du premier lancement**, si les fichiers `config.yaml` ou `.env` sont absents, l’application vous informera et lancera la configuration initiale.
 5. **Les fichiers de configuration seront créés dans le même dossier que l’exécutable.**
 
@@ -135,11 +140,11 @@ Pour plus d’informations sur Dexcom Clarity : [https://clarity.dexcom.eu](ht
 Pour générer l'exécutable à partir du code source, utilisez la commande suivante :
 
 ```sh
-pyinstaller --onefile --hidden-import=yaml --name "GlycoReportDownloader" ClarityDownload.py
+pyinstaller --onefile --hidden-import=yaml --name "GlycoReport-Downloader" GlycoDownload.py
 ```
 
 - L'option `--hidden-import=yaml` est nécessaire pour inclure le module PyYAML dans l'exécutable.
-- L'exécutable sera généré dans le dossier `dist/` sous le nom `GlycoReportDownloader.exe`.
+- L'exécutable sera généré dans le dossier `dist/` sous le nom `GlycoReport-Downloader.exe`.
 
 ---
 
@@ -168,13 +173,13 @@ Tous les chemins utilisés dans le projet (dossiers de téléchargement, profils
 **Exemple dans `config.yaml` :**
 
 ```yaml
-chrome_user_data_dir: C:\Users\????????\Downloads\GlycoReportDownloader\Profile
-chromedriver_log: C:\Users\????????\Downloads\GlycoReportDownloader\clarity_chromedriver.log
+chrome_user_data_dir: C:\Users\????????\Downloads\GlycoReport-Downloader\Profile
+chromedriver_log: C:\Users\????????\Downloads\GlycoReport-Downloader\clarity_chromedriver.log
 chromedriver_path: ./chromedriver-win64/chromedriver.exe
 dexcom_url: "https://clarity.dexcom.eu"
-download_dir: C:\Users\????????\Downloads\GlycoReportDownloader
+download_dir: C:\Users\????????\Downloads\GlycoReport-Downloader
 log_retention_days: 15
-output_dir: C:\Users\????????\Downloads\GlycoReportDownloader
+output_dir: C:\Users\????????\Downloads\GlycoReport-Downloader
 rapports: ["Aperçu"]
 ```
 

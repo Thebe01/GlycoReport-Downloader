@@ -5,14 +5,14 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-08-28
+#'''Last Modified On : 2025-08-29
 #'''CopyRights : Informatique Pierre Théberge IPT inc.
-#'''Description : Centralisation et sécurisation de la configuration du projet Dexcom Clarity Reports Downloader.
+#'''Description : Centralisation et sécurisation de la configuration du projet GlycoReport-Downloader.
 #'''              Lecture de tous les paramètres depuis config.yaml, normalisation systématique des chemins
 #'''              (via utils.py), gestion des erreurs et des droits d'accès, validation stricte des types,
 #'''              génération interactive de config.yaml, protection contre les vulnérabilités courantes
 #'''              (injection, mauvaise gestion des secrets, etc.).
-#'''Version : 0.2.0
+#'''Version : 0.2.1
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0     2025-08-05    Version initiale.
@@ -44,6 +44,7 @@
 #'''                        La fonction get_dexcom_credentials ne propose plus de saisie interactive si les identifiants sont absents.
 #'''                        Correction de la suppression du fichier temporaire .env.tmp même en cas d'erreur.
 #'''                        Sécurisation de l'affichage des identifiants (plus d'affichage du mot de passe en clair).
+#'''0.2.1     2025-08-29    Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
