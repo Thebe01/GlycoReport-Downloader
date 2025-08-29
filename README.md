@@ -1,12 +1,13 @@
 # Dexcom Clarity Reports Downloader
 
-## Version : 0.1.10 — 28 août 2025
+## Version : 0.2.0 — 28 août 2025
 
 ### Nouveautés
 
-- Vérification interactive de la clé `chromedriver_log` lors de la création de `config.yaml`.
-- Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
-- Correction de la robustesse de la configuration initiale.
+- Le fichier `.env` est désormais chiffré à l’écriture et déchiffré à la volée lors de la lecture.
+- La clé d’encryption est stockée dans une variable d’environnement système `ENV_DEXCOM_KEY`.
+- Suppression de la saisie interactive des identifiants Dexcom : le script s’arrête si les identifiants sont absents ou incomplets.
+- Sécurisation de la gestion des logs et des fichiers temporaires.
 
 ### Architecture
 
@@ -29,6 +30,13 @@ Téléchargez le fichier `.exe` pour Windows ainsi que les fichiers nécessaires
 ---
 
 ## Historique des versions
+
+### 0.2.0 — 28 août 2025
+
+- `.env` chiffré à l’écriture et déchiffré à la volée.
+- Clé d’encryption stockée dans une variable d’environnement système.
+- Suppression de la saisie interactive des identifiants Dexcom.
+- Sécurisation de la gestion des logs et des fichiers temporaires.
 
 ### 0.1.10 — 28 août 2025
 
@@ -125,27 +133,32 @@ Tous les chemins utilisés dans le projet (dossiers de téléchargement, profils
 **Exemple dans `config.yaml` :**
 
 ```yaml
-download_dir: "~/Downloads/Dexcom_download"
-output_dir: "C:/Users/thebe/OneDrive/Documents/Santé/Suivie glycémie et pression"
-chromedriver_log: "~/Downloads/Dexcom_download/clarity_chromedriver.log"
-chrome_user_data_dir: "~/Chrome_Clarity_Profile"
+chrome_user_data_dir: C:\Users\????????\Downloads\DexcomClarityDownloader\Profile
+chromedriver_log: C:\Users\????????\Downloads\DexcomClarityDownloader\clarity_chromedriver.log
+chromedriver_path: ./chromedriver-win64/chromedriver.exe
+dexcom_url: "https://clarity.dexcom.eu"
+download_dir: C:\Users\????????\Downloads\DexcomClarityDownloader
+log_retention_days: 15
+output_dir: C:\Users\????????\Downloads\DexcomClarityDownloader
+rapports: ["Aperçu"]
 ```
 
 ---
 
-## Sécurité et robustesse
+## Sécurité et gestion des secrets
 
-- Chargement sécurisé de la configuration (`yaml.safe_load`)
-- Validation stricte des types et de la présence des paramètres essentiels
-- Validation explicite de la présence des variables d’environnement nécessaires selon le mode d’authentification choisi (courriel/nom d’usager ou téléphone)
-- Vérification des droits d’accès au fichier de configuration
-- Jamais de log ou d’exposition de secrets
-- Jamais d’utilisation de `eval` ou `exec` sur des données de config
-- Gestion avancée des erreurs et logs détaillés (console, fichier, logs JS navigateur)
-- Capture d’écran automatique avec délai en cas d’erreur critique (fonction centralisée dans `utils.py`, uniquement en mode debug)
-- Log du contenu du dossier de téléchargement après chaque tentative
+- Le fichier `.env` est **chiffré** à l’aide d’une clé Fernet générée automatiquement lors de la première configuration.
+- La clé d’encryption est stockée dans une variable d’environnement système `ENV_DEXCOM_KEY` (créée via PowerShell).
+- Les identifiants Dexcom ne sont **jamais affichés ni stockés en clair**.
+- Si les identifiants sont absents ou incomplets dans le `.env`, le script s’arrête avec un message d’erreur explicite.
+- **Aucune saisie interactive** des identifiants n’est proposée pour des raisons de sécurité.
 
----
+## Procédure de première utilisation
+
+1. Lancez le script. Une clé d’encryption sera générée et une commande PowerShell s’affichera.
+2. Collez cette commande dans la fenêtre PowerShell qui s’ouvre, puis tapez `Exit`.
+3. Relancez le script pour poursuivre la configuration.
+4. Lors de la création du `.env`, les informations saisies seront chiffrées automatiquement.
 
 ## Tests unitaires
 
@@ -166,6 +179,18 @@ pip install pytest
 ```
 
 ---
+
+---
+
+## Création de l'exécutable Windows
+
+Pour générer l'exécutable à partir du code source, utilisez la commande suivante :
+
+```sh
+pyinstaller --onefile --hidden-import=yaml --name "DexcomClarityDownloader" [ClarityDownload.py](http://_vscodecontentref_/1)
+```
+
+**(http://_vscodecontentref_/2) pour que la procédure soit complète et fidèle à la réalité de ton projet.**
 
 ## Notes
 

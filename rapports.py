@@ -11,7 +11,7 @@
 #'''              Utilisation des chemins et paramètres centralisés, logging détaillé,
 #'''              robustesse pour la détection et gestion des fichiers téléchargés,
 #'''              logging des erreurs JS lors du déplacement/renommage.
-#'''Version : 0.1.10
+#'''Version : 0.2.0
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-08-05    Version initiale.
@@ -32,6 +32,9 @@
 #'''                      Correction de la robustesse de la configuration initiale.
 #'''0.1.10  2025-08-28    Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
 #'''                      Chaque suppression de log est loggée.
+#'''0.2.0   2025-08-28    Prise en charge du chiffrement/déchiffrement du fichier .env via config.py.
+#'''                      Les identifiants Dexcom sont lus uniquement via get_dexcom_credentials (plus de saisie interactive ici).
+#'''                      Sécurisation de la gestion des identifiants et des logs.
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 

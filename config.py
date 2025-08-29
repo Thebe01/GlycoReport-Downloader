@@ -12,7 +12,7 @@
 #'''              (via utils.py), gestion des erreurs et des droits d'accès, validation stricte des types,
 #'''              génération interactive de config.yaml, protection contre les vulnérabilités courantes
 #'''              (injection, mauvaise gestion des secrets, etc.).
-#'''Version : 0.1.10
+#'''Version : 0.2.0
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0     2025-08-05    Version initiale.
@@ -34,12 +34,16 @@
 #'''                        Copie minimale du profil Chrome lors de la configuration.
 #'''                        Ajout du paramètre log_retention_days (0 = conservation illimitée).
 #'''                        Nettoyage automatique des logs selon la rétention.
-#'''                        Messages utilisateurs colorés et validation renforcée. 
+#'''                        Messages utilisateurs colorés et validation renforcée.
 #'''0.1.9     2025-08-28    Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
 #'''                        Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
 #'''                        Correction de la robustesse de la configuration initiale.
 #'''0.1.10    2025-08-28    Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
 #'''                        Chaque suppression de log est loggée.
+#'''0.2.0     2025-08-28    Le fichier .env est désormais chiffré à l'écriture et déchiffré à la volée lors de la lecture.
+#'''                        La fonction get_dexcom_credentials ne propose plus de saisie interactive si les identifiants sont absents.
+#'''                        Correction de la suppression du fichier temporaire .env.tmp même en cas d'erreur.
+#'''                        Sécurisation de l'affichage des identifiants (plus d'affichage du mot de passe en clair).
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -54,6 +58,8 @@ from utils import normalize_path, pause_on_error
 import getpass
 import shutil
 import re
+from cryptography.fernet import Fernet
+import subprocess
 
 # Initialisation colorama pour la coloration des messages console
 init(autoreset=True)
@@ -215,10 +221,11 @@ def interactive_config():
     print_success(f"Le fichier '{CONFIG_FILE}' a été créé avec succès.")
     logger.info("Fichier config.yaml créé avec succès.")
 
-# --- Fonction de configuration interactive pour .env ---
+# --- Fonction de configuration interactive pour .env (avec chiffrement) ---
 def interactive_env():
     """
     Crée le fichier .env de façon interactive à partir de .env.example.
+    Chiffre le contenu avec la clé Fernet stockée dans ENV_DEXCOM_KEY.
     Ne logge jamais les valeurs, seulement les clés renseignées.
     """
     print_info("Configuration initiale : création interactive de '.env'.")
@@ -258,14 +265,116 @@ def interactive_env():
         env_vars[key] = value
         logger.info(f"L'utilisateur a fourni une valeur pour la clé '{key}'.")
 
-    # Écrire le fichier .env
-    with open(ENV_FILE, "w", encoding="utf-8") as f:
-        for k, v in env_vars.items():
-            f.write(f"{k}={v}\n")
-    print_success(f"Le fichier '{ENV_FILE}' a été créé avec succès.")
-    logger.info("Fichier .env créé avec succès.")
+    # Préparer le contenu à chiffrer
+    env_content = ""
+    for k, v in env_vars.items():
+        env_content += f"{k}={v}\n"
+
+    # Récupérer la clé Fernet depuis la variable d'environnement
+    env_key = os.environ.get("ENV_DEXCOM_KEY")
+    if not env_key:
+        print_error("La clé d'encryption ENV_DEXCOM_KEY est absente de l'environnement.")
+        logger.error("Impossible de chiffrer le fichier .env : clé absente.")
+        pause_on_error()
+        sys.exit(1)
+    try:
+        fernet = Fernet(env_key.encode())
+        encrypted_content = fernet.encrypt(env_content.encode())
+    except Exception as e:
+        print_error(f"Erreur lors du chiffrement du fichier .env : {e}")
+        logger.error(f"Erreur lors du chiffrement du fichier .env : {e}")
+        pause_on_error()
+        sys.exit(1)
+
+    # Écrire le contenu chiffré dans le fichier .env
+    with open(ENV_FILE, "wb") as f:
+        f.write(encrypted_content)
+    print_success(f"Le fichier '{ENV_FILE}' a été créé et chiffré avec succès.")
+    logger.info("Fichier .env créé et chiffré avec succès.")
+
+# --- Vérification/création de la clé d'encryption avant la création du .env ---
+def ensure_encryption_key():
+    """
+    Vérifie si la variable d'environnement ENV_DEXCOM_KEY existe et est une clé Fernet valide.
+    Logge la présence, l'absence, la validité ou la création de la variable.
+    Si la variable est absente ou invalide, génère une nouvelle clé Fernet, propose la commande PowerShell
+    pour la créer, puis ferme le script.
+    """
+    env_var_name = "ENV_DEXCOM_KEY"
+    key = os.environ.get(env_var_name)
+    if key:
+        try:
+            Fernet(key.encode())
+            logger.info("La variable d'environnement ENV_DEXCOM_KEY existe et est valide.")
+            return
+        except Exception:
+            print_error("La variable d'environnement ENV_DEXCOM_KEY existe mais n'est pas une clé Fernet valide.")
+            logger.warning("La variable d'environnement ENV_DEXCOM_KEY existe mais n'est pas une clé Fernet valide.")
+    else:
+        logger.info("La variable d'environnement ENV_DEXCOM_KEY est absente.")
+
+    # Génère une nouvelle clé si absente ou invalide
+    encryption_key = Fernet.generate_key().decode()
+    powershell_cmd = f'[Environment]::SetEnvironmentVariable("{env_var_name}", "{encryption_key}", "User")'
+    print_info("\nUne clé d'encryption a été générée pour protéger le fichier .env.")
+    print_info("Une fenêtre PowerShell va s'ouvrir.")
+    print_info("Collez la commande suivante dans la fenêtre PowerShell, puis appuyez sur Entrée :\n")
+    print(Fore.YELLOW + powershell_cmd)
+    print_info("\nEnsuite, tapez : Exit puis appuyez sur Entrée pour fermer la fenêtre PowerShell.")
+    print_info("L'application va se fermer. Veuillez la relancer pour continuer la configuration.\n")
+    logger.info("Création d'une nouvelle clé Fernet et demande à l'utilisateur de créer la variable d'environnement ENV_DEXCOM_KEY.")
+    subprocess.Popen("start powershell", shell=True)
+    sys.exit(0)
+
+# --- Gestion des credentials Dexcom ---
+def get_dexcom_credentials():
+    """
+    Déchiffre le fichier .env avec la clé Fernet, charge les identifiants Dexcom.
+    Retourne None, None, None, None si les informations sont absentes ou incomplètes.
+    """
+    env_key = os.environ.get("ENV_DEXCOM_KEY")
+    if not env_key:
+        print_error("La clé d'encryption ENV_DEXCOM_KEY est absente de l'environnement.")
+        logger.error("Impossible de déchiffrer le fichier .env : clé absente.")
+        pause_on_error()
+        sys.exit(1)
+    temp_env_path = ENV_FILE + ".tmp"
+    try:
+        with open(ENV_FILE, "rb") as f:
+            encrypted_content = f.read()
+        fernet = Fernet(env_key.encode())
+        decrypted_content = fernet.decrypt(encrypted_content).decode()
+        with open(temp_env_path, "w", encoding="utf-8") as f:
+            f.write(decrypted_content)
+        load_dotenv(temp_env_path)
+    except Exception as e:
+        print_error(f"Erreur lors du déchiffrement du fichier .env : {e}")
+        logger.error(f"Erreur lors du déchiffrement du fichier .env : {e}")
+        pause_on_error()
+        sys.exit(1)
+    finally:
+        if os.path.exists(temp_env_path):
+            try:
+                os.remove(temp_env_path)
+            except Exception:
+                pass
+
+    username = os.getenv("DEXCOM_USERNAME")
+    password = os.getenv("DEXCOM_PASSWORD")
+    country_code = os.getenv("DEXCOM_COUNTRY_CODE")
+    phone_number = os.getenv("DEXCOM_PHONE_NUMBER")
+    if username and password:
+        return username, password, country_code, phone_number
+    else:
+        logger.warning("Identifiants Dexcom absents ou incomplets dans le fichier .env.")
+        return None, None, None, None
 
 # --- Création interactive des fichiers de configuration si absents ---
+if not os.path.exists(ENV_FILE):
+    ensure_encryption_key()  # Vérifie ou crée la clé AVANT la config interactive
+    print_info("Le fichier '.env' est absent.")
+    interactive_env()
+
 if not os.path.exists(CONFIG_FILE):
     print_info("Le fichier 'config.yaml' est absent.")
     logger.info("Le fichier 'config.yaml' est absent. Lancement de la configuration initiale.")
@@ -275,10 +384,6 @@ if not os.path.exists(CONFIG_FILE):
         pause_on_error()
         sys.exit(1)
     interactive_config()
-
-if not os.path.exists(ENV_FILE):
-    print_info("Le fichier '.env' est absent.")
-    interactive_env()
 
 # --- Chargement de la configuration ---
 with open(CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -316,26 +421,3 @@ if not DATE_DEBUT:
     DATE_DEBUT = (date_fin_obj - timedelta(days=14 - 1)).strftime("%Y-%m-%d")
 
 NOW_STR = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-
-# --- Gestion des credentials Dexcom ---
-def get_dexcom_credentials():
-    """
-    Récupère les identifiants Dexcom depuis .env ou demande à l'utilisateur si absent.
-    """
-    load_dotenv()
-    username = os.getenv("DEXCOM_USERNAME")
-    password = os.getenv("DEXCOM_PASSWORD")
-    country_code = os.getenv("DEXCOM_COUNTRY_CODE")
-    phone_number = os.getenv("DEXCOM_PHONE_NUMBER")
-    if username and password:
-        return username, password, country_code, phone_number
-    print_info("Le fichier .env est absent ou incomplet. Veuillez saisir vos identifiants Dexcom (ils ne seront pas conservés).")
-    username = input("Adresse courriel ou numéro de téléphone Dexcom : ").strip()
-    password = getpass.getpass("Mot de passe Dexcom : ").strip()
-    if re.fullmatch(r"\+?[1-9]\d{9,14}", username):
-        country_code = input("Code pays (ex : +1) : ").strip()
-        phone_number = input("Numéro de téléphone (sans code pays) : ").strip()
-    else:
-        country_code = None
-        phone_number = None
-    return username, password, country_code, phone_number
