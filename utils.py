@@ -10,7 +10,7 @@
 #'''Description : Fonctions utilitaires pour le projet GlycoReport-Downloader.
 #'''              Connexion internet, overlay, renommage, détection du dernier fichier téléchargé,
 #'''              logging détaillé, robustesse accrue pour le renommage, logs JS navigateur.
-#'''Version : 0.2.1
+#'''Version : 0.2.2
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0	2025-08-05    Version initiale.
@@ -37,6 +37,7 @@
 #'''                      Les identifiants Dexcom sont lus uniquement via get_dexcom_credentials (plus de saisie interactive ici).
 #'''                      Sécurisation de la gestion des identifiants et des logs.
 #'''0.2.1   2025-08-29    Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
+#'''0.2.2   2025-08-29    Nettoyage des fonctions CLI, robustesse accrue du help, synchronisation des entêtes.
 #'''</summary>
 #'''////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -12,7 +12,7 @@
 #'''              (via utils.py), gestion des erreurs et des droits d'accès, validation stricte des types,
 #'''              génération interactive de config.yaml, protection contre les vulnérabilités courantes
 #'''              (injection, mauvaise gestion des secrets, etc.).
-#'''Version : 0.2.1
+#'''Version : 0.2.2
 #'''Modifications :
 #'''Version   Date          Description
 #'''0.0.0     2025-08-05    Version initiale.
@@ -45,6 +45,9 @@
 #'''                        Correction de la suppression du fichier temporaire .env.tmp même en cas d'erreur.
 #'''                        Sécurisation de l'affichage des identifiants (plus d'affichage du mot de passe en clair).
 #'''0.2.1     2025-08-29    Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
+#'''0.2.2     2025-08-29    Séparation stricte de la gestion des arguments CLI (retirée de ce module).
+#'''                        Désactivation de tout accès à la config lors de l'affichage du help.
+#'''                        Nettoyage des doublons de fonctions utilitaires CLI.
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -61,6 +64,8 @@ import shutil
 import re
 from cryptography.fernet import Fernet
 import subprocess
+import ast  # à mettre en haut du fichier si pas déjà importé
+import argparse
 
 # Initialisation colorama pour la coloration des messages console
 init(autoreset=True)
@@ -85,6 +90,18 @@ def print_success(msg):
 
 def print_error(msg):
     print(Fore.RED + msg)
+
+def parse_args():
+    """
+    Parse les arguments de la ligne de commande pour GlycoReport-Downloader.
+    Retourne l'objet Namespace argparse.
+    """
+
+
+def is_help_requested():
+    """
+    Détecte si l'utilisateur a demandé l'aide via -h, --help ou --h.
+    """
 
 # --- Fonction de validation de la configuration ---
 def validate_config(config):
@@ -179,7 +196,21 @@ def interactive_config():
         else:
             prompt = f"{Fore.CYAN}Entrez la valeur pour '{key}' [{value}] : {Style.RESET_ALL}"
         user_input = input(prompt).strip()
-        final_value = value if user_input == "" else type(value)(user_input)
+
+        if key == "rapports":
+            if user_input == "":
+                final_value = value
+            else:
+                try:
+                    final_value = ast.literal_eval(user_input)
+                    if not isinstance(final_value, list):
+                        raise ValueError
+                except Exception:
+                    print_error("Veuillez entrer une liste Python valide, par exemple : [\"Aperçu\", \"AGP\"]")
+                    logger.error("Saisie invalide pour 'rapports'.")
+                    continue
+        else:
+            final_value = value if user_input == "" else type(value)(user_input)
 
         # Vérification spécifique pour chromedriver_log
         if key == "chromedriver_log":
@@ -309,10 +340,10 @@ def ensure_encryption_key():
             logger.info("La variable d'environnement ENV_DEXCOM_KEY existe et est valide.")
             return
         except Exception:
-            print_error("La variable d'environnement ENV_DEXCOM_KEY existe mais n'est pas une clé Fernet valide.")
-            logger.warning("La variable d'environnement ENV_DEXCOM_KEY existe mais n'est pas une clé Fernet valide.")
+            print_error("La variable d'encryption ENV_DEXCOM_KEY existe mais n'est pas valide.")
+            logger.warning("La variable d'encryption ENV_DEXCOM_KEY existe mais n'est pas valide.")
     else:
-        logger.info("La variable d'environnement ENV_DEXCOM_KEY est absente.")
+        logger.info("La variable d'encryption ENV_DEXCOM_KEY est absente.")
 
     # Génère une nouvelle clé si absente ou invalide
     encryption_key = Fernet.generate_key().decode()
@@ -371,20 +402,23 @@ def get_dexcom_credentials():
         return None, None, None, None
 
 # --- Création interactive des fichiers de configuration si absents ---
-if not os.path.exists(ENV_FILE):
-    ensure_encryption_key()  # Vérifie ou crée la clé AVANT la config interactive
-    print_info("Le fichier '.env' est absent.")
-    interactive_env()
+# Si l'utilisateur demande l'aide, ne rien faire (pour éviter toute interaction ou création de fichier)
+HELP_ARGS = {'-h', '--help', '--h'}
+if not any(arg in sys.argv for arg in HELP_ARGS):
+    if not os.path.exists(ENV_FILE):
+        ensure_encryption_key()  # Vérifie ou crée la clé AVANT la config interactive
+        print_info("Le fichier '.env' est absent.")
+        interactive_env()
 
-if not os.path.exists(CONFIG_FILE):
-    print_info("Le fichier 'config.yaml' est absent.")
-    logger.info("Le fichier 'config.yaml' est absent. Lancement de la configuration initiale.")
-    if not os.path.exists(CONFIG_EXAMPLE_FILE):
-        print_error(f"Impossible de trouver '{CONFIG_EXAMPLE_FILE}' pour créer '{CONFIG_FILE}'. Arrêt du script.")
-        logger.error(f"Impossible de trouver '{CONFIG_EXAMPLE_FILE}' pour créer '{CONFIG_FILE}'.")
-        pause_on_error()
-        sys.exit(1)
-    interactive_config()
+    if not os.path.exists(CONFIG_FILE):
+        print_info("Le fichier 'config.yaml' est absent.")
+        logger.info("Le fichier 'config.yaml' est absent. Lancement de la configuration initiale.")
+        if not os.path.exists(CONFIG_EXAMPLE_FILE):
+            print_error(f"Impossible de trouver '{CONFIG_EXAMPLE_FILE}' pour créer '{CONFIG_FILE}'. Arrêt du script.")
+            logger.error(f"Impossible de trouver '{CONFIG_EXAMPLE_FILE}' pour créer '{CONFIG_FILE}'.")
+            pause_on_error()
+            sys.exit(1)
+        interactive_config()
 
 # --- Chargement de la configuration ---
 with open(CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -401,24 +435,25 @@ def get_param(name, required=True):
     return value
 
 # --- Extraction des paramètres principaux (exportés) ---
-DOWNLOAD_DIR = normalize_path(get_param("download_dir"))
-OUTPUT_DIR = normalize_path(get_param("output_dir"))
-CHROME_USER_DATA_DIR = normalize_path(get_param("chrome_user_data_dir"))
-CHROMEDRIVER_LOG = normalize_path(get_param("chromedriver_log"))
-CHROMEDRIVER_PATH = get_param("chromedriver_path", required=False) or "./chromedriver-win64/chromedriver.exe"
-DEXCOM_URL = get_param("dexcom_url")
-RAPPORTS = get_param("rapports")
-LOG_RETENTION_DAYS = int(config.get("log_retention_days", 15))
+if not is_help_requested():
+    DOWNLOAD_DIR = normalize_path(get_param("download_dir"))
+    OUTPUT_DIR = normalize_path(get_param("output_dir"))
+    CHROME_USER_DATA_DIR = normalize_path(get_param("chrome_user_data_dir"))
+    CHROMEDRIVER_LOG = normalize_path(get_param("chromedriver_log"))
+    CHROMEDRIVER_PATH = get_param("chromedriver_path", required=False) or "./chromedriver-win64/chromedriver.exe"
+    DEXCOM_URL = get_param("dexcom_url")
+    RAPPORTS = get_param("rapports")
+    LOG_RETENTION_DAYS = int(config.get("log_retention_days", 15))
 
-DATE_FIN = config.get("date_fin")
-if not DATE_FIN:
-    DATE_FIN = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-annee = DATE_FIN[:4]
-DIR_FINAL_BASE = OUTPUT_DIR.replace("AAAA", annee)
+    DATE_FIN = config.get("date_fin")
+    if not DATE_FIN:
+        DATE_FIN = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+    annee = DATE_FIN[:4]
+    DIR_FINAL_BASE = OUTPUT_DIR.replace("AAAA", annee)
 
-DATE_DEBUT = config.get("date_debut")
-if not DATE_DEBUT:
-    date_fin_obj = datetime.strptime(DATE_FIN, "%Y-%m-%d")
-    DATE_DEBUT = (date_fin_obj - timedelta(days=14 - 1)).strftime("%Y-%m-%d")
+    DATE_DEBUT = config.get("date_debut")
+    if not DATE_DEBUT:
+        date_fin_obj = datetime.strptime(DATE_FIN, "%Y-%m-%d")
+        DATE_DEBUT = (date_fin_obj - timedelta(days=14 - 1)).strftime("%Y-%m-%d")
 
-NOW_STR = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    NOW_STR = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')

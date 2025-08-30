@@ -1,14 +1,18 @@
-
 # GlycoReport Downloader
 
-[![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr) [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/) ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey) ![Version](https://img.shields.io/badge/version-0.2.1-blue)
+[![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr) [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/) ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey) ![Version](https://img.shields.io/badge/version-0.2.2-blue)
 
 An English version of this text follows the French text.
 
-## Version : 0.2.1 — 29 août 2025
+## Version : 0.2.2 — 29 août 2025
 
 ### Nouveautés
 
+- Séparation stricte de la gestion des arguments CLI (désormais dans GlycoDownload.py).
+- Affichage du help possible même sans fichiers de configuration.
+- Plus aucun accès ni création de fichiers de config/env lors de l’affichage du help.
+- Nettoyage des doublons de fonctions CLI.
+- Synchronisation et nettoyage des entêtes de tous les modules.
 - Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
 - Le fichier `.env` est désormais chiffré à l’écriture et déchiffré à la volée lors de la lecture.
 - La clé d’encryption est stockée dans une variable d’environnement système `ENV_DEXCOM_KEY`.
@@ -17,9 +21,12 @@ An English version of this text follows the French text.
 
 ### Architecture
 
-- `config.py` : centralise la configuration et les credentials
-- `utils.py` : fonctions utilitaires
-- `GlycoDownload.py` : script principal, utilise uniquement les variables/fonctions exposées par les modules
+- `GlycoDownload.py` : script principal, gestion CLI, help, logique métier.
+- `config.py` : centralise la configuration et les credentials.
+- `utils.py` : fonctions utilitaires.
+- `rapports.py` : traitement des rapports.
+- `tests/` : tests unitaires.
+- `version.py` : numéro de version du projet.
 
 ## Description
 
@@ -47,6 +54,14 @@ Pour plus d’informations sur Dexcom Clarity : [https://clarity.dexcom.eu](ht
 ---
 
 ## Historique des versions
+
+### 0.2.2 — 29 août 2025
+
+- Séparation stricte de la gestion des arguments CLI (désormais dans GlycoDownload.py).
+- Affichage du help possible même sans fichiers de configuration.
+- Plus aucun accès ni création de fichiers de config/env lors de l’affichage du help.
+- Nettoyage des doublons de fonctions CLI.
+- Synchronisation et nettoyage des entêtes de tous les modules.
 
 ### 0.2.1 — 29 août 2025
 
@@ -202,6 +217,39 @@ rapports: ["Aperçu"]
 2. Collez cette commande dans la fenêtre PowerShell qui s’ouvre, puis tapez `Exit`.
 3. Relancez le script pour poursuivre la configuration.
 4. Lors de la création du `.env`, les informations saisies seront chiffrées automatiquement.
+
+---
+
+## Paramètres de la ligne de commande
+
+- `-h`, `--help` : Afficher l’aide et quitter.
+- `--debug`, `-d` : Activer le mode debug.
+- `--days {7,14,30,90}` : Nombre de jours à inclure dans le rapport (7, 14, 30, 90).
+- `--date_debut DATE_DEBUT` : Date de début (AAAA-MM-JJ).
+- `--date_fin DATE_FIN` : Date de fin (AAAA-MM-JJ).
+- `--rapports RAPPORTS [RAPPORTS ...]` : Liste des rapports à traiter (ex : `"Aperçu" "AGP"`).
+
+**Remarque** :  
+L’aide s’affiche toujours proprement, même si les fichiers de configuration sont absents ou incomplets.
+
+---
+
+## Exemple d’aide
+
+```text
+usage:  [-h] [--debug] [--days {7,14,30,90}] [--date_debut DATE_DEBUT]
+                        [--date_fin DATE_FIN] [--rapports RAPPORTS [RAPPORTS ...]]
+
+options:
+  -h, --help            afficher cette aide et quitter
+  --debug, -d           Activer le mode debug
+  --days {7,14,30,90}   Nombre de jours à inclure dans le rapport (7, 14, 30, 90)
+  --date_debut DATE_DEBUT
+                        Date de début (AAAA-MM-JJ)
+  --date_fin DATE_FIN   Date de fin (AAAA-MM-JJ)
+  --rapports RAPPORTS [RAPPORTS ...]
+                        Liste des rapports à traiter
+```
 
 ---
 

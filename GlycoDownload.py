@@ -1,6 +1,6 @@
 #'''////////////////////////////////////////////////////////////////////////////////////////////////////
 #'''<summary>
-#'''FileName: ClarityDownload.py
+#'''FileName: GlycoDownload.py
 #'''FileType: py Source file
 #'''
 #'''Author : Pierre Théberge
@@ -10,10 +10,10 @@
 #'''Description : Script principal pour l'automatisation du téléchargement des rapports Dexcom Clarity.
 #'''              Centralisation de la configuration, gestion CLI avancée, robustesse accrue,
 #'''              logs détaillés (console, fichier, JS), gestion des exceptions et de la déconnexion.
-#'''Version : 0.2.1
+#'''Version : 0.2.2
 #'''Modifications :
 #'''Version   Date          Description
-#'''0.0.0	2025-03-03    Version initiale.
+#'''0.0.0   2025-03-03    Version initiale.
 #'''0.0.1	2025-03-07    Connectoin à Clarity et authentification
 #''                       Utilisation de Chrome au lieu de Edge
 #'''0.0.2   2025-03-20    Cliquer sur le sélecteur de dates et choisir la période
@@ -43,14 +43,14 @@
 #'''0.0.13  2025-07-13    Ajout du traitement pour le rapport Comparer
 #'''0.0.14  2025-07-18    Ajout de l'exportation des données en format csv
 #'''0.0.15  2025-07-21    Terminer la fonction traitement_export_csv
-#'''                        Ajout des sous-rapport pour le rapport Comparer
-#'''                        Les sous-rapports Superposition et Quotidien de comparer ne fonctioone pas.
-#'''                            Ils produisent le même PDF que Tendances.
-#'''                        Ajouter la déconnexion du compte avant de fermer le navigateur
+#'''                      Ajout des sous-rapport pour le rapport Comparer
+#'''                      Les sous-rapports Superposition et Quotidien de comparer ne fonctioone pas.
+#'''                          Ils produisent le même PDF que Tendances.
+#'''                      Ajouter la déconnexion du compte avant de fermer le navigateur
 #'''0.0.16  2025-07-25    Correction pour la déconnexion du compte
-#'''                        Correction pour le bouton Fermer de la fenêtre modale Exporter
+#'''                      Correction pour le bouton Fermer de la fenêtre modale Exporter
 #'''0.0.17  2025-07-25    Correction pour le déconnexion du compte. Éliminer la référence au nom d'utilisateur.
-#'''                        Ajout de TODO pour la correction du code.
+#'''                      Ajout de TODO pour la correction du code.
 #'''0.0.18  2025-07-30    Gestion des exceptions plus précise. Évite les except: nus. Précise toujours le type d’exception
 #'''                      Factorisation des attentes sur les overlays/loaders. Crée une fonction utilitaire
 #'''                          pour attendre la disparition des overlays, et utilise-la partout où c’est pertinent.
@@ -91,6 +91,11 @@
 #'''                      Les identifiants Dexcom sont lus uniquement via get_dexcom_credentials (plus de saisie interactive ici).
 #'''                      Sécurisation de la gestion des identifiants et des logs.
 #'''0.2.1   2025-08-29    Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
+#'''0.2.2   2025-08-29    Séparation stricte de la gestion des arguments CLI (désormais dans GlycoDownload.py).
+#'''                      Affichage du help possible même sans fichiers de configuration.
+#'''                      Plus aucun accès ni création de fichiers de config/env lors de l’affichage du help.
+#'''                      Nettoyage des doublons de fonctions CLI.
+#'''                      Synchronisation et nettoyage des entêtes de tous les modules.
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -100,10 +105,10 @@
 # TODO 14 Rendre l'application indépendante de la langue de l'utilisateur.
 # TODO 15 Améliorer le help
 
-import os
 import sys
-import logging
 import argparse
+import os
+import logging
 import time
 from datetime import datetime, timedelta
 from selenium import webdriver
@@ -117,12 +122,6 @@ import re
 from getpass import getpass
 import traceback
 
-from config import (
-    DOWNLOAD_DIR, DIR_FINAL_BASE, CHROME_USER_DATA_DIR, DEXCOM_URL,
-    CHROMEDRIVER_LOG, RAPPORTS, NOW_STR, DATE_DEBUT, DATE_FIN,
-    LOG_RETENTION_DAYS,
-    get_dexcom_credentials
-)
 from utils import (
     check_internet,
     attendre_disparition_overlay,
@@ -137,140 +136,24 @@ from utils import (
 from rapports import selection_rapport
 from version import __version__
 
-# Ajout du parser d'arguments
-parser = argparse.ArgumentParser(description="Téléchargement des rapports Dexcom Clarity")
-parser.add_argument('--debug', '-d', action='store_true', help='Activer le mode debug')
-parser.add_argument('--days', type=int, choices=[7, 14, 30, 90], help='Nombre de jours à inclure dans le rapport (7, 14, 30, 90)')
-parser.add_argument('--date_debut', type=str, help='Date de début (AAAA-MM-JJ)')
-parser.add_argument('--date_fin', type=str, help='Date de fin (AAAA-MM-JJ)')
-parser.add_argument('--rapports', nargs='+', help='Liste des rapports à traiter')
-args = parser.parse_args()
+# --- Gestion des arguments CLI et du help ---
+def parse_args():
+    import argparse
+    parser = argparse.ArgumentParser(description='Téléchargement des rapports Dexcom Clarity', add_help=False, usage="%(prog)s [-h] [--debug] [--days {7,14,30,90}] [--date_debut DATE_DEBUT] [--date_fin DATE_FIN] [--rapports RAPPORTS [RAPPORTS ...]]")
+    parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help='afficher cette aide et quitter')
+    parser.add_argument('--debug', '-d', action='store_true', help='Activer le mode debug')
+    parser.add_argument('--days', type=int, choices=[7, 14, 30, 90], help='Nombre de jours à inclure dans le rapport (7, 14, 30, 90)')
+    parser.add_argument('--date_debut', type=str, help='Date de début (AAAA-MM-JJ)')
+    parser.add_argument('--date_fin', type=str, help='Date de fin (AAAA-MM-JJ)')
+    parser.add_argument('--rapports', nargs='+', metavar='RAPPORTS', help='Liste des rapports à traiter')
+    return parser, parser.parse_args()
 
-# Gestion intelligente des dates
-if args.days:
-    date_fin = datetime.today() - timedelta(days=1)  # Date de fin = hier
-    date_debut = date_fin - timedelta(days=args.days - 1)
-    DATE_DEBUT = date_debut.strftime("%Y-%m-%d")
-    DATE_FIN = date_fin.strftime("%Y-%m-%d")
-else:
-    DATE_DEBUT = args.date_debut or DATE_DEBUT  # DATE_DEBUT de config.py
-    DATE_FIN = args.date_fin or DATE_FIN        # DATE_FIN de config.py
+def is_help_requested():
+    import sys
+    help_args = {'-h', '--help', '--h'}
+    return any(arg in sys.argv for arg in help_args)
 
-RAPPORTS = args.rapports or RAPPORTS  # RAPPORTS de config.py
-
-DEBUG_MODE = args.debug
-
-# Configuration du logger pour fichier et console
-logger = logging.getLogger('dexcom_clarity')
-logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
-formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
-
-# Handler fichier
-log_dir = os.path.dirname(CHROMEDRIVER_LOG)
-os.makedirs(log_dir, exist_ok=True)
-file_handler = logging.FileHandler(os.path.join(log_dir, f"clarity_download_{NOW_STR}.log"))
-file_handler.setLevel(logging.DEBUG if args.debug else logging.INFO)
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
-
-# Handler console (optionnel, mais recommandé)
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(formatter)
-logger.addHandler(console_handler)
-
-# Ménage des logs (après activation du logging)
-from config import CHROMEDRIVER_LOG, LOG_RETENTION_DAYS
-from utils import cleanup_logs
-import os
-
-log_dir = os.path.dirname(CHROMEDRIVER_LOG) or "."
-cleanup_logs(log_dir, LOG_RETENTION_DAYS, logger)
-
-# Options Chrome
-options = Options()
-options.add_argument(f"--user-data-dir={CHROME_USER_DATA_DIR}")
-options.add_argument("--disable-gpu")
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-dev-shm-usage")
-options.add_argument("--disable-background-networking")
-options.add_argument("--disable-client-side-phishing-detection")
-options.add_argument("--disable-default-apps")
-options.add_argument("--disable-hang-monitor")
-options.add_argument("--disable-popup-blocking")
-options.add_argument("--disable-sync")
-options.add_argument("--disable-translate")
-options.add_argument("--disable-features=PaintHolding")
-
-prefs = {
-    "download.default_directory": DOWNLOAD_DIR,  # Dossier de téléchargement
-    "download.prompt_for_download": False,       # Pas de popup de confirmation
-    "directory_upgrade": True,                   # Mise à jour du dossier si déjà ouvert
-    "safebrowsing.enabled": True                 # Désactive l'avertissement de sécurité
-}
-options.add_experimental_option("prefs", prefs)
-
-# Service ChromeDriver
-chromedriver_service_args = ["--verbose"] if args.debug else []
-service = ChromeService(
-    log_path=CHROMEDRIVER_LOG,
-    service_args=chromedriver_service_args
-)
-
-# Initialisation du WebDriver
-driver = webdriver.Chrome(service=service, options=options)
-
-# URL de la page Dexcom Clarity
-url = DEXCOM_URL
-
-
-def get_user_menu_button(driver, logger, args, timeout=10):
-    """
-    Retourne le bouton du menu utilisateur pour la déconnexion.
-
-    Args:
-        driver (WebDriver): Instance du navigateur Selenium.
-        logger (Logger): Logger à utiliser pour les messages d'erreur.
-        args (Namespace): Arguments de la ligne de commande (pour debug).
-        timeout (int): Durée maximale d'attente en secondes.
-
-    Returns:
-        WebElement: Bouton du menu utilisateur.
-
-    Raises:
-        Exception: Si le bouton n'est pas trouvé ou cliquable.
-    """
-    try:
-        xpath = ("(//button[.//span[@class='clarity-menu__primarylabel'] "
-                "and .//span[@class='clarity-menu__trigger-item-down-arrow']])[last()]")
-        return WebDriverWait(driver, timeout).until(
-            EC.element_to_be_clickable((By.XPATH, xpath))
-        )
-    except Exception as e:
-        logger.error(f"Bouton utilisateur introuvable : {e}", exc_info=args.debug)
-        raise
-
-
-def click_home_user_button(driver, logger, timeout=10):
-    """
-    Clique sur le bouton 'Dexcom Clarity for Home Users' sur la page d'accueil.
-    Arrête le script en cas d'échec.
-    """
-    try:
-        xpath = "//input[@type='submit' and contains(@class, 'landing-page--button')]"
-        button = WebDriverWait(driver, timeout).until(
-            EC.element_to_be_clickable((By.XPATH, xpath))
-        )
-        driver.execute_script("arguments[0].scrollIntoView(true);", button)
-        button.click()
-        logger.debug("Le bouton 'Dexcom Clarity for Home Users' a été cliqué avec succès!")
-    except Exception as e:
-        time.sleep(2)
-        capture_screenshot(driver, logger, "home_user_button_error", log_dir, NOW_STR)
-        logger.error(f"Une erreur s'est produite au moment de cliquer sur le bouton 'Dexcom Clarity for Home Users' : {e}")
-        logger.info("Arrêt du script suite à une erreur sur le bouton d'accueil.")
-        sys.exit(1)
-
-
+# --- Fonctions utilitaires refactorisées ---
 def saisir_identifiants(driver, logger, log_dir, NOW_STR):
     """
     Saisit les identifiants de connexion (nom d'utilisateur et mot de passe) sur la page Dexcom Clarity.
@@ -431,28 +314,105 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
     except Exception as e:
         logger.error(f"Erreur lors de la saisie des identifiants ou de la connexion : {e}")
         raise SystemExit(1)
-
-
-def pause_on_error():
+def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=10):
     """
-    Affiche un message et attend que l'utilisateur appuie sur Entrée avant de fermer la fenêtre du terminal.
+    Clique sur le bouton 'Dexcom Clarity for Home Users' sur la page d'accueil.
+    Arrête le script en cas d'échec.
     """
-    if sys.stdin.isatty():
-        input("\nAppuyez sur Entrée pour fermer...")
+    try:
+        xpath = "//input[@type='submit' and contains(@class, 'landing-page--button')]"
+        button = WebDriverWait(driver, timeout).until(
+            EC.element_to_be_clickable((By.XPATH, xpath))
+        )
+        driver.execute_script("arguments[0].scrollIntoView(true);", button)
+        button.click()
+        logger.debug("Le bouton 'Dexcom Clarity for Home Users' a été cliqué avec succès!")
+    except Exception as e:
+        time.sleep(2)
+        capture_screenshot(driver, logger, "home_user_button_error", log_dir, NOW_STR)
+        logger.error(f"Une erreur s'est produite au moment de cliquer sur le bouton 'Dexcom Clarity for Home Users' : {e}")
+
+def setup_logger(debug, log_dir, now_str):
+    logger = logging.getLogger('dexcom_clarity')
+    logger.setLevel(logging.DEBUG if debug else logging.INFO)
+    formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
+    file_handler = logging.FileHandler(os.path.join(log_dir, f"clarity_download_{now_str}.log"))
+    file_handler.setLevel(logging.DEBUG if debug else logging.INFO)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    return logger
 
 
-def main():
+def main(args, logger, config):
     """
-    Fonction principale du script Dexcom Clarity Reports Downloader.
+    Fonction principale du script GlycoReport-Downloader (refactorisée).
     Gère la connexion, la sélection des dates, le téléchargement des rapports et la déconnexion.
     """
     try:
-        # Affichage de la version de Python si le mode debug est activé
-        if args.debug:
+        # Préparation des variables locales
+        debug_mode = args.debug
+        rapports = args.rapports or config['RAPPORTS']
+        download_dir = config['DOWNLOAD_DIR']
+        dir_final_base = config['DIR_FINAL_BASE']
+        dexcom_url = config['DEXCOM_URL']
+        chromedriver_log = config['CHROMEDRIVER_LOG']
+        now_str = config['NOW_STR']
+        log_dir = os.path.dirname(chromedriver_log) or "."
+
+        # Gestion intelligente des dates
+        if args.days:
+            date_fin = datetime.today() - timedelta(days=1)
+            date_debut = date_fin - timedelta(days=args.days - 1)
+            date_debut_str = date_debut.strftime("%Y-%m-%d")
+            date_fin_str = date_fin.strftime("%Y-%m-%d")
+        else:
+            date_debut_str = args.date_debut or config['DATE_DEBUT']
+            date_fin_str = args.date_fin or config['DATE_FIN']
+
+        # Ménage des logs (après activation du logging)
+        from utils import cleanup_logs
+        cleanup_logs(log_dir, config['LOG_RETENTION_DAYS'], logger)
+
+        # Options Chrome
+        options = Options()
+        options.add_argument(f"--user-data-dir={config['CHROME_USER_DATA_DIR']}")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-background-networking")
+        options.add_argument("--disable-client-side-phishing-detection")
+        options.add_argument("--disable-default-apps")
+        options.add_argument("--disable-hang-monitor")
+        options.add_argument("--disable-popup-blocking")
+        options.add_argument("--disable-sync")
+        options.add_argument("--disable-translate")
+        options.add_argument("--disable-features=PaintHolding")
+        prefs = {
+            "download.default_directory": download_dir,
+            "download.prompt_for_download": False,
+            "directory_upgrade": True,
+            "safebrowsing.enabled": True
+        }
+        options.add_experimental_option("prefs", prefs)
+
+        # Service ChromeDriver
+        chromedriver_service_args = ["--verbose"] if debug_mode else []
+        service = ChromeService(
+            log_path=chromedriver_log,
+            service_args=chromedriver_service_args
+        )
+
+        # Initialisation du WebDriver
+        driver = webdriver.Chrome(service=service, options=options)
+
+        if debug_mode:
             logger.debug(f"Version de Python : {sys.version}")
         logger.info(f"Version de l'application exécutée : {__version__}")
-        logger.info(f"Rapports à traiter : {RAPPORTS}")
-        logger.info(f"Dossier de téléchargement : {DOWNLOAD_DIR}")
+        logger.info(f"Rapports à traiter : {rapports}")
+        logger.info(f"Dossier de téléchargement : {download_dir}")
 
         # Vérification de la connexion internet avant d'ouvrir la page
         if not check_internet():
@@ -461,41 +421,30 @@ def main():
             sys.exit(0)
 
         # Ouvrir la page de connexion
-        driver.get(DEXCOM_URL)
+        driver.get(dexcom_url)
+        wait = WebDriverWait(driver=driver, timeout=60)
 
-        # Attendez que la page soit entièrement chargée
-        wait = WebDriverWait(driver=driver, timeout=60)  # Augmenté à 60s
-
-        # Vérification de la connexion internet avant de cliquer sur le bouton d'accueil
         if not check_internet():
             logger.error("Perte de connexion internet détectée avant de cliquer sur le bouton d'accueil.")
             logger.info("Arrêt du script suite à une perte de connexion internet.")
             sys.exit(1)
 
-        # Recherchez et cliquez sur le bouton "Dexcom Clarity for Home Users"
         try:
-            click_home_user_button(driver, logger)
-            time.sleep(5)  # Augmenté à 5s
+            click_home_user_button(driver, logger, log_dir, now_str)
+            time.sleep(5)
             logger.debug("Le bouton 'Dexcom Clarity for Home Users' a été cliqué avec succès!")
         except Exception as e:
-            time.sleep(2)
-            capture_screenshot(driver, logger, "home_user_button_error", log_dir, NOW_STR)
-            logger.error(f"Une erreur s'est produite au moment de cliquer sur le bouton 'Dexcom Clarity for Home Users' : {e}")
-            logger.info("Arrêt du script suite à une erreur sur le bouton d'accueil.")
-            sys.exit(1)
+            # La gestion d'erreur est déjà dans click_home_user_button
+            raise
 
-        # Recherchez les champs de saisie pour le courriel/nom d'utilisateur ou le numéro de téléphone
         try:
-            saisir_identifiants(driver, logger, log_dir, NOW_STR)
-
+            saisir_identifiants(driver, logger, log_dir, now_str)
         except Exception as e:
             logger.error(f"Erreur lors de la saisie des identifiants ou de la connexion : {e}")
             sys.exit(1)
 
-        # Attendez que la page soit entièrement chargée
-        time.sleep(10)  # Augmenté à 10s
+        time.sleep(10)
 
-        # Recherchez les champs de saisie des dates et entrez les nouvelles dates
         try:
             if not check_internet():
                 logger.error("Perte de connexion internet détectée avant la sélection des dates.")
@@ -506,9 +455,9 @@ def main():
             )
             date_picker_button.click()
             logger.debug("Bouton du sélecteur de dates trouvé et cliqué.")
-            time.sleep(5)  # Augmenté à 5s
+            time.sleep(5)
 
-            if DATE_DEBUT is None or DATE_FIN is None:
+            if date_debut_str is None or date_fin_str is None:
                 raise ValueError("Les variables DATE_DEBUT et DATE_FIN ne peuvent pas être None. Elles doivent être définies.")
 
             date_debut_input = WebDriverWait(driver, 60).until(
@@ -519,18 +468,18 @@ def main():
             )
             date_debut_input.clear()
             date_fin_input.clear()
-            date_debut_input.send_keys(DATE_DEBUT)
-            date_fin_input.send_keys(DATE_FIN)
+            date_debut_input.send_keys(date_debut_str)
+            date_fin_input.send_keys(date_fin_str)
 
             ok_button = WebDriverWait(driver, 60).until(
                 EC.element_to_be_clickable((By.XPATH, "//button[@data-test-date-range-picker__ok-button]"))
             )
             ok_button.click()
             logger.debug("Bouton OK du sélecteur de dates cliqué.")
-            time.sleep(5)  # Augmenté à 5s
+            time.sleep(5)
 
-            logger.info(f"Date de début: {DATE_DEBUT}")
-            logger.info(f"Date de fin: {DATE_FIN}")
+            logger.info(f"Date de début: {date_debut_str}")
+            logger.info(f"Date de fin: {date_fin_str}")
             logger.info("Les dates ont été saisies avec succès !")
 
         except Exception as e:
@@ -538,34 +487,28 @@ def main():
                 logger.error("Perte de connexion internet détectée lors de la saisie des dates.")
             logger.error(f"Une erreur s'est produite lors de la saisie des dates : {e}")
 
-        # Téléchargez les rapports
         selection_rapport(
-            RAPPORTS,
+            rapports,
             driver,
             logger,
-            DOWNLOAD_DIR,
-            DIR_FINAL_BASE,
-            DATE_FIN,
+            download_dir,
+            dir_final_base,
+            date_fin_str,
             args
         )
 
-        # Attendez un peu pour vous assurer que le téléchargement est terminé
         time.sleep(60)
 
-        # (optionnel) Derniers diagnostics AVANT de quitter
-        if args.debug:
+        if debug_mode:
             boutons = driver.find_elements(By.XPATH, "//button")
             logger.info(f"{len(boutons)} boutons trouvés sur la page")
             for b in boutons:
                 logger.debug(b.get_attribute("outerHTML"))
 
-        # Déconnexion avant de fermer le navigateur
         try:
-
             user_menu_button = get_user_menu_button(driver, logger, args)
             user_menu_button.click()
             time.sleep(2)
-            # Cliquer sur le lien Déconnexion (structure <a> fournie)
             logout_link = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'cui-link__logout') and contains(., 'Déconnexion')]"))
             )
@@ -573,7 +516,7 @@ def main():
             logger.info("Déconnexion effectuée avec succès.")
             time.sleep(3)
         except Exception as e:
-            logger.warning(f"Impossible de se déconnecter proprement : {e}", exc_info=args.debug)
+            logger.warning(f"Impossible de se déconnecter proprement : {e}", exc_info=debug_mode)
 
     except Exception as e:
         logger.error(f"Erreur inattendue dans le script principal : {e}")
@@ -581,23 +524,64 @@ def main():
         pause_on_error()
         sys.exit(1)
     finally:
-        # Fermez le navigateur dans tous les cas
         try:
             driver.quit()
         except Exception as e:
-            logger.warning(f"Erreur lors de la fermeture du navigateur : {e}", exc_info=args.debug)
+            logger.warning(f"Erreur lors de la fermeture du navigateur : {e}", exc_info=debug_mode)
 
-        import glob
-        files = glob.glob(os.path.join(DOWNLOAD_DIR, '*'))
+        files = glob.glob(os.path.join(download_dir, '*'))
         logger.info(f"Fichiers présents dans le dossier de téléchargement après la demande : {files}")
 
-if __name__ == "__main__":
+def get_user_menu_button(driver, logger, args, timeout=10):
+    """
+    Retourne le bouton du menu utilisateur pour la déconnexion.
+
+    Args:
+        driver (WebDriver): Instance du navigateur Selenium.
+        logger (Logger): Logger à utiliser pour les messages d'erreur.
+        args (Namespace): Arguments de la ligne de commande (pour debug).
+        timeout (int): Durée maximale d'attente en secondes.
+
+    Returns:
+        WebElement: Bouton du menu utilisateur.
+
+    Raises:
+        Exception: Si le bouton n'est pas trouvé ou cliquable.
+    """
+    xpath = ("(//button[.//span[@class='clarity-menu__primarylabel'] "
+            "and .//span[@class='clarity-menu__trigger-item-down-arrow']])[last()]")
     try:
-        main()
+        return WebDriverWait(driver, timeout).until(
+            EC.element_to_be_clickable((By.XPATH, xpath))
+        )
     except Exception as e:
-        print(f"Erreur critique lors de l'exécution du script : {e}")
-        import traceback
-        traceback.print_exc()
-        pause_on_error()
-        sys.exit(1)
+        logger.error(f"Bouton utilisateur introuvable : {e}", exc_info=args.debug)
+        raise
+
+def pause_on_error():
+    """
+    Affiche un message et attend que l'utilisateur appuie sur Entrée avant de fermer la fenêtre du terminal.
+    """
+    if sys.stdin.isatty():
+        input("\nAppuyez sur Entrée pour fermer...")
+
+# --- Point d'entrée du script ---
+if __name__ == "__main__":
+    # Gestion de l'aide AVANT tout import/config
+    parser, args = parse_args()
+    if is_help_requested():
+        print("\n", end="")
+        parser, _ = parse_args()
+        parser.print_help()
+        import sys
+        sys.exit(0)
+    # Import de la config et des variables seulement après la gestion du help
+    from config import (
+        DOWNLOAD_DIR, DIR_FINAL_BASE, CHROME_USER_DATA_DIR, DEXCOM_URL,
+        CHROMEDRIVER_LOG, RAPPORTS, NOW_STR, DATE_DEBUT, DATE_FIN,
+        LOG_RETENTION_DAYS, get_dexcom_credentials
+    )
+    import config
+    logger = setup_logger(args.debug, os.path.dirname(config.CHROMEDRIVER_LOG) or ".", config.NOW_STR)
+    main(args, logger, config.__dict__)
 
