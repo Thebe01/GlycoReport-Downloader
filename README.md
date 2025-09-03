@@ -95,6 +95,9 @@ An English version of this text follows the French text.
 GlycoReport Downloader est un outil automatisé permettant de télécharger, organiser et archiver les rapports Dexcom Clarity pour un suivi glycémique efficace.
 Le projet est conçu pour être portable, configurable et robuste, avec une gestion avancée des logs, des erreurs et de la sécurité.
 
+LA VERSION ACTUELLE NE SUPPORTE QUE LE FRANÇAIS.
+Une prochaine version devrait être indépendante de la langue et afficher des messages en français pour les usagers francophones et en anglais pour les autres.  
+
 ---
 
 ## Release disponible
@@ -318,3 +321,325 @@ Vous êtes autorisé à partager et adapter ce projet à des fins **non commerci
 **Toute utilisation commerciale est strictement interdite sans autorisation écrite préalable.**
 
 Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
+
+---
+
+# GlycoReport Downloader (English)
+
+## Version: 0.2.2 — August 29, 2025
+
+### What's New
+
+- Strict separation of CLI argument handling (now in GlycoDownload.py).
+- Help can be displayed even if configuration files are missing.
+- No access or creation of config/env files when displaying help.
+- Cleanup of duplicate CLI functions.
+- Synchronization and cleanup of all module headers.
+- Project renamed (formerly Dexcom Clarity Reports Downloader).
+- The `.env` file is now encrypted on write and decrypted on the fly when read.
+- The encryption key is stored in the system environment variable `ENV_DEXCOM_KEY`.
+- Removal of interactive Dexcom credential entry: the script stops if credentials are missing or incomplete.
+- Secured management of logs and temporary files.
+
+---
+
+## Version History
+
+### 0.2.2 — August 29, 2025
+
+- Strict separation of CLI argument handling (now in GlycoDownload.py).
+- Help can be displayed even if configuration files are missing.
+- No access or creation of config/env files when displaying help.
+- Cleanup of duplicate CLI functions.
+- Synchronization and cleanup of all module headers.
+
+### 0.2.1 — August 29, 2025
+
+- Project renamed (formerly Dexcom Clarity Reports Downloader).
+
+### 0.2.0 — August 28, 2025
+
+- `.env` encrypted on write and decrypted on the fly.
+- Encryption key stored in a system environment variable.
+- Removal of interactive Dexcom credential entry.
+- Secured management of logs and temporary files.
+
+### 0.1.10 — August 28, 2025
+
+- Log cleanup now only occurs after logging is enabled.
+- Each log deletion is logged.
+
+### 0.1.9 — August 28, 2025
+
+- Interactive verification of the `chromedriver_log` key when creating `config.yaml`.
+- Prevents entering a folder for the log, requires a file path.
+- Improved robustness of initial configuration.
+
+### 0.1.8 — August 27, 2025
+
+- Advanced interactive configuration for `config.yaml` and `.env` on first launch.
+- Minimal Chrome profile copy during initial setup.
+- Added `log_retention_days` parameter (0 = unlimited retention).
+- Automatic log cleanup according to retention period.
+- Colored user messages and enhanced parameter validation.
+
+### 0.1.7 — August 25, 2025
+
+- Automatic creation of `config.yaml` from `config_example.yaml` if missing.
+- Interactive credential management if `.env` is missing (prompt, not saved).
+- Clarification on the presence of provided `chromedriver-win64`.
+
+### 0.1.6 — August 22, 2025
+
+- Version synchronization in all modules (up-to-date version comment blocks).
+- Added `version.py` module (single source of truth for version).
+- Log the running version at startup.
+- YAML path corrections (systematic use of `/`).
+- Dexcom interface compatibility August 2025 ("Not now" page handling).
+- Robust username entry and advanced error handling.
+- Screenshots only in debug mode.
+- Detailed logs for each critical step.
+- Robust selectors for login fields.
+
+---
+
+## Architecture
+
+- `GlycoDownload.py`: main script, CLI handling, help, business logic.
+- `config.py`: centralizes configuration and credentials.
+- `utils.py`: utility functions.
+- `rapports.py`: report processing.
+- `tests/`: unit tests.
+- `version.py`: project version number.
+
+## Description
+
+GlycoReport Downloader is an automated tool to download, organize, and archive Dexcom Clarity reports for effective glycemic monitoring.
+The project is designed to be portable, configurable, and robust, with advanced management of logs, errors, and security.
+
+**THE CURRENT VERSION SUPPORTS ONLY FRENCH.**
+A future version will be language-independent and display messages in French for French-speaking users and in English for others.
+
+---
+
+## Release Available
+
+A ready-to-use ZIP archive is available in the [Releases](https://github.com/<your-user>/<your-repo>/releases) section of the GitHub project.
+Download the `.zip` for Windows, then extract it to get all necessary files (see instructions below).
+
+---
+
+## Limitations and Warnings
+
+- This project is neither affiliated with, supported by, nor endorsed by Dexcom, Inc.
+- Use this tool at your own risk: comply with Dexcom Clarity's terms of service.
+- Never share your encryption key or credentials.
+- Any commercial use is strictly prohibited without prior written authorization.
+
+For more information about Dexcom Clarity: [https://clarity.dexcom.eu](https://clarity.dexcom.eu)
+
+---
+
+## Main Features
+
+- Automated download of all selected Dexcom Clarity reports
+- Centralized configuration via a `config.yaml` file (not versioned)
+- Example configuration provided in `config_example.yaml`
+- Support for portable paths (`~` and `/`), automatically normalized
+- Support for authentication by email/username **or** by phone number (with country code and number, via environment variables)
+- Advanced log management (application, browser, JS logs)
+- Automatic screenshot with delay in case of critical error (for diagnostics, debug mode only)
+- Selection of period, reports, and debug mode via command line
+- Increased robustness in error, download, and configuration management
+- Windows compatible (and adaptable to Linux/Mac)
+- Unit tests covering all utility functions
+
+---
+
+## Installation and Usage
+
+### Prerequisites
+
+- Windows 10 or higher
+- [Python 3.10+](https://www.python.org/downloads/) (for script mode)
+- Google Chrome installed
+- Administrator rights to set the system environment variable
+
+### Procedure
+
+1. **Download the ZIP archive from the release** page.
+2. **Extract all ZIP contents** into a folder of your choice (e.g., `C:\GlycoReport-Downloader`).
+   - The folder should contain:
+     - `GlycoReport-Downloader.exe`
+     - `config_example.yaml`
+     - `.env.example`
+     - the `chromedriver-win64` folder
+3. **Run `GlycoReport-Downloader.exe`** by double-clicking or via the terminal.
+4. **On first launch**, if `config.yaml` or `.env` files are missing, the application will inform you and start the initial configuration.
+5. **Configuration files will be created in the same folder as the executable.**
+
+---
+
+## Building the Windows Executable
+
+To generate the executable from the source code, use:
+
+```sh
+pyinstaller --onefile --hidden-import=yaml --name "GlycoReport-Downloader" GlycoDownload.py
+```
+
+- The `--hidden-import=yaml` option is necessary to include the PyYAML module in the executable.
+- The executable will be generated in the `dist/` folder as `GlycoReport-Downloader.exe`.
+
+---
+
+## Creating the Distribution Package
+
+An automated PowerShell script (`DIST-GlycoReport-Downloader.ps1`) is provided to facilitate the creation of a ready-to-distribute package.
+This script:
+
+- Generates the Windows executable with PyInstaller
+- Checks for the presence of all necessary distribution files
+- Copies `.env.example`, `config_example.yaml`, `LICENSE.txt`, `README.md`, and the `chromedriver-win64` folder to the `dist` folder
+- Creates a ZIP archive (`GlycoReport-Downloader.zip`) at the project root from the contents of the `dist` folder
+
+### Usage
+
+Open a PowerShell terminal at the project root and run:
+
+```powershell
+[DIST-GlycoReport-Downloader.ps1]
+```
+
+---
+
+## Default Date Handling
+
+- **By default**, if no date is provided as an argument or in the `config.yaml` file, the period used will be the **last 14 days up to yesterday**.
+- You can override this behavior:
+  - by passing `--days 7`, `--days 14`, `--days 30`, or `--days 90` as an argument,
+  - or by explicitly setting `date_debut` and `date_fin` in `config.yaml`,
+  - or by passing `--date_debut` and `--date_fin` as arguments.
+
+Example:
+
+- If today is 2025-08-18 and you pass no parameters, the period will be from 2025-08-04 to 2025-08-17.
+
+---
+
+## Systematic Path Normalization
+
+All paths used in the project (download folders, profiles, logs, etc.) are **automatically normalized**:
+
+- Paths starting with `~` are converted to absolute user paths.
+- `/` is used everywhere to ensure portability (Windows, Mac, Linux).
+- Normalization is done in the code via `os.path.expanduser` and `os.path.abspath` (centralized function in `utils.py`).
+
+**Example in `config.yaml`**:
+
+```yaml
+chrome_user_data_dir: C:\Users\????????\Downloads\GlycoReport-Downloader\Profile
+chromedriver_log: C:\Users\????????\Downloads\GlycoReport-Downloader\clarity_chromedriver.log
+chromedriver_path: ./chromedriver-win64/chromedriver.exe
+dexcom_url: "https://clarity.dexcom.eu"
+download_dir: C:\Users\????????\Downloads\GlycoReport-Downloader
+log_retention_days: 15
+output_dir: C:\Users\????????\Downloads\GlycoReport-Downloader
+rapports: ["Aperçu"]
+```
+
+---
+
+## Security and Secret Management
+
+- The `.env` file is **encrypted** using a Fernet key automatically generated during the first configuration.
+- The encryption key is stored in the system environment variable `ENV_DEXCOM_KEY` (created via PowerShell).
+- Dexcom credentials are **never displayed or stored in plaintext**.
+- If credentials are missing or incomplete in the `.env`, the script stops with an explicit error message.
+- **No interactive input** of credentials is offered for security reasons.
+
+## First-Time Use Procedure
+
+1. Run the script. An encryption key will be generated, and a PowerShell command to copy/paste will be displayed.
+2. Paste this command into the PowerShell window that opens, then type `Exit`.
+3. Rerun the script to continue the configuration.
+4. When creating the `.env`, the entered information will be automatically encrypted.
+
+---
+
+## Command Line Parameters
+
+- `-h`, `--help`: Display help and exit.
+- `--debug`, `-d`: Enable debug mode.
+- `--days {7,14,30,90}`: Number of days to include in the report (7, 14, 30, 90).
+- `--date_debut DATE_DEBUT`: Start date (YYYY-MM-DD).
+- `--date_fin DATE_FIN`: End date (YYYY-MM-DD).
+- `--rapports RAPPORTS [RAPPORTS ...]`: List of reports to process (e.g., `"Aperçu" "AGP"`).
+
+**Note**:
+Help is always displayed neatly, even if configuration files are missing or incomplete.
+
+---
+
+## Example Help Output
+
+```text
+usage:  [-h] [--debug] [--days {7,14,30,90}] [--date_debut DATE_DEBUT]
+                        [--date_fin DATE_FIN] [--rapports RAPPORTS [RAPPORTS ...]]
+
+options:
+  -h, --help            afficher cette aide et quitter
+  --debug, -d           Activer le mode debug
+  --days {7,14,30,90}   Nombre de jours à inclure dans le rapport (7, 14, 30, 90)
+  --date_debut DATE_DEBUT
+                        Date de début (AAAA-MM-JJ)
+  --date_fin DATE_FIN   Date de fin (AAAA-MM-JJ)
+  --rapports RAPPORTS [RAPPORTS ...]
+                        Liste des rapports à traiter
+```
+
+---
+
+## Unit Tests
+
+To run all unit tests on the project's utility functions, use the following command:
+
+```sh
+pytest -v --log-cli-level=INFO tests/test_utils.py
+```
+
+- `-v` displays the details of each executed test (verbose mode).
+- `--log-cli-level=INFO` displays the log messages generated by the tested functions.
+- This command verifies the robustness and portability of all utility functions in the project.
+
+Make sure pytest is installed:
+
+```sh
+pip install pytest
+```
+
+---
+
+## Notes
+
+- Reports are organized by year in the destination folder.
+- In case of connection loss, the script handles errors and resumes where it left off.
+- For any questions, suggestions, or bug reports, please open an issue on GitHub.
+- Please do not redistribute this code without authorization. This project is provided as is, without warranty.
+
+---
+
+## Author
+
+Pierre Théberge
+
+---
+
+## License
+
+This project is distributed under the [Creative Commons Attribution - Non-Commercial Use 4.0 International (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr).
+
+You are allowed to share and adapt this project for **non-commercial** purposes, provided that you credit the author.  
+**Any commercial use is strictly prohibited without prior written authorization.**
+
+For the full text of the license, see the [LICENSE.txt](LICENSE.txt) file.
