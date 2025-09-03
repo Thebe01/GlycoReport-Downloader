@@ -19,38 +19,6 @@ An English version of this text follows the French text.
 - Suppression de la saisie interactive des identifiants Dexcom : le script s’arrête si les identifiants sont absents ou incomplets.
 - Sécurisation de la gestion des logs et des fichiers temporaires.
 
-### Architecture
-
-- `GlycoDownload.py` : script principal, gestion CLI, help, logique métier.
-- `config.py` : centralise la configuration et les credentials.
-- `utils.py` : fonctions utilitaires.
-- `rapports.py` : traitement des rapports.
-- `tests/` : tests unitaires.
-- `version.py` : numéro de version du projet.
-
-## Description
-
-GlycoReport Downloader est un outil automatisé permettant de télécharger, organiser et archiver les rapports Dexcom Clarity pour un suivi glycémique efficace.
-Le projet est conçu pour être portable, configurable et robuste, avec une gestion avancée des logs, des erreurs et de la sécurité.
-
----
-
-## Release disponible
-
-Une archive ZIP prête à l’emploi est disponible dans la section [Releases](https://github.com/<ton-utilisateur>/<ton-repo>/releases) du projet GitHub.
-Téléchargez l’archive `.zip` pour Windows, puis décompressez-la pour obtenir tous les fichiers nécessaires (voir instructions ci-dessous).
-
----
-
-## Limitations et avertissements
-
-- Ce projet n’est ni affilié, ni supporté, ni approuvé par Dexcom, Inc.
-- L’utilisation de cet outil se fait à vos risques et périls : respectez les conditions d’utilisation du service Dexcom Clarity.
-- Ne partagez jamais votre clé d’encryption ou vos identifiants.
-- Toute utilisation commerciale est strictement interdite sans autorisation écrite préalable.
-
-Pour plus d’informations sur Dexcom Clarity : [https://clarity.dexcom.eu](https://clarity.dexcom.eu)
-
 ---
 
 ## Historique des versions
@@ -113,6 +81,40 @@ Pour plus d’informations sur Dexcom Clarity : [https://clarity.dexcom.eu](ht
 
 ---
 
+## Architecture
+
+- `GlycoDownload.py` : script principal, gestion CLI, help, logique métier.
+- `config.py` : centralise la configuration et les credentials.
+- `utils.py` : fonctions utilitaires.
+- `rapports.py` : traitement des rapports.
+- `tests/` : tests unitaires.
+- `version.py` : numéro de version du projet.
+
+## Description
+
+GlycoReport Downloader est un outil automatisé permettant de télécharger, organiser et archiver les rapports Dexcom Clarity pour un suivi glycémique efficace.
+Le projet est conçu pour être portable, configurable et robuste, avec une gestion avancée des logs, des erreurs et de la sécurité.
+
+---
+
+## Release disponible
+
+Une archive ZIP prête à l’emploi est disponible dans la section [Releases](https://github.com/<ton-utilisateur>/<ton-repo>/releases) du projet GitHub.
+Téléchargez l’archive `.zip` pour Windows, puis décompressez-la pour obtenir tous les fichiers nécessaires (voir instructions ci-dessous).
+
+---
+
+## Limitations et avertissements
+
+- Ce projet n’est ni affilié, ni supporté, ni approuvé par Dexcom, Inc.
+- L’utilisation de cet outil se fait à vos risques et périls : respectez les conditions d’utilisation du service Dexcom Clarity.
+- Ne partagez jamais votre clé d’encryption ou vos identifiants.
+- Toute utilisation commerciale est strictement interdite sans autorisation écrite préalable.
+
+Pour plus d’informations sur Dexcom Clarity : [https://clarity.dexcom.eu](https://clarity.dexcom.eu)
+
+---
+
 ## Fonctionnalités principales
 
 - Téléchargement automatisé de tous les rapports Dexcom Clarity sélectionnés
@@ -163,6 +165,26 @@ pyinstaller --onefile --hidden-import=yaml --name "GlycoReport-Downloader" Glyco
 
 - L'option `--hidden-import=yaml` est nécessaire pour inclure le module PyYAML dans l'exécutable.
 - L'exécutable sera généré dans le dossier `dist/` sous le nom `GlycoReport-Downloader.exe`.
+
+---
+
+## Création du package de distribution
+
+Un script PowerShell automatisé (`DIST-GlycoReport-Downloader.ps1`) est fourni pour faciliter la création d’un package prêt à distribuer.
+Ce script :
+
+- Génère l’exécutable Windows avec PyInstaller
+- Vérifie la présence de tous les fichiers nécessaires à la distribution
+- Copie les fichiers `.env.example`, `config_example.yaml`, `LICENSE.txt`, `README.md` et le dossier `chromedriver-win64` dans le dossier `dist`
+- Crée une archive ZIP (`GlycoReport-Downloader.zip`) à la racine du projet à partir du contenu du dossier `dist`
+
+### Utilisation
+
+Ouvre un terminal PowerShell à la racine du projet et exécute :
+
+```powershell
+[DIST-GlycoReport-Downloader.ps1]
+```
 
 ---
 
@@ -229,7 +251,7 @@ rapports: ["Aperçu"]
 - `--date_fin DATE_FIN` : Date de fin (AAAA-MM-JJ).
 - `--rapports RAPPORTS [RAPPORTS ...]` : Liste des rapports à traiter (ex : `"Aperçu" "AGP"`).
 
-**Remarque** :  
+**Remarque** :
 L’aide s’affiche toujours proprement, même si les fichiers de configuration sont absents ou incomplets.
 
 ---
@@ -284,8 +306,7 @@ pip install pytest
 
 ## Auteur
 
-Pierre Théberge  
-Informatique Pierre Théberge IPT inc.
+Pierre Théberge
 
 ---
 

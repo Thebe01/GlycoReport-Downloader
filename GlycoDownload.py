@@ -6,7 +6,7 @@
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
 #'''Last Modified On : 2025-08-29
-#'''CopyRights : Informatique Pierre Théberge IPT inc.
+#'''CopyRights : Pierre Théberge
 #'''Description : Script principal pour l'automatisation du téléchargement des rapports Dexcom Clarity.
 #'''              Centralisation de la configuration, gestion CLI avancée, robustesse accrue,
 #'''              logs détaillés (console, fichier, JS), gestion des exceptions et de la déconnexion.

@@ -6,7 +6,7 @@
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
 #'''Last Modified On : 2025-08-29
-#'''CopyRights : Informatique Pierre Théberge IPT inc.
+#'''CopyRights : Pierre Théberge
 #'''Description : Traitement et gestion des rapports Dexcom Clarity.
 #'''              Utilisation des chemins et paramètres centralisés, logging détaillé,
 #'''              robustesse pour la détection et gestion des fichiers téléchargés,

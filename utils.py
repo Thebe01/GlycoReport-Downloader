@@ -6,7 +6,7 @@
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
 #'''Last Modified On : 2025-08-29
-#'''CopyRights : Informatique Pierre Théberge IPT inc
+#'''CopyRights : Pierre Théberge
 #'''Description : Fonctions utilitaires pour le projet GlycoReport-Downloader.
 #'''              Connexion internet, overlay, renommage, détection du dernier fichier téléchargé,
 #'''              logging détaillé, robustesse accrue pour le renommage, logs JS navigateur.
