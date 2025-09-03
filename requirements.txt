@@ -1,0 +1,7 @@
+selenium
+pyyaml
+python-dotenv
+colorama
+pytest
+cryptography
+pyinstaller
