@@ -5,49 +5,57 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-08-29
+#'''Last Modified On : 2025-10-16
 #'''CopyRights : Pierre Théberge
 #'''Description : Centralisation et sécurisation de la configuration du projet GlycoReport-Downloader.
 #'''              Lecture de tous les paramètres depuis config.yaml, normalisation systématique des chemins
 #'''              (via utils.py), gestion des erreurs et des droits d'accès, validation stricte des types,
 #'''              génération interactive de config.yaml, protection contre les vulnérabilités courantes
 #'''              (injection, mauvaise gestion des secrets, etc.).
-#'''Version : 0.2.2
+#'''Version : 0.2.4
 #'''Modifications :
-#'''Version   Date          Description
-#'''0.0.0     2025-08-05    Version initiale.
-#'''0.1.0     2025-08-06    Ajout de la gestion des paramètres de configuration via un fichier YAML.
-#'''0.1.1     2025-08-13    Normalisation systématique des chemins, gestion d'erreur sur les paramètres,
-#'''                        conservation de tous les paramètres importants (chemins, URL, rapports, etc.).
-#'''0.1.2     2025-08-13    Ajout de la fonction normalize_path, harmonisation de l’utilisation des chemins.
-#'''0.1.3     2025-08-18    Suppression de la duplication de normalize_path, import depuis utils.py,
-#'''                        harmonisation de l’utilisation des chemins dans tout le projet.
-#'''0.1.4     2025-08-18    Sécurisation du chargement de la configuration : utilisation stricte de yaml.safe_load,
-#'''                        validation des types et de la présence des paramètres, vérification des droits d'accès,
-#'''                        protection contre l'exposition de secrets et contre l'injection de code.
-#'''0.1.5     2025-08-22    Ajout du paramètre chromedriver_path configurable via config.yaml,
-#'''                        valeur par défaut : "./chromedriver.exe" (même dossier que l'exécutable).
-#'''0.1.6     2025-08-22    Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
-#'''0.1.7     2025-08-25    Création automatique de config.yaml à partir de config_example.yaml si absent.
-#'''                        Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
-#'''0.1.8     2025-08-27    Configuration interactive avancée pour config.yaml et .env.
-#'''                        Copie minimale du profil Chrome lors de la configuration.
-#'''                        Ajout du paramètre log_retention_days (0 = conservation illimitée).
-#'''                        Nettoyage automatique des logs selon la rétention.
-#'''                        Messages utilisateurs colorés et validation renforcée.
-#'''0.1.9     2025-08-28    Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
-#'''                        Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
-#'''                        Correction de la robustesse de la configuration initiale.
-#'''0.1.10    2025-08-28    Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
-#'''                        Chaque suppression de log est loggée.
-#'''0.2.0     2025-08-28    Le fichier .env est désormais chiffré à l'écriture et déchiffré à la volée lors de la lecture.
-#'''                        La fonction get_dexcom_credentials ne propose plus de saisie interactive si les identifiants sont absents.
-#'''                        Correction de la suppression du fichier temporaire .env.tmp même en cas d'erreur.
-#'''                        Sécurisation de l'affichage des identifiants (plus d'affichage du mot de passe en clair).
-#'''0.2.1     2025-08-29    Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
-#'''0.2.2     2025-08-29    Séparation stricte de la gestion des arguments CLI (retirée de ce module).
-#'''                        Désactivation de tout accès à la config lors de l'affichage du help.
-#'''                        Nettoyage des doublons de fonctions utilitaires CLI.
+#'''Version   Date         Billet   Description
+#'''0.0.0     2025-08-05            Version initiale.
+#'''0.1.0     2025-08-06            Ajout de la gestion des paramètres de configuration via un fichier YAML.
+#'''0.1.1     2025-08-13            Normalisation systématique des chemins, gestion d'erreur sur les paramètres,
+#'''                                    conservation de tous les paramètres importants (chemins, URL, rapports, etc.).
+#'''0.1.2     2025-08-13            Ajout de la fonction normalize_path, harmonisation de l’utilisation des chemins.
+#'''0.1.3     2025-08-18            Suppression de la duplication de normalize_path, import depuis utils.py,
+#'''                                    harmonisation de l’utilisation des chemins dans tout le projet.
+#'''0.1.4     2025-08-18            Sécurisation du chargement de la configuration : utilisation stricte de yaml.safe_load,
+#'''                                    validation des types et de la présence des paramètres, vérification des droits d'accès,
+#'''                                    protection contre l'exposition de secrets et contre l'injection de code.
+#'''0.1.5     2025-08-22            Ajout du paramètre chromedriver_path configurable via config.yaml,
+#'''                                    valeur par défaut : "./chromedriver.exe" (même dossier que l'exécutable).
+#'''0.1.6     2025-08-22            Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
+#'''0.1.7     2025-08-25            Création automatique de config.yaml à partir de config_example.yaml si absent.
+#'''                                    Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
+#'''0.1.8     2025-08-27            Configuration interactive avancée pour config.yaml et .env.
+#'''                                    Copie minimale du profil Chrome lors de la configuration.
+#'''                                    Ajout du paramètre log_retention_days (0 = conservation illimitée).
+#'''                                    Nettoyage automatique des logs selon la rétention.
+#'''                                    Messages utilisateurs colorés et validation renforcée.
+#'''0.1.9     2025-08-28            Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
+#'''                                    Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
+#'''                                    Correction de la robustesse de la configuration initiale.
+#'''0.1.10    2025-08-28            Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
+#'''                                    Chaque suppression de log est loggée.
+#'''0.2.0     2025-08-28            Le fichier .env est désormais chiffré à l'écriture et déchiffré à la volée lors de la lecture.
+#'''                                    La fonction get_dexcom_credentials ne propose plus de saisie interactive si les identifiants sont absents.
+#'''                                    Correction de la suppression du fichier temporaire .env.tmp même en cas d'erreur.
+#'''                                    Sécurisation de l'affichage des identifiants (plus d'affichage du mot de passe en clair).
+#'''0.2.1     2025-08-29            Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
+#'''0.2.2     2025-08-29            Séparation stricte de la gestion des arguments CLI (retirée de ce module).
+#'''                                    Désactivation de tout accès à la config lors de l'affichage du help.
+#'''                                    Nettoyage des doublons de fonctions utilitaires CLI.
+#'''0.2.3   2025-10-14    ES-12     Remplacement d'une version spécifique de chromedriver par chromedriver manager qui charge toujours la
+#'''                      ES-12         la version courante.
+#'''                      ES-12     Modification du xpath pour le rapport statistiques horaires pour corriger l'erreur d'accès.
+#'''                      ES-12         Modifié pour rendre indépendante de la langue de l'utilisateur.
+#'''                      ES-12     Ajout de la colonne Billet dans le bloc des modifications.
+#'''0.2.4   2025-10-16    ES-12     Suppression du paramètre obsolète chromedriver_path (non utilisé depuis v0.2.3).
+#'''                      ES-12     Nettoyage du code : CHROMEDRIVER_PATH retiré de la configuration.
+#'''                      ES-12     Simplification : le répertoire chromedriver-win64/ n'est plus nécessaire.
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -440,7 +448,6 @@ if not is_help_requested():
     OUTPUT_DIR = normalize_path(get_param("output_dir"))
     CHROME_USER_DATA_DIR = normalize_path(get_param("chrome_user_data_dir"))
     CHROMEDRIVER_LOG = normalize_path(get_param("chromedriver_log"))
-    CHROMEDRIVER_PATH = get_param("chromedriver_path", required=False) or "./chromedriver-win64/chromedriver.exe"
     DEXCOM_URL = get_param("dexcom_url")
     RAPPORTS = get_param("rapports")
     LOG_RETENTION_DAYS = int(config.get("log_retention_days", 15))

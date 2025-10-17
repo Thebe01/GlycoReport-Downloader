@@ -5,37 +5,45 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-08-29
+#'''Last Modified On : 2025-10-16
 #'''CopyRights : Pierre Théberge
 #'''Description : Traitement et gestion des rapports Dexcom Clarity.
 #'''              Utilisation des chemins et paramètres centralisés, logging détaillé,
 #'''              robustesse pour la détection et gestion des fichiers téléchargés,
 #'''              logging des erreurs JS lors du déplacement/renommage.
-#'''Version : 0.2.1
+#'''Version : 0.2.4
 #'''Modifications :
-#'''Version   Date          Description
-#'''0.0.0	2025-08-05    Version initiale.
-#'''0.0.1   2025-08-13    Logging JS navigateur, robustesse accrue sur la gestion des fichiers,
-#'''                      utilisation systématique des chemins centralisés.
-#'''0.0.2   2025-08-13    Utilisation de capture_screenshot centralisée (utils.py) avec délai,
-#'''                      ajout de logs pour le diagnostic.
-#'''0.1.6   2025-08-22    Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
-#'''0.1.7   2025-08-25    Création automatique de config.yaml à partir de config_example.yaml si absent.
-#'''                      Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
-#'''0.1.8   2025-08-27    Configuration interactive avancée pour config.yaml et .env.
-#'''                      Copie minimale du profil Chrome lors de la configuration.
-#'''                      Ajout du paramètre log_retention_days (0 = conservation illimitée).
-#'''                      Nettoyage automatique des logs selon la rétention.
-#'''                      Messages utilisateurs colorés et validation renforcée.
-#'''0.1.9   2025-08-28    Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
-#'''                      Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
-#'''                      Correction de la robustesse de la configuration initiale.
-#'''0.1.10  2025-08-28    Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
-#'''                      Chaque suppression de log est loggée.
-#'''0.2.0   2025-08-28    Prise en charge du chiffrement/déchiffrement du fichier .env via config.py.
-#'''                      Les identifiants Dexcom sont lus uniquement via get_dexcom_credentials (plus de saisie interactive ici).
-#'''                      Sécurisation de la gestion des identifiants et des logs.
-#'''0.2.1   2025-08-29    Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
+#'''Version   Date        Billet    Description
+#'''0.0.0	2025-08-05              Version initiale.
+#'''0.0.1   2025-08-13              Logging JS navigateur, robustesse accrue sur la gestion des fichiers,
+#'''                                    utilisation systématique des chemins centralisés.
+#'''0.0.2   2025-08-13              Utilisation de capture_screenshot centralisée (utils.py) avec délai,
+#'''                                    ajout de logs pour le diagnostic.
+#'''0.1.6   2025-08-22              Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
+#'''0.1.7   2025-08-25              Création automatique de config.yaml à partir de config_example.yaml si absent.
+#'''                                    Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
+#'''0.1.8   2025-08-27              Configuration interactive avancée pour config.yaml et .env.
+#'''                                    Copie minimale du profil Chrome lors de la configuration.
+#'''                                    Ajout du paramètre log_retention_days (0 = conservation illimitée).
+#'''                                    Nettoyage automatique des logs selon la rétention.
+#'''                                    Messages utilisateurs colorés et validation renforcée.
+#'''0.1.9   2025-08-28              Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
+#'''                                    Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
+#'''                                Correction de la robustesse de la configuration initiale.
+#'''0.1.10  2025-08-28              Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
+#'''                                    Chaque suppression de log est loggée.
+#'''0.2.0   2025-08-28              Prise en charge du chiffrement/déchiffrement du fichier .env via config.py.
+#'''                                    Les identifiants Dexcom sont lus uniquement via get_dexcom_credentials (plus de saisie interactive ici).
+#'''                                    Sécurisation de la gestion des identifiants et des logs.
+#'''0.2.1   2025-08-29              Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
+#'''0.2.3   2025-10-14    ES-12     Remplacement d'une version spécifique de chromedriver par chromedriver manager qui charge toujours la
+#'''                      ES-12         la version courante.
+#'''                      ES-12     Modification du xpath pour le rapport statistiques horaires pour corriger l'erreur d'accès.
+#'''                      ES-12         Modifié pour rendre indépendante de la langue de l'utilisateur.
+#'''                      ES-12     Ajout de la colonne Billet dans le bloc des modifications.
+#'''0.2.4   2025-10-16    ES-12     Suppression du paramètre obsolète chromedriver_path (non utilisé depuis v0.2.3).
+#'''                      ES-12     Nettoyage du code : CHROMEDRIVER_PATH retiré de la configuration.
+#'''                      ES-12     Simplification : le répertoire chromedriver-win64/ n'est plus nécessaire.
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -401,7 +409,7 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
         # Par heure
         rapport_statistiques = "Statistiques-Horaires"
         logger.info(f"Traitement du rapport {rapport_statistiques}")
-        xpath_horaire = "//a[contains(@href, '/statistics/hourly') and normalize-space()='Par heure']"
+        xpath_horaire = "//a[contains(@class, 'ember-view') and contains(@href, '/statistics/hourly')]"
         horaire_link = WebDriverWait(driver, 30).until(
             EC.element_to_be_clickable((By.XPATH, xpath_horaire))
         )
