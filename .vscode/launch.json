@@ -11,10 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": [
-                "--debug",
-                "--date_debut", "2025-08-18",
-                "--date_fin", "2025-08-31",
-                "--rapports", "Aperçu"
+                "--debug"
             ]
         }
     ]

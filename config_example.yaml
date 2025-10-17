@@ -1,13 +1,16 @@
 #/////////////////////////////////////////////////////////////////////////////////////////////////////
 # Fichier : config_example.yaml
-# Description : Exemple de configuration pour Dexcom Clarity Reports Downloader.
+# Description : Exemple de configuration pour GlycoReport Downloader.
 #               Sert de modèle pour générer un config.yaml utilisateur.
 #               Tous les paramètres nécessaires sont présents avec des valeurs portables (~ et /).
 # Auteur : Pierre Théberge
-# Dernière modification : 2025-08-22
+# Dernière modification : 2025-10-16
 #   - 2025-08-18 : Adaptation à la nouvelle interface Dexcom (champ usernameLogin, bouton 'Pas maintenant').
 #   - 2025-08-22 : Ajout du paramètre chromedriver_path pour configurer le chemin du binaire ChromeDriver.
-#                  Par défaut "./chromedriver-win64/chromedriver.exe" (même dossier que l'exécutable).
+#   - 2025-10-14 : Modification de la période de rétention des logs de 15 à 30 jours.
+#   - 2025-10-14 : (v0.2.3) Migration vers ChromeDriverManager pour gestion automatique de ChromeDriver.
+#   - 2025-10-16 : (v0.2.4) Suppression du paramètre obsolète chromedriver_path (non utilisé depuis v0.2.3).
+#                  ChromeDriverManager télécharge automatiquement la version appropriée.
 #/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # config_example.yaml
@@ -16,6 +19,15 @@ output_dir: "~/Downloads/Dexcom_download"
 dexcom_url: "https://clarity.dexcom.eu"
 chromedriver_log: "~/Downloads/Dexcom_download/clarity_chromedriver.log"
 chrome_user_data_dir: "~/Chrome_Clarity_Profile"
-chromedriver_path: "./chromedriver-win64/chromedriver.exe"
-rapports: ["Aperçu", "Modèles", "Superposition", "Quotidien", "Comparer", "Statistiques", "AGP", "Export"]
-log_retention_days: 15
+rapports:
+  [
+    "Aperçu",
+    "Modèles",
+    "Superposition",
+    "Quotidien",
+    "Comparer",
+    "Statistiques",
+    "AGP",
+    "Export",
+  ]
+log_retention_days: 30
