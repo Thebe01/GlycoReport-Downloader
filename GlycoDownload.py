@@ -96,7 +96,7 @@
 #'''                      -             Plus aucun accès ni création de fichiers de config/env lors de l’affichage du help.
 #'''                      -             Nettoyage des doublons de fonctions CLI.
 #'''                      -             Synchronisation et nettoyage des entêtes de tous les modules.
-#'''0.2.3   2025-10-14    ES-12     Remplacement d'une version spécifique de chromedriver par chromedriver manager qui charge toujours la
+#'''0.2.3   2025-10-14    ES-12     Remplacement d'une version spécifique de chromedriver par ChromeDriverManager qui charge toujours la
 #'''                      ES-12         la version courante.
 #'''                      ES-12     Modification du xpath pour le rapport statistiques horaires pour corriger l'erreur d'accès.
 #'''                      ES-12         Modifié pour rendre indépendante de la langue de l'utilisateur.
