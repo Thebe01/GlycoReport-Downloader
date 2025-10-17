@@ -48,7 +48,7 @@
 #'''0.2.2     2025-08-29            Séparation stricte de la gestion des arguments CLI (retirée de ce module).
 #'''                                    Désactivation de tout accès à la config lors de l'affichage du help.
 #'''                                    Nettoyage des doublons de fonctions utilitaires CLI.
-#'''0.2.3   2025-10-14    ES-12     Remplacement d'une version spécifique de chromedriver par chromedriver manager qui charge toujours la
+#'''0.2.3   2025-10-14    ES-12     Remplacement d'une version spécifique de chromedriver par ChromeDriverManager qui charge toujours la
 #'''                      ES-12         la version courante.
 #'''                      ES-12     Modification du xpath pour le rapport statistiques horaires pour corriger l'erreur d'accès.
 #'''                      ES-12         Modifié pour rendre indépendante de la langue de l'utilisateur.
