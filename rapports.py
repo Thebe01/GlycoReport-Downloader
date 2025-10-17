@@ -36,7 +36,7 @@
 #'''                                    Les identifiants Dexcom sont lus uniquement via get_dexcom_credentials (plus de saisie interactive ici).
 #'''                                    Sécurisation de la gestion des identifiants et des logs.
 #'''0.2.1   2025-08-29              Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
-#'''0.2.3   2025-10-14    ES-12     Remplacement d'une version spécifique de chromedriver par chromedriver manager qui charge toujours la
+#'''0.2.3   2025-10-14    ES-12     Remplacement d'une version spécifique de chromedriver par ChromeDriverManager qui charge toujours la
 #'''                      ES-12         la version courante.
 #'''                      ES-12     Modification du xpath pour le rapport statistiques horaires pour corriger l'erreur d'accès.
 #'''                      ES-12         Modifié pour rendre indépendante de la langue de l'utilisateur.
