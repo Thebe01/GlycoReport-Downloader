@@ -69,7 +69,7 @@ An English version of this text follows the French text.
 
 ### 0.2.3 — 14 octobre 2025
 
-- Utilisation de chromedriver manager pour toujours charger la version courante.
+- Utilisation de ChromeDriverManager pour toujours charger la version courante.
 - Correction du xpath pour le rapport Statistiques horaires (robustesse accrue).
 - Indépendance de la langue utilisateur (sélecteurs et messages).
 - Ajout de la colonne Billet dans les historiques de modifications.
