@@ -586,7 +586,7 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 
 ### 0.2.3 — October 14, 2025
 
-- Uses chromedriver manager to always load the current version.
+- Uses ChromeDriverManager to always load the current version.
 - Fixed xpath for Hourly Statistics report (improved robustness).
 - Language independence for selectors and messages.
 - Added the Billet column in change histories.
