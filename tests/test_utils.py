@@ -5,21 +5,23 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-13
-#'''Last Modified On : 2025-08-29
+#'''Last Modified On : 2025-10-16
 #'''CopyRights : Pierre Théberge
 #'''Description : Tests unitaires pour toutes les fonctions utilitaires du projet GlycoReport-Downloader.
-#'''              Vérifie la robustesse et la portabilité des fonctions (normalisation des chemins, capture d’écran, etc.).
+#'''              Vérifie la robustesse et la portabilité des fonctions (normalisation des chemins, capture d'écran, etc.).
 #'''              Pour exécuter les tests, utilisez la commande : pytest tests/test_utils.py
-#'''Version : 0.2.2
+#'''Version : 0.2.4
 #'''Modifications :
-#'''Version   Date          Description
-#'''0.0.0    2025-08-13    Version initiale
-#'''0.0.1    2025-08-18    Ajout de tests unitaires pour toutes les fonctions utilitaires,
-#'''                       adaptation pour la centralisation de normalize_path dans utils.py,
-#'''                       vérification de la robustesse et de la portabilité des utilitaires.
-#'''0.1.6    2025-08-22    Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
-#'''0.2.1    2025-08-29    Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
-#'''0.2.2     2025-08-29    Synchronisation des entêtes, robustesse accrue du help, nettoyage des doublons CLI.
+#'''Version   Date         Billet   Description
+#'''0.0.0    2025-08-13             Version initiale
+#'''0.0.1    2025-08-18                 Ajout de tests unitaires pour toutes les fonctions utilitaires,
+#'''                                    adaptation pour la centralisation de normalize_path dans utils.py,
+#'''                                    vérification de la robustesse et de la portabilité des utilitaires.
+#'''0.1.6    2025-08-22             Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
+#'''0.2.1    2025-08-29             Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
+#'''0.2.2    2025-08-29             Synchronisation des entêtes, robustesse accrue du help, nettoyage des doublons CLI.
+#'''0.2.3    2025-10-14    ES-12    Migration vers ChromeDriverManager pour gestion automatique de ChromeDriver.
+#'''0.2.4    2025-10-16    ES-12    Synchronisation de version (aucun changement fonctionnel dans les tests).
 #''' </summary>
 #'''////////////////////////////////////////////////////////////////////////////////////////////////////
 

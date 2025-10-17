@@ -5,98 +5,106 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-08-29
+#'''Last Modified On : 2025-10-16
 #'''CopyRights : Pierre Théberge
 #'''Description : Script principal pour l'automatisation du téléchargement des rapports Dexcom Clarity.
 #'''              Centralisation de la configuration, gestion CLI avancée, robustesse accrue,
 #'''              logs détaillés (console, fichier, JS), gestion des exceptions et de la déconnexion.
-#'''Version : 0.2.2
+#'''Version : 0.2.4
 #'''Modifications :
-#'''Version   Date          Description
-#'''0.0.0   2025-03-03    Version initiale.
-#'''0.0.1	2025-03-07    Connectoin à Clarity et authentification
-#''                       Utilisation de Chrome au lieu de Edge
-#'''0.0.2   2025-03-20    Cliquer sur le sélecteur de dates et choisir la période
-#'''0.0.3   2025-03-28    Ajout du traitement des rapports
-#'''0.0.4   2025-04-07    Conversion à Python 3.13 et une erreur de syntaxe dans le code de la fonction traitement_rapport_apercu
-#'''0.0.5   2025-04-11    Ajout de la sélection du rapport Apercu
-#'''0.0.6   2025-04-16    Ajout du code pour télécharger un rapport.
-#'''                        Reste à cliquer sur les boutons télécharger le rapport et
-#'''                        enregistrer sous.
-#'''0.0.7   2025-04-24    Retour à Python 3.12. Besoin Tensorflow et il n'est pas supporté par Python 3.13
-#'''                      Cliquer sur le bouton "Enregistrer le rapport"
-#'''                      Enlever la sélection du mode couleur (problème à avoir le bon xpath)
-#'''0.0.8   2025-05-23    Terminé la fonction téléchargement_rapport
-#'''                      Ajout de la fonction deplace_et_renomme_rapport
-#'''                      Reconversion à Python 3.13
-#'''0.0.9   2025-07-01    Ajout de l'option debug et ajout d'un fichier de log
-#'''0.0.10  2025-07-02    Modification pour tenir compte d'une connexion internet lente et instable (4mb/s)Ajout de la fonction traitement_rapport
-#'''                      Ajout de la fonction check_internet pour vérifier la connexion internet
-#'''                      Ajout du traitement pour les rapports Modèles
-#'''                      Dans la fonction deplace_et_renomme_rapport, ne pas tenir compte des fichiers *.log
-#'''0.0.11  2025-07-03    La vérification de la connexion internet ne fonctionne pas avec NordVPN
-#'''                      Ajout du traitement pour le rapport Superposition
-#'''                      Rendre plus robuste le traitement du rapport Aperçu
-#'''                      Ajout du traitement pour le rapport Quotidien
-#'''                      Ajout du traitement pour le rapport AGP
-#'''0.0.12  2025-07-08    Ajout du traitement pour le rapport Statistiques
-#'''0.0.13  2025-07-13    Ajout du traitement pour le rapport Comparer
-#'''0.0.14  2025-07-18    Ajout de l'exportation des données en format csv
-#'''0.0.15  2025-07-21    Terminer la fonction traitement_export_csv
-#'''                      Ajout des sous-rapport pour le rapport Comparer
-#'''                      Les sous-rapports Superposition et Quotidien de comparer ne fonctioone pas.
-#'''                          Ils produisent le même PDF que Tendances.
-#'''                      Ajouter la déconnexion du compte avant de fermer le navigateur
-#'''0.0.16  2025-07-25    Correction pour la déconnexion du compte
-#'''                      Correction pour le bouton Fermer de la fenêtre modale Exporter
-#'''0.0.17  2025-07-25    Correction pour le déconnexion du compte. Éliminer la référence au nom d'utilisateur.
-#'''                      Ajout de TODO pour la correction du code.
-#'''0.0.18  2025-07-30    Gestion des exceptions plus précise. Évite les except: nus. Précise toujours le type d’exception
-#'''                      Factorisation des attentes sur les overlays/loaders. Crée une fonction utilitaire
-#'''                          pour attendre la disparition des overlays, et utilise-la partout où c’est pertinent.
-#'''                      Centralisation des paramètres et chemins. Définis tous les chemins, URLs, et paramètres en haut du script ou dans un fichier de config.
-#'''                      Ajout d’une fonction main()
-#'''                      Fermeture du navigateur dans un finally
-#'''0.0.19  2025-08-04    Ajout de docstrings pour toutes les fonctions
-#'''                      Logging cohérent. Utilise le logger pour tous les messages (pas de print).
-#'''0.0.20  2025-08-05    Ajout d'une validation pour la présende des variables d'environnement nécessaires
-#'''                      Crée un fichier config.py pour centraliser tous les paramètres, chemins, URLs, etc.
-#'''                      Crée un fichier utils.py pour toutes les fonctions utilitaires (connexion internet, overlay, renommage, etc.).
-#'''                      Crée un fichier rapports.py pour le traitement des rapports
-#'''0.0.21  2025-08-06    Ajout d'un exemple de fichier de configuration "config_example.yaml"
-#'''0.0.22  2025-08-13    Centralisation et normalisation des chemins, gestion CLI améliorée,
-#'''                      logs JS navigateur, robustesse accrue sur la gestion des erreurs,
-#'''                      factorisation des utilitaires, gestion propre des exceptions et de la déconnexion.
-#'''0.0.23  2025-08-13    Capture d’écran centralisée via utils.py, délai avant capture,
-#'''                      suppression des duplications de code, ajout de logs pour le diagnostic.
-#'''0.1.0   2025-08-18    Robustesse saisie identifiant : sélection usernameLogin, vérification visibilité/interactivité,
-#'''                      captures d’écran uniquement en mode debug, gestion du bouton 'Pas maintenant' après connexion,
-#'''                      adaptation aux changements d’interface Dexcom, logs détaillés pour le diagnostic.
-#'''0.1.6   2025-08-22    Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
-#'''0.1.7   2025-08-25    Création automatique de config.yaml à partir de config_example.yaml si absent.
-#'''                      Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
-#'''                      Utilisation centralisée de get_dexcom_credentials depuis config.py.
-#'''                      Plus d'accès direct à os.getenv dans ce module.
-#'''0.1.8   2025-08-27    Configuration interactive avancée pour config.yaml et .env.
-#'''                      Copie minimale du profil Chrome lors de la configuration.
-#'''                      Ajout du paramètre log_retention_days (0 = conservation illimitée).
-#'''                      Nettoyage automatique des logs selon la rétention.
-#'''                      Messages utilisateurs colorés et validation renforcée.
-#'''0.1.9   2025-08-28    Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
-#'''                      Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
-#'''                      Correction de la robustesse de la configuration initiale.
-#'''0.1.10  2025-08-28    Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
-#'''                      Chaque suppression de log est loggée.
-#'''0.2.0   2025-08-28    Prise en charge du chiffrement/déchiffrement du fichier .env via config.py.
-#'''                      Les identifiants Dexcom sont lus uniquement via get_dexcom_credentials (plus de saisie interactive ici).
-#'''                      Sécurisation de la gestion des identifiants et des logs.
-#'''0.2.1   2025-08-29    Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
-#'''0.2.2   2025-08-29    Séparation stricte de la gestion des arguments CLI (désormais dans GlycoDownload.py).
-#'''                      Affichage du help possible même sans fichiers de configuration.
-#'''                      Plus aucun accès ni création de fichiers de config/env lors de l’affichage du help.
-#'''                      Nettoyage des doublons de fonctions CLI.
-#'''                      Synchronisation et nettoyage des entêtes de tous les modules.
-#'''</summary>
+#'''Version   Date        Billet    Description
+#'''0.0.0   2025-03-03    -        Version initiale.
+#'''0.0.1	2025-03-07    -         Connectoin à Clarity et authentification
+#''                       -             Utilisation de Chrome au lieu de Edge
+#'''0.0.2   2025-03-20    -         Cliquer sur le sélecteur de dates et choisir la période
+#'''0.0.3   2025-03-28    -         Ajout du traitement des rapports
+#'''0.0.4   2025-04-07    -         Conversion à Python 3.13 et une erreur de syntaxe dans le code de la fonction traitement_rapport_apercu
+#'''0.0.5   2025-04-11    -         Ajout de la sélection du rapport Apercu
+#'''0.0.6   2025-04-16    -         Ajout du code pour télécharger un rapport.
+#'''                      -             Reste à cliquer sur les boutons télécharger le rapport et
+#'''                      -             enregistrer sous.
+#'''0.0.7   2025-04-24    -         Retour à Python 3.12. Besoin Tensorflow et il n'est pas supporté par Python 3.13
+#'''                      -             Cliquer sur le bouton "Enregistrer le rapport"
+#'''                      -             Enlever la sélection du mode couleur (problème à avoir le bon xpath)
+#'''0.0.8   2025-05-23    -         Terminé la fonction téléchargement_rapport
+#'''                      -             Ajout de la fonction deplace_et_renomme_rapport
+#'''                      -             Reconversion à Python 3.13
+#'''0.0.9   2025-07-01    -         Ajout de l'option debug et ajout d'un fichier de log
+#'''0.0.10  2025-07-02    -         Modification pour tenir compte d'une connexion internet lente et instable (4mb/s)Ajout de la fonction traitement_rapport
+#'''                      -             Ajout de la fonction check_internet pour vérifier la connexion internet
+#'''                      -             Ajout du traitement pour les rapports Modèles
+#'''                      -             Dans la fonction deplace_et_renomme_rapport, ne pas tenir compte des fichiers *.log
+#'''0.0.11  2025-07-03    -         La vérification de la connexion internet ne fonctionne pas avec NordVPN
+#'''                      -             Ajout du traitement pour le rapport Superposition
+#'''                      -             Rendre plus robuste le traitement du rapport Aperçu
+#'''                      -             Ajout du traitement pour le rapport Quotidien
+#'''                      -             Ajout du traitement pour le rapport AGP
+#'''0.0.12  2025-07-08    -         Ajout du traitement pour le rapport Statistiques
+#'''0.0.13  2025-07-13    -         Ajout du traitement pour le rapport Comparer
+#'''0.0.14  2025-07-18    -         Ajout de l'exportation des données en format csv
+#'''0.0.15  2025-07-21    -         Terminer la fonction traitement_export_csv
+#'''                      -             Ajout des sous-rapport pour le rapport Comparer
+#'''                      -             Les sous-rapports Superposition et Quotidien de comparer ne fonctioone pas.
+#'''                      -                 Ils produisent le même PDF que Tendances.
+#'''                      -         Ajouter la déconnexion du compte avant de fermer le navigateur
+#'''0.0.16  2025-07-25    -         Correction pour la déconnexion du compte
+#'''                      -             Correction pour le bouton Fermer de la fenêtre modale Exporter
+#'''0.0.17  2025-07-25    -         Correction pour le déconnexion du compte. Éliminer la référence au nom d'utilisateur.
+#'''                      -             Ajout de TODO pour la correction du code.
+#'''0.0.18  2025-07-30    -         Gestion des exceptions plus précise. Évite les except: nus. Précise toujours le type d’exception
+#'''                      -             Factorisation des attentes sur les overlays/loaders. Crée une fonction utilitaire
+#'''                      -                 pour attendre la disparition des overlays, et utilise-la partout où c’est pertinent.
+#'''                      -             Centralisation des paramètres et chemins. Définis tous les chemins, URLs, et paramètres en haut du script ou dans un fichier de config.
+#'''                      -             Ajout d’une fonction main()
+#'''                      -             Fermeture du navigateur dans un finally
+#'''0.0.19  2025-08-04    -         Ajout de docstrings pour toutes les fonctions
+#'''                      -             Logging cohérent. Utilise le logger pour tous les messages (pas de print).
+#'''0.0.20  2025-08-05    -         Ajout d'une validation pour la présende des variables d'environnement nécessaires
+#'''                      -             Crée un fichier config.py pour centraliser tous les paramètres, chemins, URLs, etc.
+#'''                      -             Crée un fichier utils.py pour toutes les fonctions utilitaires (connexion internet, overlay, renommage, etc.).
+#'''                      -             Crée un fichier rapports.py pour le traitement des rapports
+#'''0.0.21  2025-08-06    -         Ajout d'un exemple de fichier de configuration "config_example.yaml"
+#'''0.0.22  2025-08-13    -         Centralisation et normalisation des chemins, gestion CLI améliorée,
+#'''                      -             logs JS navigateur, robustesse accrue sur la gestion des erreurs,
+#'''                      -             factorisation des utilitaires, gestion propre des exceptions et de la déconnexion.
+#'''0.0.23  2025-08-13    -         Capture d’écran centralisée via utils.py, délai avant capture,
+#'''                      -             suppression des duplications de code, ajout de logs pour le diagnostic.
+#'''0.1.0   2025-08-18    -         Robustesse saisie identifiant : sélection usernameLogin, vérification visibilité/interactivité,
+#'''                      -             captures d’écran uniquement en mode debug, gestion du bouton 'Pas maintenant' après connexion,
+#'''                      -             adaptation aux changements d’interface Dexcom, logs détaillés pour le diagnostic.
+#'''0.1.6   2025-08-22    -         Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
+#'''0.1.7   2025-08-25    -         Création automatique de config.yaml à partir de config_example.yaml si absent.
+#'''                      -             Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
+#'''                      -             Utilisation centralisée de get_dexcom_credentials depuis config.py.
+#'''                      -             Plus d'accès direct à os.getenv dans ce module.
+#'''0.1.8   2025-08-27    -         Configuration interactive avancée pour config.yaml et .env.
+#'''                      -             Copie minimale du profil Chrome lors de la configuration.
+#'''                      -             Ajout du paramètre log_retention_days (0 = conservation illimitée).
+#'''                      -             Nettoyage automatique des logs selon la rétention.
+#'''                      -             Messages utilisateurs colorés et validation renforcée.
+#'''0.1.9   2025-08-28    -         Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
+#'''                      -             Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
+#'''                      -             Correction de la robustesse de la configuration initiale.
+#'''0.1.10  2025-08-28    -         Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
+#'''                      -             Chaque suppression de log est loggée.
+#'''0.2.0   2025-08-28    -         Prise en charge du chiffrement/déchiffrement du fichier .env via config.py.
+#'''                      -             Les identifiants Dexcom sont lus uniquement via get_dexcom_credentials (plus de saisie interactive ici).
+#'''                      -             Sécurisation de la gestion des identifiants et des logs.
+#'''0.2.1   2025-08-29    -         Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
+#'''0.2.2   2025-08-29    -         Séparation stricte de la gestion des arguments CLI (désormais dans GlycoDownload.py).
+#'''                      -             Affichage du help possible même sans fichiers de configuration.
+#'''                      -             Plus aucun accès ni création de fichiers de config/env lors de l’affichage du help.
+#'''                      -             Nettoyage des doublons de fonctions CLI.
+#'''                      -             Synchronisation et nettoyage des entêtes de tous les modules.
+#'''0.2.3   2025-10-14    ES-12     Remplacement d'une version spécifique de chromedriver par ChromeDriverManager qui charge toujours la
+#'''                      ES-12         la version courante.
+#'''                      ES-12     Modification du xpath pour le rapport statistiques horaires pour corriger l'erreur d'accès.
+#'''                      ES-12         Modifié pour rendre indépendante de la langue de l'utilisateur.
+#'''                      ES-12     Ajout de la colonne Billet dans le bloc des modifications.
+#'''0.2.4   2025-10-16    ES-12     Suppression du paramètre obsolète chromedriver_path (non utilisé depuis v0.2.3).
+#'''                      ES-12     Nettoyage du code : CHROMEDRIVER_PATH retiré de la configuration.
+#'''                      ES-12     Simplification : le répertoire chromedriver-win64/ n'est plus nécessaire.
+#''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # TODO 11 Réparer le problème avec les rapports Comparer
@@ -121,6 +129,7 @@ import glob
 import re
 from getpass import getpass
 import traceback
+from webdriver_manager.chrome import ChromeDriverManager
 
 from utils import (
     check_internet,
@@ -333,6 +342,9 @@ def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=10):
         logger.error(f"Une erreur s'est produite au moment de cliquer sur le bouton 'Dexcom Clarity for Home Users' : {e}")
 
 def setup_logger(debug, log_dir, now_str):
+    # Créer le répertoire de logs s'il n'existe pas
+    os.makedirs(log_dir, exist_ok=True)
+
     logger = logging.getLogger('dexcom_clarity')
     logger.setLevel(logging.DEBUG if debug else logging.INFO)
     formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
@@ -398,9 +410,12 @@ def main(args, logger, config):
         }
         options.add_experimental_option("prefs", prefs)
 
-        # Service ChromeDriver
+        # Service ChromeDriver avec gestion automatique
         chromedriver_service_args = ["--verbose"] if debug_mode else []
+
+        # Utilisation de webdriver-manager pour télécharger automatiquement la bonne version
         service = ChromeService(
+            ChromeDriverManager().install(),
             log_path=chromedriver_log,
             service_args=chromedriver_service_args
         )

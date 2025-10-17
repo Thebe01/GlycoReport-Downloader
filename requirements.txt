@@ -5,3 +5,4 @@ colorama
 pytest
 cryptography
 pyinstaller
+webdriver-manager
