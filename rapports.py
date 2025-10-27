@@ -11,9 +11,9 @@
 #'''              Utilisation des chemins et paramètres centralisés, logging détaillé,
 #'''              robustesse pour la détection et gestion des fichiers téléchargés,
 #'''              logging des erreurs JS lors du déplacement/renommage.
-#'''Version : 0.2.4
+#'''Version : 0.2.6
 #'''Modifications :
-#'''Version   Date        Billet    Description
+#'''Version   Date         Billet   Description
 #'''0.0.0	2025-08-05              Version initiale.
 #'''0.0.1   2025-08-13              Logging JS navigateur, robustesse accrue sur la gestion des fichiers,
 #'''                                    utilisation systématique des chemins centralisés.
@@ -36,15 +36,18 @@
 #'''                                    Les identifiants Dexcom sont lus uniquement via get_dexcom_credentials (plus de saisie interactive ici).
 #'''                                    Sécurisation de la gestion des identifiants et des logs.
 #'''0.2.1   2025-08-29              Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
-#'''0.2.3   2025-10-14    ES-12     Remplacement d'une version spécifique de chromedriver par ChromeDriverManager qui charge toujours la
-#'''                      ES-12         la version courante.
-#'''                      ES-12     Modification du xpath pour le rapport statistiques horaires pour corriger l'erreur d'accès.
-#'''                      ES-12         Modifié pour rendre indépendante de la langue de l'utilisateur.
-#'''                      ES-12     Ajout de la colonne Billet dans le bloc des modifications.
+#'''0.2.3   2025-10-14    ES-11     Remplacement d'une version spécifique de chromedriver par ChromeDriverManager qui charge toujours la
+#'''                      ES-11         la version courante.
+#'''                      ES-11     Modification du xpath pour le rapport statistiques horaires pour corriger l'erreur d'accès.
+#'''                      ES-11         Modifié pour rendre indépendante de la langue de l'utilisateur.
+#'''                      ES-11     Ajout de la colonne Billet dans le bloc des modifications.
 #'''0.2.4   2025-10-16    ES-12     Suppression du paramètre obsolète chromedriver_path (non utilisé depuis v0.2.3).
 #'''                      ES-12     Nettoyage du code : CHROMEDRIVER_PATH retiré de la configuration.
 #'''                      ES-12     Simplification : le répertoire chromedriver-win64/ n'est plus nécessaire.
-#'''</summary>
+#'''0.2.4   2025-10-16    ES-12     Synchronisation de version (aucun changement fonctionnel).
+#'''0.2.5   2025-10-16    ES-10     Synchronisation de version (aucun changement fonctionnel).
+#'''0.2.6   2025-10-21    ES-7      Synchronisation de version (aucun changement fonctionnel).
+#''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import os

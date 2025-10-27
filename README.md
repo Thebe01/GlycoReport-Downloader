@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.2.4-blue)
+![Version](https://img.shields.io/badge/version-0.2.6-blue)
 
 An English version of this text follows the French text.
 
@@ -11,7 +11,7 @@ An English version of this text follows the French text.
 
 ## Sommaire
 
-- [Nouveautés](#version--024--16-octobre-2025)
+- [Nouveautés](#version--025--21-octobre-2025)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,38 +23,57 @@ An English version of this text follows the French text.
 
 ---
 
-## Version : 0.2.4 — 16 octobre 2025
+## Version : 0.2.6 — 21 octobre 2025
 
 ### Nouveautés
 
-**Gestion automatique de ChromeDriver**
+**Améliorations de l'aide et des options CLI :**
 
-- Utilisation de ChromeDriverManager pour charger automatiquement la version
-  courante de ChromeDriver (plus besoin de version spécifique)
-- Suppression du paramètre obsolète `chromedriver_path` (nettoyage du code)
-- Simplification de la distribution : le répertoire `chromedriver-win64/` n'est
-  plus nécessaire
-- Réduction de la taille du package de distribution (~10 MB en moins)
+- Aide (`--help`) complètement repensée avec description détaillée, exemples
+  d'utilisation et groupes d'arguments organisés
+- Nouvelle option `--list-rapports` pour afficher la liste complète des rapports
+  disponibles avec descriptions
+- Nouvelle option `--dry-run` pour simuler l'exécution et afficher la
+  configuration sans télécharger
+- Validation améliorée des dates avec messages d'erreur explicites et colorés
+- Les options d'aide fonctionnent maintenant **avant** la validation des
+  fichiers de configuration
 
-**Améliorations fonctionnelles**
+**Améliorations du nettoyage des logs :**
 
-- Correction de l'accès au rapport Statistiques horaires (xpath adapté,
-  robustesse accrue)
-- Le script est désormais indépendant de la langue de l'utilisateur (messages et
-  sélecteurs)
-- La période de rétention des logs par défaut passe à 30 jours
-  (`log_retention_days: 30`)
-
-**Améliorations techniques**
-
-- Ajout de la colonne "Billet" dans les blocs d'historique des modifications
-- Synchronisation des entêtes et commentaires de version dans tous les modules
-- Corrections mineures et robustesse accrue sur la gestion des erreurs et la
-  configuration
+- Les captures d'écran (fichiers `.png`) générées en mode debug sont maintenant
+  automatiquement supprimées lors du nettoyage des logs selon la période de
+  rétention configurée
+- Amélioration de la gestion de l'espace disque
 
 ---
 
 ## Historique des versions
+
+### 0.2.6 — 21 octobre 2025
+
+- Amélioration majeure de l'aide CLI (`--help`) : description détaillée,
+  exemples pratiques, groupes d'arguments
+- Ajout de `--list-rapports` : affiche la liste des rapports disponibles avec
+  descriptions détaillées
+- Ajout de `--dry-run` : simule l'exécution et affiche la configuration sans
+  effectuer de téléchargement
+- Validation robuste des dates avec messages d'erreur explicites (format,
+  cohérence)
+- Les options `--help`, `--version`, et `--list-rapports` fonctionnent désormais
+  avant la validation de `config.yaml` et `.env`
+- Expérience utilisateur améliorée avec messages colorés et informatifs
+- Synchronisation des versions dans tous les modules
+
+### 0.2.5 — 16 octobre 2025
+
+- Amélioration de la fonction `cleanup_logs` : suppression automatique des
+  captures d'écran (`.png`) en plus des fichiers `.log`
+- Les fichiers `.png` plus anciens que la période de rétention
+  (`log_retention_days`) sont maintenant nettoyés automatiquement
+- Ajout de tests unitaires pour valider la suppression des captures d'écran
+  anciennes
+- Synchronisation des versions dans tous les modules
 
 ### 0.2.4 — 16 octobre 2025
 
@@ -372,18 +391,6 @@ logs, etc.) sont **normalisés automatiquement** :
 - La normalisation est effectuée dans le code via `os.path.expanduser` et
   `os.path.abspath` (fonction centralisée dans `utils.py`).
 
-**Exemple dans `config.yaml` :**
-
-```yaml
-chrome_user_data_dir: C:\Users\????????\Downloads\GlycoReport-Downloader\Profile
-chromedriver_log: C:\Users\????????\Downloads\GlycoReport-Downloader\clarity_chromedriver.log
-dexcom_url: "https://clarity.dexcom.eu"
-download_dir: C:\Users\????????\Downloads\GlycoReport-Downloader
-log_retention_days: 30
-output_dir: C:\Users\????????\Downloads\GlycoReport-Downloader
-rapports: ["Aperçu"]
-```
-
 ---
 
 ## Sécurité et gestion des secrets
@@ -412,35 +419,90 @@ rapports: ["Aperçu"]
 
 ## Paramètres de la ligne de commande
 
-- `-h`, `--help` : Afficher l’aide et quitter.
-- `--debug`, `-d` : Activer le mode debug.
-- `--days {7,14,30,90}` : Nombre de jours à inclure dans le rapport (7, 14, 30,
-  90).
-- `--date_debut DATE_DEBUT` : Date de début (AAAA-MM-JJ).
-- `--date_fin DATE_FIN` : Date de fin (AAAA-MM-JJ).
-- `--rapports RAPPORTS [RAPPORTS ...]` : Liste des rapports à traiter (ex :
-  `"Aperçu" "AGP"`).
+- `-h`, `--help` : Afficher l'aide et quitter.
+- `-v`, `--version` : Afficher la version et quitter.
+- `-d`, `--debug` : Activer le mode debug (logs détaillés, captures d'écran).
+- `--dry-run` : Simuler l'exécution sans télécharger (affiche la configuration).
+- `--days {7,14,30,90}` : Nombre de jours à inclure dans le rapport (7, 14, 30
+  ou 90).
+- `--date_debut AAAA-MM-JJ` : Date de début au format AAAA-MM-JJ (ex:
+  2025-01-01).
+- `--date_fin AAAA-MM-JJ` : Date de fin au format AAAA-MM-JJ (ex: 2025-01-31).
+- `--rapports RAPPORT [RAPPORT ...]` : Liste des rapports à traiter (ex :
+  `"Aperçu" "AGP" "Statistiques"`).
+- `--list-rapports` : Afficher la liste des rapports disponibles avec
+  descriptions et quitter.
 
-**Remarque** : L’aide s’affiche toujours proprement, même si les fichiers de
-configuration sont absents ou incomplets.
+**Remarque** : L'aide s'affiche toujours proprement, même si les fichiers de
+configuration sont absents ou incomplets. Les options `--help`, `--version` et
+`--list-rapports` fonctionnent avant la validation de la configuration.
 
 ---
 
 ## Exemple d’aide
 
 ```text
-usage:  [-h] [--debug] [--days {7,14,30,90}] [--date_debut DATE_DEBUT]
-                        [--date_fin DATE_FIN] [--rapports RAPPORTS [RAPPORTS ...]]
+usage: GlycoReport-Downloader [-h] [--version] [--debug] [--dry-run]
+                               [--days N] [--date_debut YYYY-MM-DD]
+                               [--date_fin YYYY-MM-DD]
+                               [--rapports REPORT [REPORT ...]]
+                               [--list-rapports]
 
-options:
-  -h, --help            afficher cette aide et quitter
-  --debug, -d           Activer le mode debug
-  --days {7,14,30,90}   Nombre de jours à inclure dans le rapport (7, 14, 30, 90)
-  --date_debut DATE_DEBUT
-                        Date de début (AAAA-MM-JJ)
-  --date_fin DATE_FIN   Date de fin (AAAA-MM-JJ)
-  --rapports RAPPORTS [RAPPORTS ...]
-                        Liste des rapports à traiter
+GlycoReport Downloader v0.2.6 - Automated Dexcom Clarity report download
+
+This script automates the download of glycemic reports from your
+Dexcom Clarity account. It supports multiple report types, customizable periods,
+and exports data in PDF or CSV format.
+
+For more information: https://github.com/pierretheberge/GlycoReport-Downloader
+
+general options:
+  -h, --help            Show this help message and exit
+  --version, -v         Display version and exit
+  --debug, -d           Enable debug mode (detailed logs, screenshots)
+  --dry-run             Simulate execution without downloading (displays configuration)
+
+report period:
+  Define the download period (default: last 14 days)
+
+  --days N              Number of days to include (7, 14, 30 or 90)
+  --date_debut YYYY-MM-DD
+                        Start date in YYYY-MM-DD format (e.g., 2025-01-01)
+  --date_fin YYYY-MM-DD
+                        End date in YYYY-MM-DD format (e.g., 2025-01-31)
+
+report selection:
+  Choose reports to download (default: all configured reports)
+
+  --rapports REPORT [REPORT ...]
+                        List of reports (e.g., "Aperçu" "AGP" "Statistiques")
+  --list-rapports       Display list of available reports and exit
+
+Usage examples:
+  Download all reports for the last 14 days (default):
+    python GlycoDownload.py
+
+  Download only the Overview report for the last 7 days:
+    python GlycoDownload.py --days 7 --rapports "Aperçu"
+
+  Download multiple reports for a specific period:
+    python GlycoDownload.py --date_debut 2025-01-01 --date_fin 2025-01-31 --rapports "Aperçu" "AGP"
+
+  Debug mode with all reports for the last 30 days:
+    python GlycoDownload.py --debug --days 30
+
+  Test configuration without downloading:
+    python GlycoDownload.py --dry-run
+
+Available reports: Aperçu, Modèles, Superposition, Quotidien, Comparer, Statistiques, AGP, Export
+(Use --list-rapports for more details)
+
+Configuration:
+  - File: config.yaml (automatically created on first launch)
+  - Credentials: .env (encrypted, requires ENV_DEXCOM_KEY variable)
+  - Logs: defined in config.yaml (log_retention_days)
+
+For questions or bug reports: https://github.com/pierretheberge/GlycoReport-Downloader/issues
 ```
 
 ---
@@ -545,34 +607,51 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 
 ## What's New (English)
 
-### Version: 0.2.4 — October 16, 2025
+### Version: 0.2.6 — October 21, 2025
 
-**Automatic ChromeDriver Management**
+**CLI Help and Options Improvements:**
 
-- Uses ChromeDriverManager to automatically load the current ChromeDriver
-  version (no more version-specific issues)
-- Removed obsolete `chromedriver_path` parameter (code cleanup)
-- Simplified distribution: the `chromedriver-win64/` directory is no longer
-  necessary
-- Reduced distribution package size (~10 MB smaller)
+- Help (`--help`) completely redesigned with detailed description, usage
+  examples, and organized argument groups
+- New `--list-rapports` option to display the complete list of available reports
+  with descriptions
+- New `--dry-run` option to simulate execution and display configuration without
+  downloading
+- Enhanced date validation with explicit and colored error messages
+- Help options now work **before** configuration file validation
 
-**Functional Improvements**
+**Log Cleanup Improvements:**
 
-- Fixed access to the Hourly Statistics report (adapted xpath, improved
-  robustness)
-- The script is now language-independent (selectors and messages)
-- Default log retention period is now 30 days (`log_retention_days: 30`)
-
-**Technical Improvements**
-
-- Added the "Billet" column in change history blocks
-- Synchronized headers and version comments in all modules
-- Minor corrections and improved robustness in error and configuration
-  management
+- Screenshot files (`.png` files) generated in debug mode are now automatically
+  deleted during log cleanup according to the configured retention period
+- Improved disk space management
 
 ---
 
 ## Version History (English)
+
+### 0.2.6 — October 21, 2025
+
+- Major CLI help improvement (`--help`): detailed description, practical
+  examples, argument groups
+- Added `--list-rapports`: displays list of available reports with detailed
+  descriptions
+- Added `--dry-run`: simulates execution and displays configuration without
+  downloading
+- Robust date validation with explicit error messages (format, consistency)
+- Options `--help`, `--version`, and `--list-rapports` now work before
+  validating `config.yaml` and `.env`
+- Improved user experience with colored and informative messages
+- Version synchronization across all modules
+
+### 0.2.5 — October 16, 2025
+
+- Enhanced `cleanup_logs` function: automatic deletion of screenshots (`.png`)
+  in addition to `.log` files
+- `.png` files older than the retention period (`log_retention_days`) are now
+  automatically cleaned up
+- Added unit tests to validate deletion of old screenshots
+- Version synchronization across all modules
 
 ### 0.2.4 — October 16, 2025
 
@@ -876,18 +955,6 @@ All paths used in the project (download folders, profiles, logs, etc.) are
 - Normalization is done in the code via `os.path.expanduser` and
   `os.path.abspath` (centralized function in `utils.py`).
 
-**Example in `config.yaml`**:
-
-```yaml
-chrome_user_data_dir: C:/Users/YourUser/Downloads/GlycoReport-Downloader/Profile
-chromedriver_log: C:/Users/YourUser/Downloads/GlycoReport-Downloader/clarity_chromedriver.log
-dexcom_url: "https://clarity.dexcom.eu"
-download_dir: C:/Users/YourUser/Downloads/GlycoReport-Downloader
-log_retention_days: 30
-output_dir: C:/Users/YourUser/Downloads/GlycoReport-Downloader
-rapports: ["Aperçu"]
-```
-
 ---
 
 ## Security and Secret Management (English)
@@ -915,69 +982,124 @@ rapports: ["Aperçu"]
 ## Command Line Parameters (English)
 
 - `-h`, `--help`: Display help and exit.
-- `--debug`, `-d`: Enable debug mode.
+- `-v`, `--version`: Display version and exit.
+- `-d`, `--debug`: Enable debug mode (detailed logs, screenshots).
+- `--dry-run`: Simulate execution without downloading (displays configuration).
 - `--days {7,14,30,90}`: Number of days to include in the report (7, 14, 30,
   90).
 - `--date_debut DATE_DEBUT`: Start date (YYYY-MM-DD).
 - `--date_fin DATE_FIN`: End date (YYYY-MM-DD).
 - `--rapports RAPPORTS [RAPPORTS ...]`: List of reports to process (e.g.,
-  `"Aperçu" "AGP"`).
+  `"Aperçu" "AGP" "Statistiques"`).
+- `--list-rapports`: Display the list of available reports with descriptions and
+  exit.
 
 **Note**: Help is always displayed neatly, even if configuration files are
-missing or incomplete.
+missing or incomplete. The `--help`, `--version`, and `--list-rapports` options
+work before configuration validation.
 
 ---
 
 ## Example Help Output (English)
 
 ```text
-usage:  [-h] [--debug] [--days {7,14,30,90}] [--date_debut DATE_DEBUT]
-                        [--date_fin DATE_FIN] [--rapports RAPPORTS [RAPPORTS ...]]
+usage: GlycoReport-Downloader [-h] [--version] [--debug] [--dry-run]
+                               [--days N] [--date_debut YYYY-MM-DD]
+                               [--date_fin YYYY-MM-DD]
+                               [--rapports REPORT [REPORT ...]]
+                               [--list-rapports]
 
-options:
-  -h, --help            display this help and quit
-  --debug, -d           Enable debug mode
-  --days {7,14,30,90}   Number of days to include in the report (7, 14, 30, 90)
-  --date_debut DATE_DEBUT
-                        Start date (YYYY-MM-DD)
-  --date_fin DATE_FIN   End date (YYYY-MM-DD)
-  --rapports RAPPORTS [RAPPORTS ...]
-                        List of reports to process
+GlycoReport Downloader v0.2.6 - Automated Dexcom Clarity report download
+
+This script automates the download of glycemic reports from your
+Dexcom Clarity account. It supports multiple report types, customizable periods,
+and exports data in PDF or CSV format.
+
+For more information: https://github.com/pierretheberge/GlycoReport-Downloader
+
+general options:
+  -h, --help            Show this help message and exit
+  --version, -v         Display version and exit
+  --debug, -d           Enable debug mode (detailed logs, screenshots)
+  --dry-run             Simulate execution without downloading (displays configuration)
+
+report period:
+  Define the download period (default: last 14 days)
+
+  --days N              Number of days to include (7, 14, 30 or 90)
+  --date_debut YYYY-MM-DD
+                        Start date in YYYY-MM-DD format (e.g., 2025-01-01)
+  --date_fin YYYY-MM-DD
+                        End date in YYYY-MM-DD format (e.g., 2025-01-31)
+
+report selection:
+  Choose reports to download (default: all configured reports)
+
+  --rapports REPORT [REPORT ...]
+                        List of reports (e.g., "Aperçu" "AGP" "Statistiques")
+  --list-rapports       Display list of available reports and exit
+
+Usage examples:
+  Download all reports for the last 14 days (default):
+    python GlycoDownload.py
+
+  Download only the Overview report for the last 7 days:
+    python GlycoDownload.py --days 7 --rapports "Aperçu"
+
+  Download multiple reports for a specific period:
+    python GlycoDownload.py --date_debut 2025-01-01 --date_fin 2025-01-31 --rapports "Aperçu" "AGP"
+
+  Debug mode with all reports for the last 30 days:
+    python GlycoDownload.py --debug --days 30
+
+  Test configuration without downloading:
+    python GlycoDownload.py --dry-run
+
+Available reports: Aperçu, Modèles, Superposition, Quotidien, Comparer, Statistiques, AGP, Export
+(Use --list-rapports for more details)
+
+Configuration:
+  - File: config.yaml (automatically created on first launch)
+  - Credentials: .env (encrypted, requires ENV_DEXCOM_KEY variable)
+  - Logs: defined in config.yaml (log_retention_days)
+
+For questions or bug reports: https://github.com/pierretheberge/GlycoReport-Downloader/issues
 ```
 
 ---
 
-## Unit Tests (English)
+## Tests unitaires
 
-To run all unit tests for the project's utility functions, use the following
-command:
+Pour exécuter tous les tests unitaires sur les fonctions utilitaires du projet,
+utilisez la commande suivante :
 
-**Bash/CMD:**
+**Bash/CMD :**
 
 ```sh
 pytest -v --log-cli-level=INFO tests/test_utils.py
 ```
 
-**PowerShell:**
+**PowerShell :**
 
 ```powershell
 pytest -v --log-cli-level=INFO tests/test_utils.py
 ```
 
-- `-v` displays details of each executed test (verbose mode).
-- `--log-cli-level=INFO` shows log messages generated by the tested functions.
-- This command verifies the robustness and portability of all utility functions
-  in the project.
+- `-v` affiche le détail de chaque test exécuté (mode verbose).
+- `--log-cli-level=INFO` affiche les messages de log générés par les fonctions
+  testées.
+- Cette commande permet de vérifier la robustesse et la portabilité de toutes
+  les fonctions utilitaires du projet.
 
-Make sure pytest is installed:
+Assurez-vous d’avoir installé pytest :
 
-**Bash/CMD:**
+**Bash/CMD :**
 
 ```sh
 pip install pytest
 ```
 
-**PowerShell:**
+**PowerShell :**
 
 ```powershell
 pip install pytest
