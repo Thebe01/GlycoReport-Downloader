@@ -10,100 +10,86 @@
 #'''Description : Script principal pour l'automatisation du téléchargement des rapports Dexcom Clarity.
 #'''              Centralisation de la configuration, gestion CLI avancée, robustesse accrue,
 #'''              logs détaillés (console, fichier, JS), gestion des exceptions et de la déconnexion.
-#'''Version : 0.2.4
+#'''Version : 0.2.6
 #'''Modifications :
-#'''Version   Date        Billet    Description
+#'''Version   Date         Billet   Description
 #'''0.0.0   2025-03-03    -        Version initiale.
-#'''0.0.1	2025-03-07    -         Connectoin à Clarity et authentification
-#''                       -             Utilisation de Chrome au lieu de Edge
-#'''0.0.2   2025-03-20    -         Cliquer sur le sélecteur de dates et choisir la période
-#'''0.0.3   2025-03-28    -         Ajout du traitement des rapports
-#'''0.0.4   2025-04-07    -         Conversion à Python 3.13 et une erreur de syntaxe dans le code de la fonction traitement_rapport_apercu
-#'''0.0.5   2025-04-11    -         Ajout de la sélection du rapport Apercu
-#'''0.0.6   2025-04-16    -         Ajout du code pour télécharger un rapport.
-#'''                      -             Reste à cliquer sur les boutons télécharger le rapport et
-#'''                      -             enregistrer sous.
-#'''0.0.7   2025-04-24    -         Retour à Python 3.12. Besoin Tensorflow et il n'est pas supporté par Python 3.13
-#'''                      -             Cliquer sur le bouton "Enregistrer le rapport"
-#'''                      -             Enlever la sélection du mode couleur (problème à avoir le bon xpath)
-#'''0.0.8   2025-05-23    -         Terminé la fonction téléchargement_rapport
-#'''                      -             Ajout de la fonction deplace_et_renomme_rapport
-#'''                      -             Reconversion à Python 3.13
-#'''0.0.9   2025-07-01    -         Ajout de l'option debug et ajout d'un fichier de log
-#'''0.0.10  2025-07-02    -         Modification pour tenir compte d'une connexion internet lente et instable (4mb/s)Ajout de la fonction traitement_rapport
-#'''                      -             Ajout de la fonction check_internet pour vérifier la connexion internet
-#'''                      -             Ajout du traitement pour les rapports Modèles
-#'''                      -             Dans la fonction deplace_et_renomme_rapport, ne pas tenir compte des fichiers *.log
-#'''0.0.11  2025-07-03    -         La vérification de la connexion internet ne fonctionne pas avec NordVPN
-#'''                      -             Ajout du traitement pour le rapport Superposition
-#'''                      -             Rendre plus robuste le traitement du rapport Aperçu
-#'''                      -             Ajout du traitement pour le rapport Quotidien
-#'''                      -             Ajout du traitement pour le rapport AGP
-#'''0.0.12  2025-07-08    -         Ajout du traitement pour le rapport Statistiques
-#'''0.0.13  2025-07-13    -         Ajout du traitement pour le rapport Comparer
-#'''0.0.14  2025-07-18    -         Ajout de l'exportation des données en format csv
-#'''0.0.15  2025-07-21    -         Terminer la fonction traitement_export_csv
-#'''                      -             Ajout des sous-rapport pour le rapport Comparer
-#'''                      -             Les sous-rapports Superposition et Quotidien de comparer ne fonctioone pas.
-#'''                      -                 Ils produisent le même PDF que Tendances.
-#'''                      -         Ajouter la déconnexion du compte avant de fermer le navigateur
-#'''0.0.16  2025-07-25    -         Correction pour la déconnexion du compte
-#'''                      -             Correction pour le bouton Fermer de la fenêtre modale Exporter
-#'''0.0.17  2025-07-25    -         Correction pour le déconnexion du compte. Éliminer la référence au nom d'utilisateur.
-#'''                      -             Ajout de TODO pour la correction du code.
-#'''0.0.18  2025-07-30    -         Gestion des exceptions plus précise. Évite les except: nus. Précise toujours le type d’exception
-#'''                      -             Factorisation des attentes sur les overlays/loaders. Crée une fonction utilitaire
-#'''                      -                 pour attendre la disparition des overlays, et utilise-la partout où c’est pertinent.
-#'''                      -             Centralisation des paramètres et chemins. Définis tous les chemins, URLs, et paramètres en haut du script ou dans un fichier de config.
-#'''                      -             Ajout d’une fonction main()
-#'''                      -             Fermeture du navigateur dans un finally
-#'''0.0.19  2025-08-04    -         Ajout de docstrings pour toutes les fonctions
-#'''                      -             Logging cohérent. Utilise le logger pour tous les messages (pas de print).
-#'''0.0.20  2025-08-05    -         Ajout d'une validation pour la présende des variables d'environnement nécessaires
-#'''                      -             Crée un fichier config.py pour centraliser tous les paramètres, chemins, URLs, etc.
-#'''                      -             Crée un fichier utils.py pour toutes les fonctions utilitaires (connexion internet, overlay, renommage, etc.).
-#'''                      -             Crée un fichier rapports.py pour le traitement des rapports
-#'''0.0.21  2025-08-06    -         Ajout d'un exemple de fichier de configuration "config_example.yaml"
-#'''0.0.22  2025-08-13    -         Centralisation et normalisation des chemins, gestion CLI améliorée,
-#'''                      -             logs JS navigateur, robustesse accrue sur la gestion des erreurs,
-#'''                      -             factorisation des utilitaires, gestion propre des exceptions et de la déconnexion.
-#'''0.0.23  2025-08-13    -         Capture d’écran centralisée via utils.py, délai avant capture,
-#'''                      -             suppression des duplications de code, ajout de logs pour le diagnostic.
-#'''0.1.0   2025-08-18    -         Robustesse saisie identifiant : sélection usernameLogin, vérification visibilité/interactivité,
-#'''                      -             captures d’écran uniquement en mode debug, gestion du bouton 'Pas maintenant' après connexion,
-#'''                      -             adaptation aux changements d’interface Dexcom, logs détaillés pour le diagnostic.
-#'''0.1.6   2025-08-22    -         Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
-#'''0.1.7   2025-08-25    -         Création automatique de config.yaml à partir de config_example.yaml si absent.
-#'''                      -             Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
-#'''                      -             Utilisation centralisée de get_dexcom_credentials depuis config.py.
-#'''                      -             Plus d'accès direct à os.getenv dans ce module.
-#'''0.1.8   2025-08-27    -         Configuration interactive avancée pour config.yaml et .env.
-#'''                      -             Copie minimale du profil Chrome lors de la configuration.
-#'''                      -             Ajout du paramètre log_retention_days (0 = conservation illimitée).
-#'''                      -             Nettoyage automatique des logs selon la rétention.
-#'''                      -             Messages utilisateurs colorés et validation renforcée.
-#'''0.1.9   2025-08-28    -         Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
-#'''                      -             Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
-#'''                      -             Correction de la robustesse de la configuration initiale.
-#'''0.1.10  2025-08-28    -         Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
-#'''                      -             Chaque suppression de log est loggée.
-#'''0.2.0   2025-08-28    -         Prise en charge du chiffrement/déchiffrement du fichier .env via config.py.
-#'''                      -             Les identifiants Dexcom sont lus uniquement via get_dexcom_credentials (plus de saisie interactive ici).
-#'''                      -             Sécurisation de la gestion des identifiants et des logs.
-#'''0.2.1   2025-08-29    -         Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
-#'''0.2.2   2025-08-29    -         Séparation stricte de la gestion des arguments CLI (désormais dans GlycoDownload.py).
-#'''                      -             Affichage du help possible même sans fichiers de configuration.
-#'''                      -             Plus aucun accès ni création de fichiers de config/env lors de l’affichage du help.
-#'''                      -             Nettoyage des doublons de fonctions CLI.
-#'''                      -             Synchronisation et nettoyage des entêtes de tous les modules.
-#'''0.2.3   2025-10-14    ES-12     Remplacement d'une version spécifique de chromedriver par ChromeDriverManager qui charge toujours la
-#'''                      ES-12         la version courante.
-#'''                      ES-12     Modification du xpath pour le rapport statistiques horaires pour corriger l'erreur d'accès.
-#'''                      ES-12         Modifié pour rendre indépendante de la langue de l'utilisateur.
-#'''                      ES-12     Ajout de la colonne Billet dans le bloc des modifications.
-#'''0.2.4   2025-10-16    ES-12     Suppression du paramètre obsolète chromedriver_path (non utilisé depuis v0.2.3).
-#'''                      ES-12     Nettoyage du code : CHROMEDRIVER_PATH retiré de la configuration.
-#'''                      ES-12     Simplification : le répertoire chromedriver-win64/ n'est plus nécessaire.
+#'''0.0.1	2025-03-07    -        Connectoin à Clarity et authentification
+#''                       -            Utilisation de Chrome au lieu de Edge
+#'''0.0.2   2025-03-20    -        Cliquer sur le sélecteur de dates et choisir la période
+#'''0.0.3   2025-03-28    -        Ajout du traitement des rapports
+#'''0.0.4   2025-04-07    -        Conversion à Python 3.13 et une erreur de syntaxe dans le code de la fonction traitement_rapport_apercu
+#'''0.0.5   2025-04-11    -        Ajout de la sélection du rapport Apercu
+#'''0.0.6   2025-04-16    -        Ajout du code pour télécharger un rapport.
+#'''                      -            Reste à cliquer sur les boutons télécharger le rapport et
+#'''                      -            enregistrer sous.
+#'''0.0.7   2025-04-24    -        Retour à Python 3.12. Besoin Tensorflow et il n'est pas supporté par Python 3.13
+#'''                      -            Cliquer sur le bouton "Enregistrer le rapport"
+#'''                      -            Enlever la sélection du mode couleur (problème à avoir le bon xpath)
+#'''0.0.8   2025-05-23    -        Terminé la fonction téléchargement_rapport
+#'''                      -            Ajout de la fonction deplace_et_renomme_rapport
+#'''                      -            Reconversion à Python 3.13
+#'''0.0.9   2025-07-01    -        Ajout de l'option debug et ajout d'un fichier de log
+#'''0.0.10  2025-07-02    -        Modification pour tenir compte d'une connexion internet lente et instable (4mb/s)Ajout de la fonction traitement_rapport
+#'''                      -            Ajout de la fonction check_internet pour vérifier la connexion internet
+#'''                      -            Ajout du traitement pour les rapports Modèles
+#'''                      -            Dans la fonction deplace_et_renomme_rapport, ne pas tenir compte des fichiers *.log
+#'''0.0.11  2025-07-03    -        La vérification de la connexion internet ne fonctionne pas avec NordVPN
+#'''                      -            Ajout du traitement pour le rapport Superposition
+#'''                      -            Rendre plus robuste le traitement du rapport Aperçu
+#'''                      -            Ajout du traitement pour le rapport Quotidien
+#'''                      -            Ajout du traitement pour le rapport AGP
+#'''0.0.12  2025-07-08    -        Ajout du traitement pour le rapport Statistiques
+#'''0.0.13  2025-07-13    -        Ajout du traitement pour le rapport Comparer
+#'''0.0.14  2025-07-18    -        Ajout de l'exportation des données en format csv
+#'''0.0.15  2025-07-21    -        Terminer la fonction traitement_export_csv
+#'''                      -            Ajout des sous-rapport pour le rapport Comparer
+#'''                      -            Les sous-rapports Superposition et Quotidien de comparer ne fonctioone pas.
+#'''                      -                Ils produisent le même PDF que Tendances.
+#'''                      -        Ajouter la déconnexion du compte avant de fermer le navigateur
+#'''0.0.16  2025-07-25    -        Correction pour la déconnexion du compte
+#'''                      -            Correction pour le bouton Fermer de la fenêtre modale Exporter
+#'''0.0.17  2025-07-25    -        Correction pour le déconnexion du compte. Éliminer la référence au nom d'utilisateur.
+#'''                      -            Ajout de TODO pour la correction du code.
+#'''0.0.18  2025-07-30    -        Gestion des exceptions plus précise. Évite les except: nus. Précise toujours le type d'exception
+#'''                      -            Factorisation des attentes sur les overlays/loaders. Crée une fonction utilitaire
+#'''                      -                pour attendre la disparition des overlays, et utilise-la partout où c'est pertinent.
+#'''                      -            Centralisation des paramètres et chemins. Définis tous les chemins, URLs, et paramètres en haut du script ou dans un fichier de config.
+#'''                      -            Ajout d'une fonction main()
+#'''                      -            Fermeture du navigateur dans un finally
+#'''0.0.19  2025-08-04    -        Ajout de docstrings pour toutes les fonctions
+#'''                      -            Logging cohérent. Utilise le logger pour tous les messages (pas de print).
+#'''0.0.20  2025-08-05    -        Ajout d'une validation pour la présende des variables d'environnement nécessaires
+#'''                      -            Crée un fichier config.py pour centraliser tous les paramètres, chemins, URLs, etc.
+#'''                      -            Crée un fichier utils.py pour toutes les fonctions utilitaires (connexion internet, overlay, renommage, etc.).
+#'''                      -            Crée un fichier rapports.py pour le traitement des rapports
+#'''0.0.21  2025-08-06    -        Ajout d'un exemple de fichier de configuration "config_example.yaml"
+#'''0.0.22  2025-08-13    -        Centralisation et normalisation des chemins, gestion CLI améliorée,
+#'''                      -            logs JS navigateur, robustesse accrue sur la gestion des erreurs,
+#'''                      -            factorisation des utilitaires, gestion propre des exceptions et de la déconnexion.
+#'''0.0.23  2025-08-13    -        Capture d'écran centralisée via utils.py, délai avant capture,
+#'''                      -            suppression des duplications de code, ajout de logs pour le diagnostic.
+#'''0.1.0   2025-08-18    -        Robustesse saisie identifiant : sélection usernameLogin, vérification visibilité/interactivité,
+#'''                      -            captures d'écran uniquement en mode debug, gestion du bouton 'Pas maintenant' après connexion,
+#'''                      -            adaptation aux changements d'interface Dexcom, logs détaillés pour le diagnostic.
+#'''0.1.1   2025-09-03             Ajout des logs.
+#'''0.1.2   2025-09-04             Vérification des répertoires.
+#'''0.1.3   2025-09-05             Correction de la récupération de la date de rapport.
+#'''0.1.4   2025-09-05             Renommage du répertoire de sortie.
+#'''0.1.5   2025-09-06             Répertoire de sortie dans config.yaml.
+#'''0.1.6   2025-09-23             Gestion améliorée de la sélection des jours (days).
+#'''0.1.7   2025-10-06             Détermination automatique de la version de chromedriver.
+#'''0.2.0   2025-10-07             Réorganisation complète de la structure en modules.
+#'''0.2.1   2025-10-09    ES-5     Ajout de la langue dans les arguments en CLI et au rapport.
+#'''0.2.2   2025-10-11    ES-6     Les rapports sont indépendants de la langue de l'utilisateur.
+#'''0.2.3   2025-10-14    ES-11    Ajout du rapport Statistiques horaires et amélioration de la robustesse d'accès aux rapports.
+#'''                       ES-11    Utilisation de ChromeDriverManager pour télécharger automatiquement la bonne version de ChromeDriver.
+#'''0.2.4   2025-10-16    ES-12    Synchronisation de version (aucun changement fonctionnel).
+#'''0.2.5   2025-10-16    ES-10    Synchronisation de version (aucun changement fonctionnel).
+#'''0.2.6   2025-10-21    ES-7     Amélioration du système d'aide (--help) avec description détaillée, exemples et groupes d'arguments.
+#'''                      ES-7     Ajout de l'option --list-rapports pour afficher la liste des rapports disponibles.
+#'''                      ES-7     Ajout de l'option --dry-run pour tester la configuration sans télécharger.
+#'''                      ES-7     Ajout de la validation des dates avec messages d'erreur clairs.
 #''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -147,20 +133,181 @@ from version import __version__
 
 # --- Gestion des arguments CLI et du help ---
 def parse_args():
+    """Parse les arguments de la ligne de commande."""
     import argparse
-    parser = argparse.ArgumentParser(description='Téléchargement des rapports Dexcom Clarity', add_help=False, usage="%(prog)s [-h] [--debug] [--days {7,14,30,90}] [--date_debut DATE_DEBUT] [--date_fin DATE_FIN] [--rapports RAPPORTS [RAPPORTS ...]]")
-    parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help='afficher cette aide et quitter')
-    parser.add_argument('--debug', '-d', action='store_true', help='Activer le mode debug')
-    parser.add_argument('--days', type=int, choices=[7, 14, 30, 90], help='Nombre de jours à inclure dans le rapport (7, 14, 30, 90)')
-    parser.add_argument('--date_debut', type=str, help='Date de début (AAAA-MM-JJ)')
-    parser.add_argument('--date_fin', type=str, help='Date de fin (AAAA-MM-JJ)')
-    parser.add_argument('--rapports', nargs='+', metavar='RAPPORTS', help='Liste des rapports à traiter')
+    from version import __version__
+    
+    description = """
+GlycoReport Downloader v{version} - Téléchargement automatisé des rapports Dexcom Clarity
+
+Ce script automatise le téléchargement des rapports glycémiques depuis votre compte
+Dexcom Clarity. Il supporte plusieurs types de rapports, périodes personnalisables,
+et exporte les données en PDF ou CSV.
+
+Pour plus d'informations : https://github.com/pierrethb/GlycoReport-Downloader
+    """.format(version=__version__)
+    
+    epilog = """
+Exemples d'utilisation :
+  Télécharger tous les rapports des 14 derniers jours (par défaut) :
+    python GlycoDownload.py
+    
+  Télécharger uniquement le rapport Aperçu des 7 derniers jours :
+    python GlycoDownload.py --days 7 --rapports "Aperçu"
+    
+  Télécharger plusieurs rapports pour une période spécifique :
+    python GlycoDownload.py --date_debut 2025-01-01 --date_fin 2025-01-31 --rapports "Aperçu" "AGP"
+    
+  Mode debug avec tous les rapports des 30 derniers jours :
+    python GlycoDownload.py --debug --days 30
+    
+  Simuler l'exécution sans télécharger (afficher la configuration) :
+    python GlycoDownload.py --dry-run --days 7 --rapports "AGP"
+
+Rapports disponibles : Aperçu, Modèles, Superposition, Quotidien, Comparer, Statistiques, AGP, Export
+(Utilisez --list-rapports pour plus de détails)
+
+Configuration :
+  - Fichier : config.yaml (créé automatiquement au premier lancement)
+  - Identifiants : .env (chiffré, nécessite la variable ENV_DEXCOM_KEY)
+  - Logs : définis dans config.yaml (log_retention_days)
+
+Pour toute question ou signalement de bug : GitHub Issues
+    """
+    
+    parser = argparse.ArgumentParser(
+        prog='GlycoReport-Downloader',
+        description=description,
+        epilog=epilog,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    
+    # Groupe des options générales
+    general_group = parser.add_argument_group('options générales')
+    general_group.add_argument(
+        '--version', '-v',
+        action='version',
+        version=f'GlycoReport Downloader v{__version__}',
+        help='Afficher la version et quitter'
+    )
+    general_group.add_argument(
+        '--debug', '-d',
+        action='store_true',
+        help='Activer le mode debug (logs détaillés, captures d\'écran)'
+    )
+    general_group.add_argument(
+        '--dry-run',
+        action='store_true',
+        help='Simuler l\'exécution sans télécharger (affiche la configuration)'
+    )
+    
+    # Groupe des options de période
+    period_group = parser.add_argument_group(
+        'période des rapports',
+        'Définir la période de téléchargement (par défaut : 14 derniers jours)'
+    )
+    period_group.add_argument(
+        '--days',
+        type=int,
+        choices=[7, 14, 30, 90],
+        metavar='N',
+        help='Nombre de jours à inclure (7, 14, 30 ou 90)'
+    )
+    period_group.add_argument(
+        '--date_debut',
+        type=str,
+        metavar='AAAA-MM-JJ',
+        help='Date de début au format AAAA-MM-JJ (ex: 2025-01-01)'
+    )
+    period_group.add_argument(
+        '--date_fin',
+        type=str,
+        metavar='AAAA-MM-JJ',
+        help='Date de fin au format AAAA-MM-JJ (ex: 2025-01-31)'
+    )
+    
+    # Groupe des options de rapports
+    reports_group = parser.add_argument_group(
+        'sélection des rapports',
+        'Choisir les rapports à télécharger (par défaut : tous les rapports configurés)'
+    )
+    reports_group.add_argument(
+        '--rapports',
+        nargs='+',
+        metavar='RAPPORT',
+        help='Liste des rapports (ex: "Aperçu" "AGP" "Statistiques")'
+    )
+    reports_group.add_argument(
+        '--list-rapports',
+        action='store_true',
+        help='Afficher la liste des rapports disponibles et quitter'
+    )
+    
     return parser, parser.parse_args()
 
-def is_help_requested():
-    import sys
-    help_args = {'-h', '--help', '--h'}
-    return any(arg in sys.argv for arg in help_args)
+
+def list_available_reports():
+    """Affiche la liste des rapports disponibles avec leurs descriptions."""
+    from colorama import Fore, Style, init
+    init(autoreset=True)
+    
+    reports = {
+        "Aperçu": "Vue d'ensemble de la glycémie sur la période sélectionnée",
+        "Modèles": "Analyse des tendances et modèles glycémiques récurrents",
+        "Superposition": "Superposition des jours pour identifier les patterns",
+        "Quotidien": "Détail jour par jour de la glycémie",
+        "Comparer": "Comparaison de différentes périodes (3 sous-rapports)",
+        "Statistiques": "Statistiques détaillées quotidiennes et horaires (2 sous-rapports)",
+        "AGP": "Profil glycémique ambulatoire (Ambulatory Glucose Profile)",
+        "Export": "Export des données brutes au format CSV"
+    }
+    
+    print(f"\n{Fore.CYAN}{'=' * 80}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}Rapports disponibles - GlycoReport Downloader{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{'=' * 80}{Style.RESET_ALL}\n")
+    
+    for name, desc in reports.items():
+        print(f"{Fore.GREEN}• {name:<15}{Style.RESET_ALL} {desc}")
+    
+    print(f"\n{Fore.YELLOW}Notes :{Style.RESET_ALL}")
+    print(f"  • Le rapport 'Comparer' génère 3 fichiers PDF distincts")
+    print(f"  • Le rapport 'Statistiques' génère 2 fichiers PDF (quotidien + horaire)")
+    print(f"  • Le rapport 'Export' génère un fichier CSV avec toutes les données brutes")
+    print(f"\n{Fore.CYAN}{'=' * 80}{Style.RESET_ALL}\n")
+
+
+def validate_dates(args):
+    """Valide les dates fournies en arguments."""
+    from datetime import datetime
+    from colorama import Fore, Style, init
+    init(autoreset=True)
+    
+    if args.date_debut:
+        try:
+            datetime.strptime(args.date_debut, "%Y-%m-%d")
+        except ValueError:
+            print(f"\n{Fore.RED}❌ Erreur : La date de début '{args.date_debut}' n'est pas valide.{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}Format attendu : AAAA-MM-JJ (ex: 2025-01-15){Style.RESET_ALL}\n")
+            sys.exit(1)
+    
+    if args.date_fin:
+        try:
+            datetime.strptime(args.date_fin, "%Y-%m-%d")
+        except ValueError:
+            print(f"\n{Fore.RED}❌ Erreur : La date de fin '{args.date_fin}' n'est pas valide.{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}Format attendu : AAAA-MM-JJ (ex: 2025-01-31){Style.RESET_ALL}\n")
+            sys.exit(1)
+    
+    if args.date_debut and args.date_fin:
+        debut = datetime.strptime(args.date_debut, "%Y-%m-%d")
+        fin = datetime.strptime(args.date_fin, "%Y-%m-%d")
+        if debut > fin:
+            print(f"\n{Fore.RED}❌ Erreur : La date de début ne peut pas être postérieure à la date de fin.{Style.RESET_ALL}\n")
+            sys.exit(1)
+    
+    if args.days and (args.date_debut or args.date_fin):
+        print(f"\n{Fore.YELLOW}⚠ Avertissement : --days est ignoré car --date_debut ou --date_fin est spécifié.{Style.RESET_ALL}")
+
 
 # --- Fonctions utilitaires refactorisées ---
 def saisir_identifiants(driver, logger, log_dir, NOW_STR):
@@ -582,21 +729,126 @@ def pause_on_error():
 
 # --- Point d'entrée du script ---
 if __name__ == "__main__":
-    # Gestion de l'aide AVANT tout import/config
+    # ============================================
+    # ÉTAPE 1 : Parse des arguments (léger, pas d'import config)
+    # ============================================
     parser, args = parse_args()
-    if is_help_requested():
-        print("\n", end="")
-        parser, _ = parse_args()
-        parser.print_help()
-        import sys
+    
+    # ============================================
+    # ÉTAPE 2 : Gestion des options qui N'ONT PAS besoin de config
+    # (Ces options s'exécutent AVANT la validation de .env et config.yaml)
+    # ============================================
+    
+    # Note : --help et --version sont gérés automatiquement par argparse
+    # et terminent le programme AVANT d'arriver ici
+    
+    # Option --list-rapports
+    if hasattr(args, 'list_rapports') and args.list_rapports:
+        list_available_reports()
         sys.exit(0)
-    # Import de la config et des variables seulement après la gestion du help
-    from config import (
-        DOWNLOAD_DIR, DIR_FINAL_BASE, CHROME_USER_DATA_DIR, DEXCOM_URL,
-        CHROMEDRIVER_LOG, RAPPORTS, NOW_STR, DATE_DEBUT, DATE_FIN,
-        LOG_RETENTION_DAYS, get_dexcom_credentials
+    
+    # ============================================
+    # ÉTAPE 3 : Import de config (validation de .env et config.yaml)
+    # (À partir d'ici, .env et config.yaml DOIVENT être valides)
+    # ============================================
+    
+    try:
+        from config import (
+            DOWNLOAD_DIR, DIR_FINAL_BASE, CHROME_USER_DATA_DIR, DEXCOM_URL,
+            CHROMEDRIVER_LOG, RAPPORTS, NOW_STR, DATE_DEBUT, DATE_FIN,
+            LOG_RETENTION_DAYS, get_dexcom_credentials
+        )
+        import config
+    except Exception as e:
+        from colorama import Fore, Style, init
+        init(autoreset=True)
+        print(f"\n{Fore.RED}❌ Erreur lors du chargement de la configuration :{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}{str(e)}{Style.RESET_ALL}")
+        print(f"\n{Fore.CYAN}💡 Vérifiez que les fichiers config.yaml et .env existent et sont valides.{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}   Pour afficher l'aide : python GlycoDownload.py --help{Style.RESET_ALL}\n")
+        sys.exit(1)
+    
+    # ============================================
+    # ÉTAPE 4 : Validation des arguments (nécessite config)
+    # ============================================
+    
+    validate_dates(args)
+    
+    # ============================================
+    # ÉTAPE 5 : Option --dry-run (NÉCESSITE config)
+    # ============================================
+    
+    if hasattr(args, 'dry_run') and args.dry_run:
+        from colorama import Fore, Style, init
+        from datetime import datetime, timedelta
+        init(autoreset=True)
+        
+        # Déterminer la période selon les arguments
+        if args.date_debut and args.date_fin:
+            date_debut_str = args.date_debut
+            date_fin_str = args.date_fin
+        elif args.days:
+            fin = datetime.now() - timedelta(days=1)
+            debut = fin - timedelta(days=args.days - 1)
+            date_debut_str = debut.strftime("%Y-%m-%d")
+            date_fin_str = fin.strftime("%Y-%m-%d")
+        else:
+            date_debut_str = config.DATE_DEBUT
+            date_fin_str = config.DATE_FIN
+        
+        # Déterminer les rapports à télécharger
+        rapports = args.rapports if args.rapports else config.RAPPORTS
+        
+        # Afficher la configuration en mode dry-run
+        print(f"\n{Fore.CYAN}{'=' * 80}{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}MODE DRY-RUN : Aucun téléchargement ne sera effectué{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}{'=' * 80}{Style.RESET_ALL}\n")
+        
+        print(f"{Fore.GREEN}Configuration détectée :{Style.RESET_ALL}\n")
+        print(f"  {Fore.YELLOW}• Période :{Style.RESET_ALL} {date_debut_str} → {date_fin_str}")
+        print(f"  {Fore.YELLOW}• Rapports :{Style.RESET_ALL} {', '.join(rapports)}")
+        print(f"  {Fore.YELLOW}• Dossier de téléchargement :{Style.RESET_ALL} {config.DOWNLOAD_DIR}")
+        print(f"  {Fore.YELLOW}• Dossier de destination :{Style.RESET_ALL} {config.DIR_FINAL_BASE}")
+        print(f"  {Fore.YELLOW}• Mode debug :{Style.RESET_ALL} {'Activé' if args.debug else 'Désactivé'}")
+        print(f"  {Fore.YELLOW}• Rétention des logs :{Style.RESET_ALL} {config.LOG_RETENTION_DAYS} jours")
+        print(f"  {Fore.YELLOW}• URL Dexcom :{Style.RESET_ALL} {config.DEXCOM_URL}")
+        print(f"  {Fore.YELLOW}• ChromeDriver log :{Style.RESET_ALL} {config.CHROMEDRIVER_LOG}")
+        print(f"  {Fore.YELLOW}• Profil Chrome :{Style.RESET_ALL} {config.CHROME_USER_DATA_DIR}")
+        
+        # Vérifier les credentials
+        try:
+            credentials = get_dexcom_credentials()
+            print(f"\n  {Fore.GREEN}✓ Credentials Dexcom détectés{Style.RESET_ALL}")
+            print(f"    {Fore.YELLOW}• Type d'authentification :{Style.RESET_ALL} ", end="")
+            if credentials.get('email'):
+                print(f"Email/Nom d'utilisateur")
+            elif credentials.get('country_code') and credentials.get('phone_number'):
+                print(f"Numéro de téléphone ({credentials['country_code']} {credentials['phone_number']})")
+            else:
+                print(f"{Fore.RED}Inconnu (configuration incomplète){Style.RESET_ALL}")
+        except Exception as e:
+            print(f"\n  {Fore.RED}✗ Erreur lors de la lecture des credentials : {e}{Style.RESET_ALL}")
+        
+        print(f"\n{Fore.CYAN}{'=' * 80}{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}Fin du mode dry-run{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}{'=' * 80}{Style.RESET_ALL}\n")
+        
+        print(f"{Fore.GREEN}💡 Pour exécuter réellement le téléchargement, relancez sans --dry-run{Style.RESET_ALL}\n")
+        
+        sys.exit(0)
+    
+    # ============================================
+    # ÉTAPE 6 : Setup du logger (exécution normale)
+    # ============================================
+    
+    logger = setup_logger(
+        args.debug, 
+        os.path.dirname(config.CHROMEDRIVER_LOG) or ".", 
+        config.NOW_STR
     )
-    import config
-    logger = setup_logger(args.debug, os.path.dirname(config.CHROMEDRIVER_LOG) or ".", config.NOW_STR)
-    main(args, logger, config.__dict__)
-
+    
+    # ============================================
+    # ÉTAPE 7 : Exécution de la fonction principale
+    # ============================================
+    
+    main(args, logger, config.__dict__)  # ← Correction : config.__dict__ au lieu de config

@@ -5,14 +5,14 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-10-16
+#'''Last Modified On : 2025-10-21
 #'''CopyRights : Pierre Théberge
 #'''Description : Centralisation et sécurisation de la configuration du projet GlycoReport-Downloader.
 #'''              Lecture de tous les paramètres depuis config.yaml, normalisation systématique des chemins
 #'''              (via utils.py), gestion des erreurs et des droits d'accès, validation stricte des types,
 #'''              génération interactive de config.yaml, protection contre les vulnérabilités courantes
 #'''              (injection, mauvaise gestion des secrets, etc.).
-#'''Version : 0.2.4
+#'''Version : 0.2.6
 #'''Modifications :
 #'''Version   Date         Billet   Description
 #'''0.0.0     2025-08-05            Version initiale.
@@ -48,15 +48,17 @@
 #'''0.2.2     2025-08-29            Séparation stricte de la gestion des arguments CLI (retirée de ce module).
 #'''                                    Désactivation de tout accès à la config lors de l'affichage du help.
 #'''                                    Nettoyage des doublons de fonctions utilitaires CLI.
-#'''0.2.3   2025-10-14    ES-12     Remplacement d'une version spécifique de chromedriver par ChromeDriverManager qui charge toujours la
-#'''                      ES-12         la version courante.
-#'''                      ES-12     Modification du xpath pour le rapport statistiques horaires pour corriger l'erreur d'accès.
-#'''                      ES-12         Modifié pour rendre indépendante de la langue de l'utilisateur.
-#'''                      ES-12     Ajout de la colonne Billet dans le bloc des modifications.
-#'''0.2.4   2025-10-16    ES-12     Suppression du paramètre obsolète chromedriver_path (non utilisé depuis v0.2.3).
-#'''                      ES-12     Nettoyage du code : CHROMEDRIVER_PATH retiré de la configuration.
-#'''                      ES-12     Simplification : le répertoire chromedriver-win64/ n'est plus nécessaire.
-#'''</summary>
+#'''0.2.3     2025-10-14    ES-11   Remplacement d'une version spécifique de chromedriver par ChromeDriverManager qui charge toujours la
+#'''                        ES-11       la version courante.
+#'''                        ES-11   Modification du xpath pour le rapport statistiques horaires pour corriger l'erreur d'accès.
+#'''                        ES-11       Modifié pour rendre indépendante de la langue de l'utilisateur.
+#'''                        ES-11   Ajout de la colonne Billet dans le bloc des modifications.
+#'''0.2.4     2025-10-16    ES-12   Suppression du paramètre obsolète chromedriver_path (non utilisé depuis v0.2.3).
+#'''                        ES-12   Nettoyage du code : CHROMEDRIVER_PATH retiré de la configuration.
+#'''                        ES-12   Simplification : le répertoire chromedriver-win64/ n'est plus nécessaire.
+#'''0.2.5     2025-10-16    ES-10   Synchronisation de version (aucun changement fonctionnel).
+#'''0.2.6     2025-10-21    ES-7    Synchronisation de version (aucun changement fonctionnel).
+#''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import os
