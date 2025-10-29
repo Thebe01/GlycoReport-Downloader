@@ -5,13 +5,13 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-10-27
+#'''Last Modified On : 2025-10-16
 #'''CopyRights : Pierre Théberge
 #'''Description : Traitement et gestion des rapports Dexcom Clarity.
 #'''              Utilisation des chemins et paramètres centralisés, logging détaillé,
 #'''              robustesse pour la détection et gestion des fichiers téléchargés,
 #'''              logging des erreurs JS lors du déplacement/renommage.
-#'''Version : 0.2.7
+#'''Version : 0.2.6
 #'''Modifications :
 #'''Version   Date         Billet   Description
 #'''0.0.0	2025-08-05              Version initiale.
@@ -47,10 +47,6 @@
 #'''0.2.4   2025-10-16    ES-12     Synchronisation de version (aucun changement fonctionnel).
 #'''0.2.5   2025-10-16    ES-10     Synchronisation de version (aucun changement fonctionnel).
 #'''0.2.6   2025-10-21    ES-7      Synchronisation de version (aucun changement fonctionnel).
-#'''0.2.7   2025-10-27    ES-17     Refactorisation de selection_rapport avec gestion des erreurs 502 et retry.
-#'''                      ES-17     Ajout de select_rapport_with_retry pour gérer les erreurs temporaires.
-#'''                      ES-17     Ajout de traiter_rapport pour dispatcher vers les fonctions de traitement.
-#'''                      ES-17     Suivi global des rapports échoués avec résumé final.
 #''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 

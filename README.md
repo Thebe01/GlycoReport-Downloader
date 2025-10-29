@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.2.7-blue)
+![Version](https://img.shields.io/badge/version-0.2.6-blue)
 
 An English version of this text follows the French text.
 
@@ -11,7 +11,7 @@ An English version of this text follows the French text.
 
 ## Sommaire
 
-- [Nouveautés](#version--027--27-octobre-2025)
+- [Nouveautés](#version--025--21-octobre-2025)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,43 +23,32 @@ An English version of this text follows the French text.
 
 ---
 
-## Version : 0.2.7 — 27 octobre 2025
+## Version : 0.2.6 — 21 octobre 2025
 
 ### Nouveautés
 
-**Gestion robuste des erreurs serveur (502 Bad Gateway) :**
+**Améliorations de l'aide et des options CLI :**
 
-- Détection automatique des erreurs 502 (Bad Gateway) du serveur Dexcom Clarity
-- Retry automatique avec 3 tentatives maximum en cas d'erreur temporaire
-- Attente intelligente de 10 secondes entre chaque tentative
-- Rapport détaillé des échecs de téléchargement avec raisons spécifiques
-- Le script continue le téléchargement des autres rapports même si un rapport
-  échoue
-- Résumé final listant tous les rapports ayant échoué et leurs raisons
+- Aide (`--help`) complètement repensée avec description détaillée, exemples
+  d'utilisation et groupes d'arguments organisés
+- Nouvelle option `--list-rapports` pour afficher la liste complète des rapports
+  disponibles avec descriptions
+- Nouvelle option `--dry-run` pour simuler l'exécution et afficher la
+  configuration sans télécharger
+- Validation améliorée des dates avec messages d'erreur explicites et colorés
+- Les options d'aide fonctionnent maintenant **avant** la validation des
+  fichiers de configuration
 
-**Améliorations de la robustesse :**
+**Améliorations du nettoyage des logs :**
 
-- Meilleure gestion des problèmes temporaires du serveur Dexcom
-- Logs détaillés des tentatives de retry pour faciliter le diagnostic
-- Possibilité de relancer uniquement les rapports échoués
+- Les captures d'écran (fichiers `.png`) générées en mode debug sont maintenant
+  automatiquement supprimées lors du nettoyage des logs selon la période de
+  rétention configurée
+- Amélioration de la gestion de l'espace disque
 
 ---
 
 ## Historique des versions
-
-### 0.2.7 — 27 octobre 2025
-
-- **Gestion robuste des erreurs serveur (502 Bad Gateway) :**
-  - Détection automatique des erreurs 502 (Bad Gateway) du serveur Dexcom
-    Clarity
-  - Retry automatique avec 3 tentatives maximum en cas d'erreur temporaire
-  - Attente intelligente de 10 secondes entre chaque tentative
-  - Rapport détaillé des échecs de téléchargement avec raisons spécifiques
-  - Le script continue le téléchargement des autres rapports même si un rapport
-    échoue
-  - Résumé final listant tous les rapports ayant échoué et leurs raisons
-- Améliorations de la robustesse générale du script
-- Synchronisation des versions dans tous les modules
 
 ### 0.2.6 — 21 octobre 2025
 
@@ -459,7 +448,7 @@ usage: GlycoReport-Downloader [-h] [--version] [--debug] [--dry-run]
                                [--rapports REPORT [REPORT ...]]
                                [--list-rapports]
 
-GlycoReport Downloader v0.2.7 - Automated Dexcom Clarity report download
+GlycoReport Downloader v0.2.6 - Automated Dexcom Clarity report download
 
 This script automates the download of glycemic reports from your
 Dexcom Clarity account. It supports multiple report types, customizable periods,
@@ -618,39 +607,28 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 
 ## What's New (English)
 
-### Version: 0.2.7 — October 27, 2025
+### Version: 0.2.6 — October 21, 2025
 
-**Robust Handling of Server Errors (502 Bad Gateway):**
+**CLI Help and Options Improvements:**
 
-- Automatic detection of 502 (Bad Gateway) errors from the Dexcom Clarity server
-- Automatic retry with up to 3 attempts in case of temporary error
-- Intelligent wait of 10 seconds between each attempt
-- Detailed reporting of download failures with specific reasons
-- The script continues downloading other reports even if one report fails
-- Final summary listing all failed reports and their reasons
+- Help (`--help`) completely redesigned with detailed description, usage
+  examples, and organized argument groups
+- New `--list-rapports` option to display the complete list of available reports
+  with descriptions
+- New `--dry-run` option to simulate execution and display configuration without
+  downloading
+- Enhanced date validation with explicit and colored error messages
+- Help options now work **before** configuration file validation
 
-**Improvements in Robustness:**
+**Log Cleanup Improvements:**
 
-- Better handling of temporary issues with the Dexcom server
-- Detailed logs of retry attempts for easier diagnosis
-- Possibility to re-run only the failed reports
+- Screenshot files (`.png` files) generated in debug mode are now automatically
+  deleted during log cleanup according to the configured retention period
+- Improved disk space management
 
 ---
 
 ## Version History (English)
-
-### 0.2.7 — October 27, 2025
-
-- **Robust Handling of Server Errors (502 Bad Gateway):**
-  - Automatic detection of 502 (Bad Gateway) errors from the Dexcom Clarity
-    server
-  - Automatic retry with up to 3 attempts in case of temporary error
-  - Intelligent wait of 10 seconds between each attempt
-  - Detailed reporting of download failures with specific reasons
-  - The script continues downloading other reports even if one report fails
-  - Final summary listing all failed reports and their reasons
-- Improvements in the overall robustness of the script
-- Version synchronization across all modules
 
 ### 0.2.6 — October 21, 2025
 
@@ -1031,7 +1009,7 @@ usage: GlycoReport-Downloader [-h] [--version] [--debug] [--dry-run]
                                [--rapports REPORT [REPORT ...]]
                                [--list-rapports]
 
-GlycoReport Downloader v0.2.7 - Automated Dexcom Clarity report download
+GlycoReport Downloader v0.2.6 - Automated Dexcom Clarity report download
 
 This script automates the download of glycemic reports from your
 Dexcom Clarity account. It supports multiple report types, customizable periods,

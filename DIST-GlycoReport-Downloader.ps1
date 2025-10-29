@@ -3,11 +3,11 @@
 #
 #	Auteur : Pierre Théberge
 #	Créé le : 2025-09-03
-#	Dernière modification le : 2025-10-27
+#	Dernière modification le : 2025-10-16
 #	CopyRights : Pierre Théberge
 #	Description : Script pour générer l'exécutable, préparer le dossier dist et créer l'archive ZIP de distribution.
 #
-#	Version : 1.0.7
+#	Version : 1.0.5
 #	Modifications :
 #	Version   Date          Billet  Description
 #	1.0.0     2025-09-03            Version initiale.
@@ -16,8 +16,6 @@
 #   1.0.3     2025-10-16    ES-12   Suppression de la copie du dossier chromedriver-win64 (ChromeDriverManager gère maintenant le téléchargement automatique).
 #   1.0.4     2025-10-16    ES-12   Ajout des fichiers de migration (migrate.py, MIGRATION.md) dans la distribution.
 #   1.0.5     2025-10-16    ES-12   Création d'un exécutable migrate.exe à partir de migrate.py pour simplifier l'utilisation.
-#   1.0.6     2025-10-21    ES-7    Synchronisation de version (aucun changement fonctionnel).
-#   1.0.7     2025-10-27    ES-17   Synchronisation de version (aucun changement fonctionnel).
 
 $ErrorActionPreference = "Stop"
 

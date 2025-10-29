@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-13
-#'''Last Modified On : 2025-10-27
+#'''Last Modified On : 2025-10-21
 #'''CopyRights : Pierre Théberge
 #'''Description : Tests unitaires pour toutes les fonctions utilitaires du projet GlycoReport-Downloader.
 #'''              Vérifie la robustesse et la portabilité des fonctions (normalisation des chemins, capture d'écran, etc.).
 #'''              Pour exécuter les tests, utilisez la commande : pytest tests/test_utils.py
-#'''Version : 0.2.7
+#'''Version : 0.2.6
 #'''Modifications :
 #'''Version   Date         Billet   Description
 #'''0.0.0    2025-08-13             Version initiale
@@ -24,7 +24,6 @@
 #'''0.2.4    2025-10-16    ES-12    Synchronisation de version (aucun changement fonctionnel dans les tests).
 #'''0.2.5    2025-10-16    ES-10    Ajout de tests pour la suppression des captures d'écran (.png) lors du nettoyage des logs.
 #'''0.2.6    2025-10-21    ES-7     Synchronisation de version (aucun changement fonctionnel dans les tests).
-#'''0.2.7    2025-10-27    ES-17    Synchronisation de version (aucun changement fonctionnel dans les tests).
 #''' </summary>
 #'''////////////////////////////////////////////////////////////////////////////////////////////////////
 

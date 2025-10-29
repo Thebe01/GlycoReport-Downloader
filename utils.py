@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-10-27
+#'''Last Modified On : 2025-10-21
 #'''CopyRights : Pierre Théberge
 #'''Description : Fonctions utilitaires pour le projet GlycoReport-Downloader.
 #'''              Connexion internet, overlay, renommage, détection du dernier fichier téléchargé,
 #'''              logging détaillé, robustesse accrue pour le renommage, logs JS navigateur.
-#'''Version : 0.2.7
+#'''Version : 0.2.6
 #'''Modifications :
 #'''Version   Date         Billet   Description
 #'''0.0.0	2025-08-05              Version initiale.
@@ -45,9 +45,7 @@
 #'''0.2.4    2025-10-16    ES-12    Synchronisation de version (aucun changement fonctionnel).
 #'''0.2.5    2025-10-16    ES-10    Ajout de la suppression des captures d'écran (.png) lors du nettoyage des logs.
 #'''0.2.6    2025-10-21    ES-7     Synchronisation de version (aucun changement fonctionnel).
-#'''0.2.7    2025-10-27    ES-17    Ajout de check_for_502_errors pour détecter les erreurs 502 dans les logs du navigateur.
-#'''                       ES-17    Ajout de wait_for_page_load_with_retry pour gérer les erreurs temporaires avec retry automatique.
-#''' </summary>
+#'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import os
@@ -198,79 +196,3 @@ def cleanup_logs(log_dir, retention_days, logger=None):
                 print(Fore.RED + msg)
                 if logger:
                     logger.error(msg)
-
-def check_for_502_errors(driver, logger):
-    """
-    Vérifie si des erreurs 502 (Bad Gateway) sont présentes dans les logs du navigateur.
-    
-    Args:
-        driver (WebDriver): Instance du navigateur Selenium.
-        logger (Logger): Logger pour enregistrer les erreurs détectées.
-    
-    Returns:
-        bool: True si une erreur 502 est détectée, False sinon.
-    """
-    try:
-        browser_logs = driver.get_log('browser')
-        for entry in browser_logs:
-            if entry['level'] == 'SEVERE':
-                message = entry.get('message', '')
-                if '502' in message or 'Bad Gateway' in message.lower():
-                    logger.warning(f"Erreur 502 détectée dans les logs du navigateur")
-                    return True
-        return False
-    except Exception as e:
-        logger.debug(f"Impossible de vérifier les erreurs 502 : {e}")
-        return False
-
-
-def wait_for_page_load_with_retry(driver, logger, max_retries=3, wait_time=10):
-    """
-    Attend le chargement de la page avec gestion des erreurs 502.
-    Réessaie automatiquement en cas d'erreur temporaire du serveur.
-    
-    Args:
-        driver (WebDriver): Instance du navigateur Selenium.
-        logger (Logger): Logger pour enregistrer les tentatives.
-        max_retries (int): Nombre maximum de tentatives (défaut: 3).
-        wait_time (int): Temps d'attente entre les tentatives en secondes (défaut: 10).
-    
-    Returns:
-        bool: True si le chargement a réussi, False sinon.
-    """
-    from selenium.webdriver.common.by import By
-    from selenium.webdriver.support.ui import WebDriverWait
-    from selenium.webdriver.support import expected_conditions as EC
-    from selenium.common.exceptions import TimeoutException
-    import time
-    
-    for attempt in range(1, max_retries + 1):
-        try:
-            # Attendre que la page soit chargée (présence du body)
-            WebDriverWait(driver, 30).until(
-                EC.presence_of_element_located((By.TAG_NAME, "body"))
-            )
-            
-            # Attendre la disparition des overlays/loaders
-            attendre_disparition_overlay(driver, logger)
-            
-            # Vérifier s'il y a des erreurs 502
-            if check_for_502_errors(driver, logger):
-                if attempt < max_retries:
-                    logger.warning(f"Erreur 502 détectée (tentative {attempt}/{max_retries}). "
-                                 f"Attente de {wait_time} secondes avant nouvelle tentative...")
-                    time.sleep(wait_time)
-                    driver.refresh()
-                    continue
-                else:
-                    logger.error(f"Erreur 502 persistante après {max_retries} tentatives.")
-                    return False
-            
-            # Pas d'erreur 502, chargement réussi
-            logger.debug(f"Page chargée avec succès (tentative {attempt}/{max_retries})")
-            return True
-            
-        except TimeoutException:
-            if attempt < max_retries:
-                logger.warning(f"Timeout lors du chargement (tentative {attempt}/{max_retries}). "
-                             f"Attente de {wait_time} secondes avant nouvelle tentative...")
