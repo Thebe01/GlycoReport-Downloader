@@ -90,6 +90,10 @@
 #'''                      ES-7     Ajout de l'option --list-rapports pour afficher la liste des rapports disponibles.
 #'''                      ES-7     Ajout de l'option --dry-run pour tester la configuration sans télécharger.
 #'''                      ES-7     Ajout de la validation des dates avec messages d'erreur clairs.
+#'''0.2.7   2025-10-27    ES-16    Ajout de la gestion des erreurs 502 (Bad Gateway) avec retry automatique.
+#'''                      ES-16    Attente et réessai automatique (3 tentatives max) en cas d'erreur serveur temporaire.
+#'''                      ES-16    Suivi et rapport des échecs de téléchargement avec raisons détaillées.
+#'''                      ES-16    Amélioration de la robustesse face aux problèmes temporaires du serveur Dexcom.
 #''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 

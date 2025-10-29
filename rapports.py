@@ -47,6 +47,10 @@
 #'''0.2.4   2025-10-16    ES-12     Synchronisation de version (aucun changement fonctionnel).
 #'''0.2.5   2025-10-16    ES-10     Synchronisation de version (aucun changement fonctionnel).
 #'''0.2.6   2025-10-21    ES-7      Synchronisation de version (aucun changement fonctionnel).
+#'''0.2.7   2025-10-27    ES-16     Refactorisation de selection_rapport avec gestion des erreurs 502 et retry.
+#'''                      ES-16     Ajout de select_rapport_with_retry pour gérer les erreurs temporaires.
+#'''                      ES-16     Ajout de traiter_rapport pour dispatcher vers les fonctions de traitement.
+#'''                      ES-16     Suivi global des rapports échoués avec résumé final.
 #''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -16,6 +16,8 @@
 #   1.0.3     2025-10-16    ES-12   Suppression de la copie du dossier chromedriver-win64 (ChromeDriverManager gère maintenant le téléchargement automatique).
 #   1.0.4     2025-10-16    ES-12   Ajout des fichiers de migration (migrate.py, MIGRATION.md) dans la distribution.
 #   1.0.5     2025-10-16    ES-12   Création d'un exécutable migrate.exe à partir de migrate.py pour simplifier l'utilisation.
+#   1.0.6     2025-10-21    ES-7    Synchronisation de version (aucun changement fonctionnel).
+#   1.0.7     2025-10-27    ES-16   Synchronisation de version (aucun changement fonctionnel).
 
 $ErrorActionPreference = "Stop"
 
