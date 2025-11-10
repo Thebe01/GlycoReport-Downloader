@@ -30,7 +30,9 @@ Description
 
 Modifications
 -------------
-0.0.0 - YYYY-MM-DD : Initialisation.
+0.0.0 - YYYY-MM-DD   [BILLET000] : Initialisation.
+0.1.0 - YYYY-MM-DD   [BILLET000] : Ajout notifications email.
+1.0.0 - YYYY-MM-DD   [BILLET000] : Version de production stable.
 
 Paramètres
 ----------
@@ -88,10 +90,12 @@ if __name__ == "__main__":
 ```
 
 **Pourquoi :**
+
 - `#!/usr/bin/env python3` : Compatibilité Unix/Linux
 - `# -*- coding: utf-8 -*-` : Support des caractères accentués
 
 ### 2. Docstring module
+
 Docstring complet avec sections **structurées** et **séparées** :
 
 ```python
@@ -119,9 +123,9 @@ Fonctionnalités :
 
 Modifications
 -------------
-0.0.0 - 2025-11-06 : Initialisation.
-0.1.0 - 2025-11-08 : Ajout notifications email.
-1.0.0 - 2025-11-15 : Version de production stable.
+0.0.0 - 2025-11-06   [BILLET000] : Initialisation.
+0.1.0 - 2025-11-08   [BILLET000] : Ajout notifications email.
+1.0.0 - 2025-11-15   [BILLET000] : Version de production stable.
 
 Paramètres
 ----------
@@ -139,15 +143,18 @@ Lance la sauvegarde avec logs détaillés
 ```
 
 **Règles :**
+
 - Alignement sur `:` (14 espaces après le label)
 - Sections séparées par des traits `---` (13 caractères)
 - Date au format `YYYY-MM-DD`
 - Version sémantique `MAJEUR.MINEUR.CORRECTIF`
 
 ### 3. Section Description
+
 Description **courte** avec liste de fonctionnalités.
 
 **Format :**
+
 ```python
 Description
 -----------
@@ -160,27 +167,32 @@ Fonctionnalités :
 ```
 
 ### 4. Section Modifications
+
 Changelog **complet** avec chaque version documentée.
 
 **Format :**
+
 ```python
 Modifications
 -------------
-0.0.0 - 2025-11-06 : Initialisation.
-0.1.0 - 2025-11-08 : Ajout paramètre --verbose.
-0.1.1 - 2025-11-09 : Correction encodage UTF-8.
-1.0.0 - 2025-11-15 : Version de production stable.
+0.0.0 - 2025-11-06   [BILLET000] : Initialisation.
+0.1.0 - 2025-11-08   [BILLET000] : Ajout paramètre --verbose.
+0.1.1 - 2025-11-09   [BILLET000] : Correction encodage UTF-8.
+1.0.0 - 2025-11-15   [BILLET000] : Version de production stable.
 ```
 
 **Règles versioning :**
+
 - `MAJEUR` : Breaking changes (incompatibilité)
 - `MINEUR` : Nouvelles fonctionnalités (compatible)
 - `CORRECTIF` : Corrections de bugs uniquement
 
 ### 5. Section Paramètres
+
 Documenter **tous** les arguments CLI.
 
 **Format :**
+
 ```python
 Paramètres
 ----------
@@ -196,9 +208,11 @@ Paramètres
 ```
 
 ### 6. Section Exemple
+
 Au moins **1 exemple** réaliste avec préfixe `>>>`.
 
 **Format :**
+
 ```python
 Exemple
 -------
@@ -227,6 +241,7 @@ __status__ = "Development"  # "Development", "Production", "Deprecated"
 ```
 
 **Règles :**
+
 - Version sémantique entre guillemets
 - `__status__` : "Development", "Production", ou "Deprecated"
 
@@ -243,6 +258,7 @@ from typing import Optional, List, Dict, Any
 ```
 
 **Ordre des imports :**
+
 1. Bibliothèque standard Python
 2. Bibliothèques tierces (séparées par ligne vide)
 3. Imports locaux du projet (séparées par ligne vide)
@@ -267,6 +283,7 @@ logger = logging.getLogger(__name__)
 ```
 
 **Pourquoi :**
+
 - Double sortie : fichier + console
 - Format horodaté cohérent
 - Encodage UTF-8 pour caractères accentués
@@ -282,6 +299,7 @@ MAX_RETRIES = 3
 ```
 
 **Règles :**
+
 - Noms en MAJUSCULES avec underscore
 - Valeurs par défaut sensées
 - Compatibilité Windows/Linux pour nom machine
@@ -292,10 +310,10 @@ MAX_RETRIES = 3
 def main() -> int:
     """
     Point d'entrée principal du script.
-    
+
     Returns:
         int: Code de sortie (0 = succès, 1+ = erreur)
-    
+
     Raises:
         KeyboardInterrupt: Si interrompu par l'utilisateur
         Exception: Toute autre erreur fatale
@@ -303,17 +321,17 @@ def main() -> int:
     try:
         logger.info(f"Démarrage - Version {__version__}")
         logger.info(f"Machine: {COMPUTER_NAME}")
-        
+
         # Code principal ici
-        
+
         duration = datetime.now() - START_TIME
         logger.info(f"Terminé avec succès - Durée: {duration}")
         return 0
-        
+
     except KeyboardInterrupt:
         logger.warning("Script interrompu par l'utilisateur (Ctrl+C)")
         return 130  # Code standard pour SIGINT
-        
+
     except Exception as e:
         logger.error(f"Erreur fatale: {e}", exc_info=True)
         return 1
@@ -324,6 +342,7 @@ if __name__ == "__main__":
 ```
 
 **Codes de sortie standard :**
+
 - `0` : Succès
 - `1` : Erreur générale
 - `130` : Interruption par l'utilisateur (Ctrl+C)
@@ -335,6 +354,7 @@ if __name__ == "__main__":
 ### Timestamps et dates
 
 **✅ BON :**
+
 ```python
 # Nom de fichier log
 timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -347,6 +367,7 @@ iso_time = datetime.now().isoformat()
 ```
 
 **Format recommandé :**
+
 - Fichiers : `YYYY-MM-DD_HH-MM-SS` (underscores)
 - Logs : `YYYY-MM-DD HH:MM:SS` (espace et deux-points)
 
@@ -356,7 +377,7 @@ iso_time = datetime.now().isoformat()
 def parse_arguments() -> argparse.Namespace:
     """
     Parse les arguments de la ligne de commande.
-    
+
     Returns:
         argparse.Namespace: Arguments parsés
     """
@@ -364,14 +385,14 @@ def parse_arguments() -> argparse.Namespace:
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    
+
     parser.add_argument(
         '--location',
         type=str,
         required=True,
         help='Chemin de destination (obligatoire)'
     )
-    
+
     parser.add_argument(
         '--depth',
         type=str,
@@ -379,19 +400,19 @@ def parse_arguments() -> argparse.Namespace:
         default='deep',
         help="Profondeur des tests (défaut: 'deep')"
     )
-    
+
     parser.add_argument(
         '--verbose', '-v',
         action='store_true',
         help='Active le mode verbeux'
     )
-    
+
     parser.add_argument(
         '--version',
         action='version',
         version=f'%(prog)s {__version__}'
     )
-    
+
     return parser.parse_args()
 ```
 
@@ -401,11 +422,11 @@ def parse_arguments() -> argparse.Namespace:
 def calculer_total(montants: List[float], tva: float = 0.20) -> float:
     """
     Calcule le total avec TVA.
-    
+
     Args:
         montants: Liste des montants HT
         tva: Taux de TVA (défaut: 0.20 = 20%)
-    
+
     Returns:
         float: Montant total TTC
     """
@@ -419,19 +440,19 @@ def calculer_total(montants: List[float], tva: float = 0.20) -> float:
 try:
     # Code risqué
     result = operation_risquee(param)
-    
+
 except FileNotFoundError as e:
     logger.error(f"Fichier introuvable: {e}")
     return 1
-    
+
 except PermissionError as e:
     logger.error(f"Permission refusée: {e}")
     return 1
-    
+
 except Exception as e:
     logger.error(f"Erreur inattendue: {e}", exc_info=True)
     return 1
-    
+
 finally:
     # Nettoyage (optionnel)
     if temp_file and temp_file.exists():
@@ -452,7 +473,8 @@ Avant de commiter un script Python :
 - [ ] Section Modifications à jour avec dernière version
 - [ ] Section Paramètres documente tous les arguments
 - [ ] Section Exemple avec au moins 1 cas d'usage réel
-- [ ] Variables `__version__`, `__author__`, `__company__`, `__copyright__` définies
+- [ ] Variables `__version__`, `__author__`, `__company__`, `__copyright__`
+      définies
 - [ ] Imports organisés (standard → tiers → local)
 - [ ] Logging configuré avec fichier + console
 - [ ] Fonction `main() -> int` avec gestion d'erreurs
@@ -491,7 +513,7 @@ Dans VS Code, tapez `headerpy` puis `Tab` :
       "",
       "Modifications",
       "--------------",
-      "${3:0.0.0} - ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE} : Initialisation.",
+      "${3:0.0.0} - ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}   [BILLET000] : Initialisation.",
       "",
       "Paramètres",
       "-----------",

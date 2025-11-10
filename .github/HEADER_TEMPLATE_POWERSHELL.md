@@ -8,6 +8,9 @@ Innovations, Performances, Technologies inc.
 ## 🎯 Format obligatoire
 
 ```powershell
+"# Format d'en-tête standard à respecter pour ce projet.",
+"# Voir HEADER_TEMPLATE_POWERSHELL.md pour les détails.",
+      "",
 <#
 .SYNOPSIS
     [Description courte du script en une ligne]
@@ -23,7 +26,7 @@ Innovations, Performances, Technologies inc.
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
-    0.0.0 - YYYY-MM-DD : Initialisation.
+    0.0.0 - YYYY-MM-DD - Billet-XX : Initialisation.
 
 .PARAMETER Paramètre
     Description du paramètre
@@ -62,15 +65,18 @@ $Script:StartTime = Get-Date
 ## 📋 Sections obligatoires
 
 ### 1. `.SYNOPSIS`
+
 Description **courte** (1 ligne) du script.
 
 **Exemple :**
+
 ```powershell
 .SYNOPSIS
     Sauvegarde complète Windows vers support NTFS local
 ```
 
 ### 2. `.DESCRIPTION`
+
 Bloc de métadonnées **structuré** et **aligné** :
 
 ```powershell
@@ -86,14 +92,17 @@ Bloc de métadonnées **structuré** et **aligné** :
 ```
 
 **Règles :**
+
 - Alignement sur `:` (15 espaces après le label)
 - Date au format `YYYY-MM-DD`
 - Version sémantique `MAJEUR.MINEUR.CORRECTIF`
 
 ### 3. `.MODIFICATIONS`
+
 Changelog **complet** avec chaque version documentée.
 
 **Format :**
+
 ```powershell
 .MODIFICATIONS
     0.0.0 - 2025-11-06 : Initialisation.
@@ -103,14 +112,17 @@ Changelog **complet** avec chaque version documentée.
 ```
 
 **Règles versioning :**
+
 - `MAJEUR` : Breaking changes (incompatibilité)
 - `MINEUR` : Nouvelles fonctionnalités (compatible)
 - `CORRECTIF` : Corrections de bugs uniquement
 
 ### 4. `.PARAMETER`
+
 Documenter **tous** les paramètres avec description claire.
 
 **Format :**
+
 ```powershell
 .PARAMETER BackupLocation
     Chemin vers le support de sauvegarde (ex: E:, \\serveur\share)
@@ -123,9 +135,11 @@ Documenter **tous** les paramètres avec description claire.
 ```
 
 ### 5. `.EXAMPLE`
+
 Au moins **1 exemple** réaliste. Préfixe `PS>` obligatoire.
 
 **Format :**
+
 ```powershell
 .EXAMPLE
     PS> .\Sauvegarde-Windows.ps1 -BackupLocation "E:"
@@ -137,9 +151,11 @@ Au moins **1 exemple** réaliste. Préfixe `PS>` obligatoire.
 ```
 
 ### 6. `.NOTES` (optionnel mais recommandé)
+
 Prérequis, contraintes, avertissements.
 
 **Format :**
+
 ```powershell
 .NOTES
     Prérequis :
@@ -150,9 +166,11 @@ Prérequis, contraintes, avertissements.
 ```
 
 ### 7. `.LINK` (optionnel)
+
 Liens vers documentation.
 
 **Format :**
+
 ```powershell
 .LINK
     https://docs.microsoft.com/windows-server/administration/windows-commands/wbadmin
@@ -166,29 +184,34 @@ Liens vers documentation.
 ## 🔧 Code obligatoire après l'en-tête
 
 ### 1. Déclaration des paramètres
+
 ```powershell
 [CmdletBinding(SupportsShouldProcess)]  # Si modification système
 param(
     [Parameter(Mandatory, HelpMessage = "Description claire")]
     [ValidateNotNullOrEmpty()]
     [string]$Paramètre1,
-    
+
     [Parameter(HelpMessage = "Description paramètre optionnel")]
     [ValidateSet('Option1', 'Option2', 'Option3')]
     [string]$Paramètre2 = 'Option1',
-    
+
     [Parameter(HelpMessage = "Active une fonctionnalité")]
     [switch]$EnableFeature
 )
 ```
 
 **Règles :**
+
 - `[CmdletBinding()]` obligatoire si paramètres
-- `SupportsShouldProcess` si le script modifie le système (support `-WhatIf`/`-Confirm`)
+- `SupportsShouldProcess` si le script modifie le système (support
+  `-WhatIf`/`-Confirm`)
 - `HelpMessage` pour chaque paramètre
-- Validation appropriée (`ValidateNotNullOrEmpty`, `ValidateSet`, `ValidateRange`, etc.)
+- Validation appropriée (`ValidateNotNullOrEmpty`, `ValidateSet`,
+  `ValidateRange`, etc.)
 
 ### 2. Prérequis PowerShell
+
 ```powershell
 #Requires -Version 5.1
 #Requires -RunAsAdministrator  # Si nécessaire
@@ -196,6 +219,7 @@ param(
 ```
 
 ### 3. Configuration stricte (OBLIGATOIRE)
+
 ```powershell
 # === Configuration stricte ===
 $ErrorActionPreference = 'Stop'
@@ -203,10 +227,12 @@ Set-StrictMode -Version Latest
 ```
 
 **Pourquoi :**
+
 - `Stop` : Arrête le script à la première erreur
 - `StrictMode` : Détecte les erreurs de syntaxe cachées
 
 ### 4. Variables globales standard
+
 ```powershell
 # === Variables globales ===
 $Script:ComputerName = $env:COMPUTERNAME
@@ -223,6 +249,7 @@ $Script:StartTime = Get-Date
 ### Timestamps et dates
 
 **✅ BON :**
+
 ```powershell
 # Nom de fichier log
 $timestamp = (Get-Date).ToString("yyyy-MM-dd_HH-mm-ss", [System.Globalization.CultureInfo]::InvariantCulture)
@@ -232,6 +259,7 @@ $logTime = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss", [System.Globalization.Cult
 ```
 
 **❌ MAUVAIS :**
+
 ```powershell
 # Ne fonctionne pas sur toutes les locales !
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
@@ -246,17 +274,17 @@ function Write-Log {
         [Parameter(Mandatory, Position = 0)]
         [AllowEmptyString()]
         [string]$Message,
-        
+
         [Parameter()]
         [ValidateSet('Info', 'Warning', 'Error', 'Success', 'Header')]
         [string]$Level = 'Info'
     )
-    
+
     $Stamp = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss", [System.Globalization.CultureInfo]::InvariantCulture)
     $LogMessage = "$Stamp [$Level] $Message"
-    
+
     $LogMessage | Out-File -FilePath $Script:LogFile -Append -Encoding utf8
-    
+
     if (-not [string]::IsNullOrWhiteSpace($Message)) {
         $Color = switch ($Level) {
             'Warning' { 'Yellow' }
@@ -340,7 +368,7 @@ Dans VS Code, tapez `headerps` puis `Tab` :
       "Copyright      : Pierre Théberge",
       "",
       ".MODIFICATIONS",
-      "${3:0.0.0} - ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE} : Initialisation.",
+      "${3:0.0.0} - ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE} - Billet-XX : Initialisation.",
       "",
       ".PARAMETER",
       "${4:Paramètre} - ${5:Description du paramètre}",
