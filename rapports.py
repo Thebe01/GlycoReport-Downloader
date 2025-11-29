@@ -11,7 +11,7 @@
 #'''              Utilisation des chemins et paramètres centralisés, logging détaillé,
 #'''              robustesse pour la détection et gestion des fichiers téléchargés,
 #'''              logging des erreurs JS lors du déplacement/renommage.
-#'''Version : 0.2.6
+#'''Version : 0.2.9
 #'''Modifications :
 #'''Version   Date         Billet   Description
 #'''0.0.0	2025-08-05              Version initiale.
@@ -47,6 +47,14 @@
 #'''0.2.4   2025-10-16    ES-12     Synchronisation de version (aucun changement fonctionnel).
 #'''0.2.5   2025-10-16    ES-10     Synchronisation de version (aucun changement fonctionnel).
 #'''0.2.6   2025-10-21    ES-7      Synchronisation de version (aucun changement fonctionnel).
+#'''0.2.7   2025-10-27    ES-16     Refactorisation de selection_rapport avec gestion des erreurs 502 et retry.
+#'''                      ES-16     Ajout de select_rapport_with_retry pour gérer les erreurs temporaires.
+#'''                      ES-16     Ajout de traiter_rapport pour dispatcher vers les fonctions de traitement.
+#'''                      ES-16     Suivi global des rapports échoués avec résumé final.
+#'''0.2.8   2025-11-28    ES-16     Correction du sélecteur pour le bouton 'Exporter' de la fenêtre modale.
+#'''                      ES-16     Utilisation de l'attribut 'data-test-export-dialog-export-button' pour plus de robustesse.
+#'''0.2.9   2025-11-28    ES-16     Correction du sélecteur pour le bouton 'Fermer' de la fenêtre d'export CSV.
+#'''                      ES-16     Suppression de la classe 'btn-3d' obsolète dans le sélecteur XPath.
 #''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -467,7 +475,8 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
         logger.error(f"Une erreur s'est produite lors du clic sur le bouton Exporter : {e}", exc_info=args.debug)
         return
     try:
-        xpath_bouton_export_modal = "//button[contains(@class, 'btn-primary') and contains(@class, 'btn-3d') and normalize-space()='Exporter']"
+        # Utilisation de l'attribut data-test spécifique (plus robuste que le texte)
+        xpath_bouton_export_modal = "//button[@data-test-export-dialog-export-button]"
         bouton_export_modal = WebDriverWait(driver, 30).until(
             EC.element_to_be_clickable((By.XPATH, xpath_bouton_export_modal))
         )
@@ -480,8 +489,10 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
         return
 
     try:
-        bouton_fermer = WebDriverWait(driver, 5).until(
-            EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'btn-primary') and contains(@class, 'btn-3d') and normalize-space()='Fermer']"))
+        # Correction du sélecteur pour le bouton Fermer (suppression de btn-3d qui n'est plus présent)
+        xpath_fermer = "//button[contains(@class, 'btn-primary') and normalize-space()='Fermer']"
+        bouton_fermer = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_fermer))
         )
         driver.execute_script("arguments[0].scrollIntoView(true);", bouton_fermer)
         time.sleep(1)
@@ -492,7 +503,7 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
 
     if wait_for_csv_download(DOWNLOAD_DIR):
         logger.info("Fichier CSV exporté détecté et téléchargement terminé.")
-        deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN)
+        deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, driver)
     else:
         logger.error("Le téléchargement du fichier CSV n'a pas été détecté ou n'est pas terminé après 2 minutes.")
 

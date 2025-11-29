@@ -58,6 +58,7 @@
 #'''                        ES-12   Simplification : le répertoire chromedriver-win64/ n'est plus nécessaire.
 #'''0.2.5     2025-10-16    ES-10   Synchronisation de version (aucun changement fonctionnel).
 #'''0.2.6     2025-10-21    ES-7    Synchronisation de version (aucun changement fonctionnel).
+#'''0.2.7     2025-10-27    ES-16   Synchronisation de version (aucun changement fonctionnel).
 #''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
