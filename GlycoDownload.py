@@ -472,8 +472,8 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
         password_input.send_keys(dexcom_password)
 
         # Clic sur le bouton de connexion
-        # Utilisation de l'ID 'default-login-text' (indépendant de la langue)
-        # On cible le span contenant le texte, le clic se propagera au bouton parent
+        # Utilisation de l'ID 'default-login-text' (indépendant de la langue et du type d'élément)
+        # On cible l'élément avec cet ID, le clic se propagera au bouton parent si nécessaire
         try:
             logger.debug("Tentative de clic sur le bouton de connexion via ID 'default-login-text'...")
             login_button = WebDriverWait(driver, 5).until(
