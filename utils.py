@@ -47,7 +47,7 @@
 #'''0.2.6    2025-10-21    ES-7     Synchronisation de version (aucun changement fonctionnel).
 #'''0.2.7    2025-10-27    ES-16    Ajout de check_for_502_errors pour détecter les erreurs 502 dans les logs du navigateur.
 #'''                       ES-16    Ajout de wait_for_page_load_with_retry pour gérer les erreurs temporaires avec retry automatique.
-#''' </summary>
+#'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import os
