@@ -5,14 +5,14 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-10-16
+#'''Last Modified On : 2025-10-21
 #'''CopyRights : Pierre Théberge
 #'''Description : Fonctions utilitaires pour le projet GlycoReport-Downloader.
 #'''              Connexion internet, overlay, renommage, détection du dernier fichier téléchargé,
 #'''              logging détaillé, robustesse accrue pour le renommage, logs JS navigateur.
-#'''Version : 0.2.4
+#'''Version : 0.2.6
 #'''Modifications :
-#'''Version   Date        Billet    Description
+#'''Version   Date         Billet   Description
 #'''0.0.0	2025-08-05              Version initiale.
 #'''0.0.1   2025-08-13              Ajout du logging détaillé, robustesse sur le renommage,
 #'''                                    récupération et logging des erreurs JS du navigateur.
@@ -42,6 +42,11 @@
 #'''0.2.4   2025-10-16    ES-12     Suppression du paramètre obsolète chromedriver_path (non utilisé depuis v0.2.3).
 #'''                      ES-12     Nettoyage du code : CHROMEDRIVER_PATH retiré de la configuration.
 #'''                      ES-12     Simplification : le répertoire chromedriver-win64/ n'est plus nécessaire.
+#'''0.2.4    2025-10-16    ES-12    Synchronisation de version (aucun changement fonctionnel).
+#'''0.2.5    2025-10-16    ES-10    Ajout de la suppression des captures d'écran (.png) lors du nettoyage des logs.
+#'''0.2.6    2025-10-21    ES-7     Synchronisation de version (aucun changement fonctionnel).
+#'''0.2.7    2025-10-27    ES-16    Ajout de check_for_502_errors pour détecter les erreurs 502 dans les logs du navigateur.
+#'''                       ES-16    Ajout de wait_for_page_load_with_retry pour gérer les erreurs temporaires avec retry automatique.
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -158,13 +163,13 @@ def pause_on_error() -> None:
 
 def cleanup_logs(log_dir, retention_days, logger=None):
     """
-    Supprime les fichiers logs plus vieux que retention_days dans le dossier log_dir.
+    Supprime les fichiers logs (.log) et captures d'écran (.png) plus vieux que retention_days dans le dossier log_dir.
     Si retention_days vaut 0, aucun ménage n'est effectué (conservation illimitée).
     Logge les suppressions si un logger est fourni.
     """
  
     if retention_days == 0:
-        msg = "Aucun ménage des logs n'est effectué (conservation illimitée)."
+        msg = "Aucun ménage des logs et captures d'écran n'est effectué (conservation illimitée)."
         print(Fore.CYAN + msg)
         if logger:
             logger.info(msg)
@@ -178,12 +183,13 @@ def cleanup_logs(log_dir, retention_days, logger=None):
             logger.warning(msg)
         return
     for filename in os.listdir(log_dir):
-        if filename.endswith(".log"):
+        if filename.endswith(".log") or filename.endswith(".png"):
             filepath = os.path.join(log_dir, filename)
             try:
                 if os.stat(filepath).st_mtime < now - retention_seconds:
                     os.remove(filepath)
-                    msg = f"Log supprimé : {filepath}"
+                    file_type = "Log" if filename.endswith(".log") else "Capture d'écran"
+                    msg = f"{file_type} supprimé(e) : {filepath}"
                     print(Fore.GREEN + msg)
                     if logger:
                         logger.info(msg)

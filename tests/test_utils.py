@@ -5,16 +5,16 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-13
-#'''Last Modified On : 2025-10-16
+#'''Last Modified On : 2025-10-21
 #'''CopyRights : Pierre Théberge
 #'''Description : Tests unitaires pour toutes les fonctions utilitaires du projet GlycoReport-Downloader.
 #'''              Vérifie la robustesse et la portabilité des fonctions (normalisation des chemins, capture d'écran, etc.).
 #'''              Pour exécuter les tests, utilisez la commande : pytest tests/test_utils.py
-#'''Version : 0.2.4
+#'''Version : 0.2.6
 #'''Modifications :
 #'''Version   Date         Billet   Description
 #'''0.0.0    2025-08-13             Version initiale
-#'''0.0.1    2025-08-18                 Ajout de tests unitaires pour toutes les fonctions utilitaires,
+#'''0.0.1    2025-08-18             Ajout de tests unitaires pour toutes les fonctions utilitaires,
 #'''                                    adaptation pour la centralisation de normalize_path dans utils.py,
 #'''                                    vérification de la robustesse et de la portabilité des utilitaires.
 #'''0.1.6    2025-08-22             Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
@@ -22,6 +22,8 @@
 #'''0.2.2    2025-08-29             Synchronisation des entêtes, robustesse accrue du help, nettoyage des doublons CLI.
 #'''0.2.3    2025-10-14    ES-12    Migration vers ChromeDriverManager pour gestion automatique de ChromeDriver.
 #'''0.2.4    2025-10-16    ES-12    Synchronisation de version (aucun changement fonctionnel dans les tests).
+#'''0.2.5    2025-10-16    ES-10    Ajout de tests pour la suppression des captures d'écran (.png) lors du nettoyage des logs.
+#'''0.2.6    2025-10-21    ES-7     Synchronisation de version (aucun changement fonctionnel dans les tests).
 #''' </summary>
 #'''////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -145,23 +147,66 @@ def test_cleanup_logs_removes_old_logs(tmp_path):
     # Crée deux fichiers logs : un ancien et un récent
     old_log = log_dir / "old.log"
     recent_log = log_dir / "recent.log"
+    # Crée également des captures d'écran anciennes et récentes
+    old_screenshot = log_dir / "screenshot_old.png"
+    recent_screenshot = log_dir / "screenshot_recent.png"
+    
     old_log.write_text("ancien log")
     recent_log.write_text("log récent")
-    # Modifie la date de modification de l'ancien log pour qu'il soit vieux de 2 jours
+    old_screenshot.write_bytes(b"fake old screenshot")
+    recent_screenshot.write_bytes(b"fake recent screenshot")
+    
+    # Modifie la date de modification des anciens fichiers pour qu'ils soient vieux de 2 jours
     old_time = time.time() - (2 * 86400)
     os.utime(old_log, (old_time, old_time))
+    os.utime(old_screenshot, (old_time, old_time))
+    
     # Appelle cleanup_logs avec une rétention de 1 jour
     cleanup_logs(str(log_dir), retention_days=1)
-    # Vérifie que l'ancien log a été supprimé et que le récent existe toujours
+    
+    # Vérifie que les anciens fichiers ont été supprimés et que les récents existent toujours
     assert not old_log.exists()
+    assert not old_screenshot.exists()
     assert recent_log.exists()
+    assert recent_screenshot.exists()
 
 def test_cleanup_logs_retention_zero(tmp_path):
     # Crée un dossier temporaire pour les logs
     log_dir = tmp_path
     log_file = log_dir / "test.log"
+    screenshot_file = log_dir / "screenshot_test.png"
+    
     log_file.write_text("log à conserver")
+    screenshot_file.write_bytes(b"fake screenshot to keep")
+    
     # Appelle cleanup_logs avec une rétention illimitée
     cleanup_logs(str(log_dir), retention_days=0)
-    # Vérifie que le log n'a pas été supprimé
+    
+    # Vérifie que les fichiers n'ont pas été supprimés
     assert log_file.exists()
+    assert screenshot_file.exists()
+
+def test_cleanup_logs_removes_only_old_screenshots(tmp_path):
+    # Test spécifique pour vérifier que seules les vieilles captures d'écran sont supprimées
+    log_dir = tmp_path
+    
+    old_screenshot1 = log_dir / "screenshot_20230101_120000.png"
+    old_screenshot2 = log_dir / "debug_screenshot.png"
+    recent_screenshot = log_dir / "screenshot_20250101_120000.png"
+    
+    old_screenshot1.write_bytes(b"old screenshot 1")
+    old_screenshot2.write_bytes(b"old screenshot 2")
+    recent_screenshot.write_bytes(b"recent screenshot")
+    
+    # Modifie la date des anciens fichiers
+    old_time = time.time() - (2 * 86400)
+    os.utime(old_screenshot1, (old_time, old_time))
+    os.utime(old_screenshot2, (old_time, old_time))
+    
+    # Appelle cleanup_logs avec une rétention de 1 jour
+    cleanup_logs(str(log_dir), retention_days=1)
+    
+    # Vérifie que seules les anciennes captures ont été supprimées
+    assert not old_screenshot1.exists()
+    assert not old_screenshot2.exists()
+    assert recent_screenshot.exists()
