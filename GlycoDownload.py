@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-10-16
+#'''Last Modified On : 2025-11-28
 #'''CopyRights : Pierre Théberge
 #'''Description : Script principal pour l'automatisation du téléchargement des rapports Dexcom Clarity.
 #'''              Centralisation de la configuration, gestion CLI avancée, robustesse accrue,
 #'''              logs détaillés (console, fichier, JS), gestion des exceptions et de la déconnexion.
-#'''Version : 0.2.6
+#'''Version : 0.2.9
 #'''Modifications :
 #'''Version   Date         Billet   Description
 #'''0.0.0   2025-03-03    -        Version initiale.
@@ -83,7 +83,7 @@
 #'''0.2.1   2025-10-09    ES-5     Ajout de la langue dans les arguments en CLI et au rapport.
 #'''0.2.2   2025-10-11    ES-6     Les rapports sont indépendants de la langue de l'utilisateur.
 #'''0.2.3   2025-10-14    ES-11    Ajout du rapport Statistiques horaires et amélioration de la robustesse d'accès aux rapports.
-#'''                       ES-11    Utilisation de ChromeDriverManager pour télécharger automatiquement la bonne version de ChromeDriver.
+#'''                      ES-11    Utilisation de ChromeDriverManager pour télécharger automatiquement la bonne version de ChromeDriver.
 #'''0.2.4   2025-10-16    ES-12    Synchronisation de version (aucun changement fonctionnel).
 #'''0.2.5   2025-10-16    ES-10    Synchronisation de version (aucun changement fonctionnel).
 #'''0.2.6   2025-10-21    ES-7     Amélioration du système d'aide (--help) avec description détaillée, exemples et groupes d'arguments.
@@ -94,6 +94,16 @@
 #'''                      ES-16    Attente et réessai automatique (3 tentatives max) en cas d'erreur serveur temporaire.
 #'''                      ES-16    Suivi et rapport des échecs de téléchargement avec raisons détaillées.
 #'''                      ES-16    Amélioration de la robustesse face aux problèmes temporaires du serveur Dexcom.
+#'''0.2.8   2025-11-28    ES-16    Correction du sélecteur du bouton de connexion pour être indépendant de la langue.
+#'''                      ES-16    Utilisation de l'ID 'default-login-text' au lieu du texte du bouton.
+#'''                      ES-16    Ajout d'un fallback sur le type 'submit' pour plus de robustesse.
+#'''                      ES-16    Augmentation du timeout et amélioration des logs pour le bouton de connexion.
+#'''                      ES-16    Correction de la déconnexion bloquée par un overlay (clic JS forcé).
+#'''0.2.9   2025-11-28    ES-16    Ajout d'un fallback ultime pour la connexion : simulation de la touche ENTRÉE.
+#'''                      ES-16    Gestion du cas où le bouton de connexion est introuvable ou non cliquable.
+#'''                      ES-16    Correction des erreurs de portée de variables (debug_mode, download_dir).
+#'''                      ES-16    Correction du mode --dry-run (join, credentials).
+#'''                      ES-16    Amélioration de la connexion : détection automatique du champ login pour sauter l'étape de sélection du mode.
 #''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -101,7 +111,6 @@
 # TODO 12 Exécuter l'application pour produire les rapports Comparer depuis 2024-08-19
 # TODO 13 Appliquer la même solution pour obtenir des rapports séparés pour Modèle
 # TODO 14 Rendre l'application indépendante de la langue de l'utilisateur.
-# TODO 15 Améliorer le help
 
 import sys
 import argparse
@@ -111,6 +120,7 @@ import time
 from datetime import datetime, timedelta
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
@@ -371,12 +381,27 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
 
         else:
             # Sélection du mode courriel/nom d'utilisateur
-            radio_buttons = WebDriverWait(driver, 30).until(
-                EC.presence_of_all_elements_located((By.CLASS_NAME, "radio-outer-circle"))
-            )
-            if radio_buttons:
-                driver.execute_script("arguments[0].click();", radio_buttons[0])
-                time.sleep(1)
+            # MODIFICATION : Vérifier d'abord si le champ login est déjà visible (bypass de la sélection)
+            login_field_already_visible = False
+            try:
+                WebDriverWait(driver, 5).until(
+                    EC.visibility_of_element_located((By.ID, "usernameLogin"))
+                )
+                login_field_already_visible = True
+                logger.debug("Champ d'identifiant détecté directement. Étape de sélection du mode ignorée.")
+            except Exception:
+                pass
+
+            if not login_field_already_visible:
+                try:
+                    radio_buttons = WebDriverWait(driver, 10).until(
+                        EC.presence_of_all_elements_located((By.CLASS_NAME, "radio-outer-circle"))
+                    )
+                    if radio_buttons:
+                        driver.execute_script("arguments[0].click();", radio_buttons[0])
+                        time.sleep(1)
+                except Exception:
+                    logger.debug("Boutons de sélection de mode non trouvés, tentative d'accès direct au login.")
 
             # Capture avant la recherche du champ username (en mode debug uniquement)
             if logger.isEnabledFor(logging.DEBUG):
@@ -446,10 +471,28 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
         )
         password_input.send_keys(dexcom_password)
 
-        login_button = WebDriverWait(driver, 30).until(
-            EC.element_to_be_clickable((By.XPATH, "//input[@type='submit' and @value]"))
-        )
-        login_button.click()
+        # Clic sur le bouton de connexion
+        # Utilisation de l'ID 'default-login-text' (indépendant de la langue)
+        # On cible le span contenant le texte, le clic se propagera au bouton parent
+        try:
+            logger.debug("Tentative de clic sur le bouton de connexion via ID 'default-login-text'...")
+            login_button = WebDriverWait(driver, 5).until(
+                EC.element_to_be_clickable((By.ID, "default-login-text"))
+            )
+            login_button.click()
+        except Exception as e:
+            logger.warning(f"ID 'default-login-text' introuvable ou non cliquable ({e}), tentative via type='submit'")
+            # Fallback : recherche par type submit (button ou input) si l'ID n'est pas trouvé
+            try:
+                login_button = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, "//button[@type='submit'] | //input[@type='submit']"))
+                )
+                login_button.click()
+            except Exception as e2:
+                logger.warning(f"Échec du clic sur le bouton de connexion (fallback inclus) : {e2}. Tentative avec la touche ENTRÉE.")
+                # Dernier recours : appuyer sur Entrée dans le champ mot de passe
+                password_input.send_keys(Keys.ENTER)
+
         time.sleep(5)
 
         logger.info("Connexion réussie !")
@@ -472,7 +515,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
             logger.debug("Aucun bouton 'Pas maintenant' à cliquer, poursuite du script.")
 
     except Exception as e:
-        logger.error(f"Erreur lors de la saisie des identifiants ou de la connexion : {e}")
+        logger.exception(f"Erreur lors de la saisie des identifiants ou de la connexion : {e}")
         raise SystemExit(1)
 def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=10):
     """
@@ -514,6 +557,8 @@ def main(args, logger, config):
     Fonction principale du script GlycoReport-Downloader (refactorisée).
     Gère la connexion, la sélection des dates, le téléchargement des rapports et la déconnexion.
     """
+    driver = None
+    download_dir = None
     try:
         # Préparation des variables locales
         debug_mode = args.debug
@@ -552,7 +597,8 @@ def main(args, logger, config):
         options.add_argument("--disable-popup-blocking")
         options.add_argument("--disable-sync")
         options.add_argument("--disable-translate")
-        options.add_argument("--disable-features=PaintHolding")
+        options.add_argument("--disable-features=PaintHolding,NetworkServiceInProcess")
+        options.add_argument("--remote-allow-origins=*")
         prefs = {
             "download.default_directory": download_dir,
             "download.prompt_for_download": False,
@@ -672,8 +718,18 @@ def main(args, logger, config):
                 logger.debug(b.get_attribute("outerHTML"))
 
         try:
+            # Attendre que tout overlay disparaisse avant de tenter la déconnexion
+            attendre_disparition_overlay(driver, 10, logger=logger, debug=debug_mode)
+            
             user_menu_button = get_user_menu_button(driver, logger, args)
-            user_menu_button.click()
+            
+            # Tentative de clic standard, puis JS si échec (pour contourner l'interception)
+            try:
+                user_menu_button.click()
+            except Exception:
+                logger.debug("Clic standard intercepté, tentative via JS pour le menu utilisateur.")
+                driver.execute_script("arguments[0].click();", user_menu_button)
+                
             time.sleep(2)
             logout_link = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'cui-link__logout') and contains(., 'Déconnexion')]"))
@@ -688,15 +744,16 @@ def main(args, logger, config):
         logger.error(f"Erreur inattendue dans le script principal : {e}")
         traceback.print_exc()
         pause_on_error()
-        sys.exit(1)
     finally:
         try:
-            driver.quit()
+            if driver is not None:
+                driver.quit()
         except Exception as e:
-            logger.warning(f"Erreur lors de la fermeture du navigateur : {e}", exc_info=debug_mode)
+            logger.warning(f"Erreur lors de la fermeture du navigateur : {e}", exc_info=args.debug)
 
-        files = glob.glob(os.path.join(download_dir, '*'))
-        logger.info(f"Fichiers présents dans le dossier de téléchargement après la demande : {files}")
+        if download_dir:
+            files = glob.glob(os.path.join(download_dir, '*'))
+            logger.info(f"Fichiers présents dans le dossier de téléchargement après la demande : {files}")
 
 def get_user_menu_button(driver, logger, args, timeout=10):
     """
@@ -803,6 +860,14 @@ if __name__ == "__main__":
         # Déterminer les rapports à télécharger
         rapports = args.rapports if args.rapports else config.RAPPORTS
         
+        # Sécurisation pour l'affichage (conversion en liste si nécessaire)
+        if rapports is None:
+            rapports_str = "Aucun"
+        elif isinstance(rapports, list):
+            rapports_str = ', '.join(str(r) for r in rapports)
+        else:
+            rapports_str = str(rapports)
+
         # Afficher la configuration en mode dry-run
         print(f"\n{Fore.CYAN}{'=' * 80}{Style.RESET_ALL}")
         print(f"{Fore.CYAN}MODE DRY-RUN : Aucun téléchargement ne sera effectué{Style.RESET_ALL}")
@@ -810,7 +875,7 @@ if __name__ == "__main__":
         
         print(f"{Fore.GREEN}Configuration détectée :{Style.RESET_ALL}\n")
         print(f"  {Fore.YELLOW}• Période :{Style.RESET_ALL} {date_debut_str} → {date_fin_str}")
-        print(f"  {Fore.YELLOW}• Rapports :{Style.RESET_ALL} {', '.join(rapports)}")
+        print(f"  {Fore.YELLOW}• Rapports :{Style.RESET_ALL} {rapports_str}")
         print(f"  {Fore.YELLOW}• Dossier de téléchargement :{Style.RESET_ALL} {config.DOWNLOAD_DIR}")
         print(f"  {Fore.YELLOW}• Dossier de destination :{Style.RESET_ALL} {config.DIR_FINAL_BASE}")
         print(f"  {Fore.YELLOW}• Mode debug :{Style.RESET_ALL} {'Activé' if args.debug else 'Désactivé'}")
@@ -821,13 +886,14 @@ if __name__ == "__main__":
         
         # Vérifier les credentials
         try:
-            credentials = get_dexcom_credentials()
+            username, password, country_code, phone_number = get_dexcom_credentials()
             print(f"\n  {Fore.GREEN}✓ Credentials Dexcom détectés{Style.RESET_ALL}")
             print(f"    {Fore.YELLOW}• Type d'authentification :{Style.RESET_ALL} ", end="")
-            if credentials.get('email'):
+            
+            if country_code and phone_number:
+                print(f"Numéro de téléphone ({country_code} {phone_number})")
+            elif username:
                 print(f"Email/Nom d'utilisateur")
-            elif credentials.get('country_code') and credentials.get('phone_number'):
-                print(f"Numéro de téléphone ({credentials['country_code']} {credentials['phone_number']})")
             else:
                 print(f"{Fore.RED}Inconnu (configuration incomplète){Style.RESET_ALL}")
         except Exception as e:
