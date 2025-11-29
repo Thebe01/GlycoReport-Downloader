@@ -8,9 +8,8 @@ Innovations, Performances, Technologies inc.
 ## 🎯 Format obligatoire
 
 ```powershell
-"# Format d'en-tête standard à respecter pour ce projet.",
-"# Voir HEADER_TEMPLATE_POWERSHELL.md pour les détails.",
-      "",
+# Format d'en-tête standard à respecter pour ce projet.
+# Voir HEADER_TEMPLATE_POWERSHELL.md pour les détails.
 <#
 .SYNOPSIS
     [Description courte du script en une ligne]
