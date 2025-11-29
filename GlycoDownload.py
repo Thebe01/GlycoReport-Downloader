@@ -726,8 +726,8 @@ def main(args, logger, config):
             # Tentative de clic standard, puis JS si échec (pour contourner l'interception)
             try:
                 user_menu_button.click()
-            except Exception:
-                logger.debug("Clic standard intercepté, tentative via JS pour le menu utilisateur.")
+            except Exception as e:
+                logger.debug(f"Clic standard intercepté: {e}, tentative via JS pour le menu utilisateur.")
                 driver.execute_script("arguments[0].click();", user_menu_button)
                 
             time.sleep(2)
