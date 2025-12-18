@@ -104,6 +104,7 @@
 #'''                      ES-16    Correction des erreurs de portée de variables (debug_mode, download_dir).
 #'''                      ES-16    Correction du mode --dry-run (join, credentials).
 #'''                      ES-16    Amélioration de la connexion : détection automatique du champ login pour sauter l'étape de sélection du mode.
+#'''0.2.10  2025-12-17    ES-17    Sécurité : Masquage des informations sensibles (téléphone) dans la sortie --dry-run.
 #''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -891,7 +892,8 @@ if __name__ == "__main__":
             print(f"    {Fore.YELLOW}• Type d'authentification :{Style.RESET_ALL} ", end="")
             
             if country_code and phone_number:
-                print(f"Numéro de téléphone ({country_code} {phone_number})")
+                # Masquage des données sensibles pour la sécurité
+                print(f"Numéro de téléphone (Masqué)")
             elif username:
                 print(f"Email/Nom d'utilisateur")
             else:
