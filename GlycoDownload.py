@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-11-28
+#'''Last Modified On : 2025-12-22
 #'''CopyRights : Pierre Théberge
 #'''Description : Script principal pour l'automatisation du téléchargement des rapports Dexcom Clarity.
 #'''              Centralisation de la configuration, gestion CLI avancée, robustesse accrue,
 #'''              logs détaillés (console, fichier, JS), gestion des exceptions et de la déconnexion.
-#'''Version : 0.2.9
+#'''Version : 0.2.11
 #'''Modifications :
 #'''Version   Date         Billet   Description
 #'''0.0.0   2025-03-03    -        Version initiale.
@@ -28,7 +28,6 @@
 #'''                      -            Enlever la sélection du mode couleur (problème à avoir le bon xpath)
 #'''0.0.8   2025-05-23    -        Terminé la fonction téléchargement_rapport
 #'''                      -            Ajout de la fonction deplace_et_renomme_rapport
-#'''                      -            Reconversion à Python 3.13
 #'''0.0.9   2025-07-01    -        Ajout de l'option debug et ajout d'un fichier de log
 #'''0.0.10  2025-07-02    -        Modification pour tenir compte d'une connexion internet lente et instable (4mb/s)Ajout de la fonction traitement_rapport
 #'''                      -            Ajout de la fonction check_internet pour vérifier la connexion internet
@@ -105,6 +104,9 @@
 #'''                      ES-16    Correction du mode --dry-run (join, credentials).
 #'''                      ES-16    Amélioration de la connexion : détection automatique du champ login pour sauter l'étape de sélection du mode.
 #'''0.2.10  2025-12-17    ES-17    Sécurité : Masquage des informations sensibles (téléphone) dans la sortie --dry-run.
+#'''                      ES-17    Synchronisation de version.
+#'''0.2.11  2025-12-22    ES-18    Correction du délai d'attente pour la fermeture de la fenêtre de téléchargement (60s).
+#'''                      -            Reconversion à Python 3.13
 #''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 

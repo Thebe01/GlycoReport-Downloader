@@ -5,14 +5,14 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-10-21
+#'''Last Modified On : 2025-12-22
 #'''CopyRights : Pierre Théberge
 #'''Description : Centralisation et sécurisation de la configuration du projet GlycoReport-Downloader.
 #'''              Lecture de tous les paramètres depuis config.yaml, normalisation systématique des chemins
 #'''              (via utils.py), gestion des erreurs et des droits d'accès, validation stricte des types,
 #'''              génération interactive de config.yaml, protection contre les vulnérabilités courantes
 #'''              (injection, mauvaise gestion des secrets, etc.).
-#'''Version : 0.2.6
+#'''Version : 0.2.11
 #'''Modifications :
 #'''Version   Date         Billet   Description
 #'''0.0.0     2025-08-05            Version initiale.
@@ -59,6 +59,7 @@
 #'''0.2.5     2025-10-16    ES-10   Synchronisation de version (aucun changement fonctionnel).
 #'''0.2.6     2025-10-21    ES-7    Synchronisation de version (aucun changement fonctionnel).
 #'''0.2.7     2025-10-27    ES-16   Synchronisation de version (aucun changement fonctionnel).
+#'''0.2.11    2025-12-22    ES-18   Synchronisation de version.
 #''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 

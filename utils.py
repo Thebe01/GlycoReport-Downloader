@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-10-21
+#'''Last Modified On : 2025-12-22
 #'''CopyRights : Pierre Théberge
 #'''Description : Fonctions utilitaires pour le projet GlycoReport-Downloader.
 #'''              Connexion internet, overlay, renommage, détection du dernier fichier téléchargé,
 #'''              logging détaillé, robustesse accrue pour le renommage, logs JS navigateur.
-#'''Version : 0.2.6
+#'''Version : 0.2.11
 #'''Modifications :
 #'''Version   Date         Billet   Description
 #'''0.0.0	2025-08-05              Version initiale.
@@ -47,6 +47,7 @@
 #'''0.2.6    2025-10-21    ES-7     Synchronisation de version (aucun changement fonctionnel).
 #'''0.2.7    2025-10-27    ES-16    Ajout de check_for_502_errors pour détecter les erreurs 502 dans les logs du navigateur.
 #'''                       ES-16    Ajout de wait_for_page_load_with_retry pour gérer les erreurs temporaires avec retry automatique.
+#'''0.2.11   2025-12-22    ES-18    Exclusion des fichiers .crdownload lors de la recherche du dernier téléchargement.
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -60,7 +61,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from colorama import Fore
+from colorama import Fore  # type: ignore
 
 ONE_DAY_SECONDS = 86400
 
@@ -95,14 +96,15 @@ def get_last_downloaded_file(download_dir: str, logger=None) -> Optional[str]:
     return max(files, key=os.path.getctime)
 
 def get_last_downloaded_nonlog_file(download_dir: str, logger=None) -> Optional[str]:
-    """Retourne le dernier fichier téléchargé (hors .log) dans le dossier donné."""
+    """Retourne le dernier fichier téléchargé (hors .log et .crdownload) dans le dossier donné."""
     files = [os.path.join(download_dir, f) for f in os.listdir(download_dir)]
-    files = [f for f in files if os.path.isfile(f) and not f.lower().endswith('.log')]
+    # On exclut les fichiers .log et les fichiers temporaires de téléchargement .crdownload
+    files = [f for f in files if os.path.isfile(f) and not f.lower().endswith('.log') and not f.lower().endswith('.crdownload')]
     if not files:
         return None
     last_file = max(files, key=os.path.getctime)
     if logger:
-        logger.debug(f"[get_last_downloaded_nonlog_file] Dernier fichier non-log trouvé : {last_file}")
+        logger.debug(f"[get_last_downloaded_nonlog_file] Dernier fichier valide trouvé : {last_file}")
     return last_file
 
 def renomme_prefix(prefix: str, date_fin: str, logger=None) -> str:
@@ -149,7 +151,7 @@ def resource_path(relative_path: str) -> str:
     """Retourne le chemin absolu vers un fichier de ressource, compatible PyInstaller et exécution normale."""
     if hasattr(sys, '_MEIPASS'):
         # PyInstaller : les fichiers sont extraits dans _MEIPASS
-        return os.path.join(sys._MEIPASS, relative_path)
+        return os.path.join(getattr(sys, '_MEIPASS'), relative_path)
     # Exécution normale : chemin relatif depuis le dossier courant
     return os.path.join(os.path.abspath("."), relative_path)
 
