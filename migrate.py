@@ -5,7 +5,7 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-10-16
-#'''Last Modified On : 2025-10-16
+#'''Last Modified On : 2025-12-22
 #'''CopyRights : Pierre Théberge
 #'''Description : Script de migration pour GlycoReport-Downloader.
 #'''              Permet de migrer les configurations utilisateur entre versions.
@@ -13,10 +13,12 @@
 #'''              - Nettoie les fichiers et dossiers devenus inutiles
 #'''              - Crée des backups avant toute modification
 #'''              - Affiche des messages colorés et informatifs
-#'''Version : 1.0.0
+#'''Version : 0.2.11
 #'''Modifications :
 #'''Version   Date         Billet   Description
 #'''1.0.0     2025-10-16   ES-12    Version initiale - Migration vers 0.2.4 (ChromeDriverManager)
+#'''1.0.1     2025-12-22   ES-18    Synchronisation de version.
+#'''0.2.11    2025-12-22   ES-18    Synchronisation avec la version principale.
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -25,6 +27,7 @@ import sys
 import shutil
 from datetime import datetime
 import yaml
+import traceback
 
 # Import colorama pour les messages colorés (compatible avec config.py)
 try:
@@ -32,10 +35,13 @@ try:
     init(autoreset=True)
 except ImportError:
     # Fallback si colorama n'est pas installé
-    class Fore:
+    class _Fore:
         GREEN = YELLOW = RED = CYAN = ""
-    class Style:
+    Fore = _Fore
+
+    class _Style:
         RESET_ALL = ""
+    Style = _Style
 
 def print_success(message):
     """Affiche un message de succès en vert."""
@@ -88,6 +94,10 @@ def remove_chromedriver_path_from_config(config_path="config.yaml"):
         print_error(f"Erreur lors de la lecture de {config_path} : {e}")
         return False
     
+    if not isinstance(config, dict):
+        print_warning(f"Le fichier {config_path} est vide ou invalide.")
+        return False
+    
     # Vérifier si chromedriver_path existe
     if 'chromedriver_path' not in config:
         print_success(f"Le paramètre 'chromedriver_path' n'est pas présent dans {config_path}.")
@@ -132,6 +142,7 @@ def remove_chromedriver_directory(chromedriver_dir="chromedriver-win64"):
         return False
     
     # Afficher des informations sur le répertoire
+    size_mb = 0
     try:
         total_size = sum(
             os.path.getsize(os.path.join(dirpath, filename))
@@ -228,6 +239,5 @@ if __name__ == "__main__":
         sys.exit(1)
     except Exception as e:
         print_error(f"\nErreur inattendue : {e}")
-        import traceback
         traceback.print_exc()
         sys.exit(1)

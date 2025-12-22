@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.2.6-blue)
+![Version](https://img.shields.io/badge/version-0.2.11-blue)
 
 An English version of this text follows the French text.
 
@@ -11,7 +11,7 @@ An English version of this text follows the French text.
 
 ## Sommaire
 
-- [Nouveautés](#version--025--21-octobre-2025)
+- [Nouveautés](#version--0211--22-décembre-2025)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,32 +23,44 @@ An English version of this text follows the French text.
 
 ---
 
-## Version : 0.2.6 — 21 octobre 2025
+## Version : 0.2.11 — 22 décembre 2025
 
 ### Nouveautés
 
-**Améliorations de l'aide et des options CLI :**
+**Nouvel installateur Windows :**
 
-- Aide (`--help`) complètement repensée avec description détaillée, exemples
-  d'utilisation et groupes d'arguments organisés
-- Nouvelle option `--list-rapports` pour afficher la liste complète des rapports
-  disponibles avec descriptions
-- Nouvelle option `--dry-run` pour simuler l'exécution et afficher la
-  configuration sans télécharger
-- Validation améliorée des dates avec messages d'erreur explicites et colorés
-- Les options d'aide fonctionnent maintenant **avant** la validation des
-  fichiers de configuration
+- Distribution via un installateur Inno Setup (`.exe`) pour une installation
+  simplifiée.
+- Installation par défaut dans `{sd}\ipt\GlycoReport-Downloader` (disque
+  système, dossier utilisateur).
+- Création automatique des raccourcis et gestion des désinstallations.
+- Ne nécessite plus de droits administrateur pour l'installation.
 
-**Améliorations du nettoyage des logs :**
+**Améliorations techniques :**
 
-- Les captures d'écran (fichiers `.png`) générées en mode debug sont maintenant
-  automatiquement supprimées lors du nettoyage des logs selon la période de
-  rétention configurée
-- Amélioration de la gestion de l'espace disque
+- Augmentation du délai d'attente pour la fermeture de la fenêtre de
+  téléchargement (60s) pour gérer les rapports volumineux (ex: Superposition).
+- Exclusion des fichiers temporaires `.crdownload` lors de la détection du
+  dernier fichier téléchargé.
+- Mise à jour des entêtes et synchronisation de version (ES-18).
 
 ---
 
 ## Historique des versions
+
+### 0.2.11 — 22 décembre 2025
+
+- Passage à Inno Setup pour la distribution (installateur `.exe`).
+- Correction du timeout pour les rapports volumineux (Superposition).
+- Exclusion des fichiers `.crdownload` dans la détection des téléchargements.
+- Mise à jour de la documentation et des entêtes.
+
+### 0.2.7 — 27 octobre 2025
+
+- Ajout de `check_for_502_errors` pour détecter les erreurs 502 dans les logs du
+  navigateur.
+- Ajout de `wait_for_page_load_with_retry` pour gérer les erreurs temporaires
+  avec retry automatique.
 
 ### 0.2.6 — 21 octobre 2025
 
@@ -233,32 +245,30 @@ Pour plus d’informations sur Dexcom Clarity :
 
 - Windows 10 ou supérieur
 - [Python 3.10+](https://www.python.org/downloads/) (pour l’utilisation en mode
-  script)
+  script uniquement)
 - Google Chrome installé
-- Droits administrateur pour définir la variable d’environnement système
+- Droits administrateur pour définir la variable d’environnement système (si
+  nécessaire pour le chiffrement)
 
 ### Procédure
 
-1. **Téléchargez l'archive ZIP du release** depuis la page Releases du projet.
-2. **Décompressez tout le contenu du ZIP** dans un dossier de votre choix (ex :
-   `C:\GlycoReport-Downloader`).
-   - Le dossier doit contenir :
-     - `GlycoReport-Downloader.exe`
-     - `config_example.yaml`
-     - `.env.example`
-     - `migrate.exe` (outil de migration, optionnel)
-     - `MIGRATION.md` (documentation de migration, optionnel)
-3. **Lancez `GlycoReport-Downloader.exe`** en double-cliquant ou via le
-   terminal.
+1. **Téléchargez l'installateur** (`GlycoReport-Downloader_Setup_x.x.x.exe`)
+   depuis la page Releases du projet.
+2. **Exécutez l'installateur**.
+   - L'installation se fait par défaut dans `C:\ipt\GlycoReport-Downloader` (ou
+     sur le disque système correspondant).
+   - Aucune élévation de privilèges n'est requise (sauf si vous choisissez un
+     dossier protégé).
+3. **Lancez l'application** via le raccourci créé ou directement depuis le
+   dossier d'installation.
 4. **Lors du premier lancement**, si les fichiers `config.yaml` ou `.env` sont
    absents, l'application vous informera et lancera la configuration initiale.
-5. **Les fichiers de configuration seront créés dans le même dossier que
-   l'exécutable.**
 
 ### Migration depuis une version antérieure
 
 Si vous mettez à jour depuis une version < 0.2.3, un outil de migration est
-disponible pour nettoyer automatiquement votre configuration :
+disponible pour nettoyer automatiquement votre configuration. L'installateur
+inclut cet outil.
 
 **Windows :**
 
@@ -308,10 +318,13 @@ pour faciliter la création d'un package prêt à distribuer. Ce script :
 
 - Génère l'exécutable Windows avec PyInstaller
 - Vérifie la présence de tous les fichiers nécessaires à la distribution
-- Copie les fichiers `.env.example`, `config_example.yaml`, `LICENSE.txt`,
-  `README.md` dans le dossier `dist`
-- Crée une archive ZIP (`GlycoReport-Downloader.zip`) à la racine du projet à
-  partir du contenu du dossier `dist`
+- Compile l'installateur Inno Setup (`.iss`)
+- Génère l'installateur final dans le dossier `dist_setup` (ex:
+  `GlycoReport-Downloader_Setup_0.2.11.exe`)
+
+**Prérequis pour la compilation :**
+
+- [Inno Setup 6](https://jrsoftware.org/isinfo.php) doit être installé.
 
 **Note** : Depuis la version 0.2.3, ChromeDriverManager télécharge
 automatiquement la version appropriée de ChromeDriver, il n'est donc plus
@@ -322,7 +335,7 @@ nécessaire d'inclure le dossier `chromedriver-win64` dans la distribution.
 Ouvre un terminal PowerShell à la racine du projet et exécute :
 
 ```powershell
-[DIST-GlycoReport-Downloader.ps1]
+.\DIST-GlycoReport-Downloader.ps1
 ```
 
 ---
@@ -607,6 +620,24 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 
 ## What's New (English)
 
+### Version: 0.2.11 — December 22, 2025
+
+**New Windows Installer:**
+
+- Distribution via Inno Setup installer (`.exe`) for simplified installation.
+- Default installation in `{sd}\ipt\GlycoReport-Downloader` (system drive, user
+  folder).
+- Automatic creation of shortcuts and uninstallation management.
+- No longer requires administrator rights for installation.
+
+**Technical Improvements:**
+
+- Increased timeout for download window closure (60s) to handle large reports
+  (e.g., Overlay).
+- Exclusion of temporary `.crdownload` files when detecting the last downloaded
+  file.
+- Header updates and version synchronization (ES-18).
+
 ### Version: 0.2.6 — October 21, 2025
 
 **CLI Help and Options Improvements:**
@@ -629,6 +660,19 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 ---
 
 ## Version History (English)
+
+### 0.2.11 — December 22, 2025
+
+- Switched to Inno Setup for distribution (`.exe` installer).
+- Fixed timeout for large reports (Overlay).
+- Excluded `.crdownload` files from download detection.
+- Updated documentation and headers.
+
+### 0.2.7 — October 27, 2025
+
+- Added `check_for_502_errors` to detect 502 errors in browser logs.
+- Added `wait_for_page_load_with_retry` to handle temporary errors with
+  automatic retry.
 
 ### 0.2.6 — October 21, 2025
 
@@ -803,30 +847,28 @@ For more information about Dexcom Clarity:
 ### Prerequisites
 
 - Windows 10 or higher
-- [Python 3.10+](https://www.python.org/downloads/) (for script mode)
+- [Python 3.10+](https://www.python.org/downloads/) (for script mode only)
 - Google Chrome installed
-- Administrator rights to set the system environment variable
+- Administrator rights to set the system environment variable (if necessary for
+  encryption)
 
 ### Procedure
 
-1. **Download the ZIP archive from the release** page.
-2. **Extract all ZIP contents** into a folder of your choice (e.g.,
-   `C:\GlycoReport-Downloader`).
-   - The folder should contain:
-     - `GlycoReport-Downloader.exe`
-     - `config_example.yaml`
-     - `.env.example`
-     - `migrate.exe` (migration tool, optional)
-     - `MIGRATION.md` (migration documentation, optional)
-3. **Run `GlycoReport-Downloader.exe`** by double-clicking or via the terminal.
+1. **Download the installer** (`GlycoReport-Downloader_Setup_x.x.x.exe`) from
+   the project Releases page.
+2. **Run the installer**.
+   - Installation defaults to `C:\ipt\GlycoReport-Downloader` (or corresponding
+     system drive).
+   - No privilege elevation is required (unless you choose a protected folder).
+3. **Launch the application** via the created shortcut or directly from the
+   installation folder.
 4. **On first launch**, if `config.yaml` or `.env` files are missing, the
    application will inform you and start the initial configuration.
-5. **Configuration files will be created in the same folder as the executable.**
 
 ### Migrating from an Earlier Version
 
 If you are upgrading from a version < 0.2.3, a migration tool is available to
-automatically clean up your configuration:
+automatically clean up your configuration. The installer includes this tool.
 
 **Windows:**
 
@@ -874,10 +916,13 @@ to facilitate the creation of a ready-to-distribute package. This script:
 
 - Generates the Windows executable with PyInstaller
 - Checks for the presence of all necessary distribution files
-- Copies `.env.example`, `config_example.yaml`, `LICENSE.txt`, `README.md` to
-  the `dist` folder
-- Creates a ZIP archive (`GlycoReport-Downloader.zip`) in the `dist` folder from
-  its contents
+- Compiles the Inno Setup installer (`.iss`)
+- Generates the final installer in the `dist_setup` folder (e.g.,
+  `GlycoReport-Downloader_Setup_0.2.11.exe`)
+
+**Prerequisites for compilation:**
+
+- [Inno Setup 6](https://jrsoftware.org/isinfo.php) must be installed.
 
 **Note**: Since version 0.2.3, ChromeDriverManager automatically downloads the
 appropriate ChromeDriver version, so it is no longer necessary to include the

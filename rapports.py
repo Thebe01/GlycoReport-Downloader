@@ -5,13 +5,13 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-10-16
+#'''Last Modified On : 2025-12-22
 #'''CopyRights : Pierre Théberge
 #'''Description : Traitement et gestion des rapports Dexcom Clarity.
 #'''              Utilisation des chemins et paramètres centralisés, logging détaillé,
 #'''              robustesse pour la détection et gestion des fichiers téléchargés,
 #'''              logging des erreurs JS lors du déplacement/renommage.
-#'''Version : 0.2.9
+#'''Version : 0.2.11
 #'''Modifications :
 #'''Version   Date         Billet   Description
 #'''0.0.0	2025-08-05              Version initiale.
@@ -55,6 +55,7 @@
 #'''                      ES-16     Utilisation de l'attribut 'data-test-export-dialog-export-button' pour plus de robustesse.
 #'''0.2.9   2025-11-28    ES-16     Correction du sélecteur pour le bouton 'Fermer' de la fenêtre d'export CSV.
 #'''                      ES-16     Suppression de la classe 'btn-3d' obsolète dans le sélecteur XPath.
+#'''0.2.11  2025-12-22    ES-18     Augmentation du timeout de fermeture de fenêtre (30s -> 60s) et gestion d'erreur non bloquante.
 #''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -204,16 +205,19 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
         time.sleep(5)
         logger.debug("Le bouton Enregistrer le rapport a été cliqué avec succès!")
         try:
-            WebDriverWait(driver,30).until(
+            # Augmentation du délai à 60s pour les rapports longs à générer (ex: Superposition)
+            WebDriverWait(driver, 60).until(
                 EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Fermer')]"))
             )
             fermer_fenetre_telechargement_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Fermer')]")
             fermer_fenetre_telechargement_button.click()
-            time.sleep(30)
+            # Pause pour laisser le temps au téléchargement de se finaliser complètement
+            time.sleep(10)
             logger.debug("La fenêtre de téléchargement a été fermée.")
         except Exception as e:
             logger.error(f"Une erreur s'est produite lors de la fermeture de la fenêtre de téléchargement: {e}")
-            return
+            # On tente quand même de continuer, le fichier est peut-être déjà là
+
     except Exception as e:
         logger.error(f"Une erreur s'est produite lors de l'enregistrement du rapport : {e}")
         return
