@@ -2,7 +2,7 @@
 ; Généré automatiquement
 
 #define MyAppName "GlycoReport-Downloader"
-#define MyAppVersion "0.2.16" ; Sera mis à jour par le script PowerShell
+#define MyAppVersion "0.2.18" ; Sera mis à jour par le script PowerShell
 #define MyAppPublisher "Pierre Théberge"
 #define MyAppURL "https://github.com/pierretheberge/GlycoReport-Downloader"
 #define MyAppExeName "GlycoReport-Downloader.exe"
@@ -56,6 +56,3 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
-
-
-

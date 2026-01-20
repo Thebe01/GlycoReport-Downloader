@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-01-20
-Version       : 0.2.16
+Version       : 0.2.18
 Copyright     : Pierre Théberge
 
 Description
@@ -61,6 +61,8 @@ Modifications
 0.2.14 - 2026-01-19   [ES-19] : Ajout d'une attente "vérification humaine" Cloudflare (pause + reprise automatique) basée sur une ancre UI.
 0.2.15 - 2026-01-19   [ES-19] : Sécurité : validation d'URL (allowlist host + parsing) et durcissement de la détection Cloudflare.
 0.2.16 - 2026-01-20   [ES-19] : Atténuation des interactions Selenium pendant la vérification Cloudflare (fenêtre quiet + scan DOM limité).
+0.2.17 - 2026-01-20   [ES-19] : Validation robuste des paramètres Cloudflare (quiet/deep scan).
+0.2.18 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -88,6 +90,20 @@ from selenium.webdriver.common.by import By
 from colorama import Fore  # type: ignore
 
 ONE_DAY_SECONDS = 86400
+
+
+def _compute_backoff_seconds(base_seconds: float, attempt: int, max_seconds: float) -> float:
+    """Calcule un backoff exponentiel borné.
+
+    Args:
+        base_seconds: Délai de base (secondes).
+        attempt: Nombre d'essais (0 = délai de base).
+        max_seconds: Délai maximal.
+    """
+    if base_seconds <= 0:
+        return max_seconds
+    delay = base_seconds * (2 ** max(0, attempt))
+    return min(max_seconds, delay)
 
 
 def _normalize_hostname(hostname: Optional[str]) -> Optional[str]:
@@ -397,6 +413,8 @@ def attendre_verification_humaine_cloudflare(
     last_debug_shot = 0.0
     quiet_until = 0.0
     last_deep_scan = 0.0
+    challenge_attempts = 0
+    current_poll_seconds = poll_seconds
 
     while True:
         now = time.time()
@@ -422,9 +440,22 @@ def attendre_verification_humaine_cloudflare(
             # On impose un sommeil minimum de 0.1s pendant la fenêtre quiet,
             # même si poll_seconds est très petit, tout en respectant la fin
             # de la fenêtre quiet.
-            sleep_duration = max(0.1, min(poll_seconds, max(0.0, quiet_until - now)))
+            sleep_duration = max(0.1, min(current_poll_seconds, max(0.0, quiet_until - now)))
             time.sleep(sleep_duration)
             continue
+
+        # 2b) Si un challenge a déjà été détecté, privilégier un check léger (URL-only)
+        # pour éviter des interactions DOM tant que Cloudflare est toujours actif.
+        if notified:
+            if cloudflare_challenge_detecte(driver, deep_scan=False):
+                challenge_attempts += 1
+                current_poll_seconds = _compute_backoff_seconds(
+                    poll_seconds,
+                    challenge_attempts,
+                    max_seconds=30.0,
+                )
+                quiet_until = now + effective_quiet_seconds
+                continue
 
         # 3) Condition de succès: l'ancre est présente/visible.
         try:
@@ -449,7 +480,21 @@ def attendre_verification_humaine_cloudflare(
         # pour laisser l'utilisateur agir, et on limite les scans DOM/HTML.
         # deep_scan_interval est bridé à un minimum de 1.0s pour éviter des scans DOM
         # trop agressifs même si un intervalle plus court est fourni.
-        effective_deep_scan_interval = max(1.0, float(deep_scan_interval))
+        try:
+            effective_deep_scan_interval = float(deep_scan_interval)
+        except (TypeError, ValueError):
+            logger.warning(
+                "Valeur deep_scan_interval invalide (%r). Utilisation de 10.0s par défaut.",
+                deep_scan_interval,
+            )
+            effective_deep_scan_interval = 10.0
+
+        if effective_deep_scan_interval < 1.0:
+            logger.warning(
+                "Valeur deep_scan_interval trop basse (%s). Les valeurs < 1.0s sont bridées à 1.0s.",
+                effective_deep_scan_interval,
+            )
+            effective_deep_scan_interval = 1.0
         do_deep_scan = (now - last_deep_scan) >= effective_deep_scan_interval
         challenge = cloudflare_challenge_detecte(driver, deep_scan=do_deep_scan)
         if do_deep_scan:
@@ -459,10 +504,18 @@ def attendre_verification_humaine_cloudflare(
             if not notified:
                 notified = True
                 logger.warning(
-                    "Vérification Cloudflare détectée. Complétez-la manuellement dans Chrome; reprise automatique ensuite."
+                    "Vérification Cloudflare détectée. Complétez-la manuellement dans Chrome; "
+                    "puis appuyez sur Entrée pour reprendre."
                 )
                 if debug:
                     capture_screenshot(driver, logger, "cloudflare_detecte", log_dir, now_str)
+
+                # Pause totale pour limiter toute activité automatisée.
+                try:
+                    if sys.stdin.isatty():
+                        input("\nCloudflare détecté. Terminez la vérification dans Chrome, puis appuyez sur Entrée pour reprendre...")
+                except Exception:
+                    pass
 
             # Pause pour éviter du polling agressif (réduit les interactions pendant la vérification).
             quiet_until = now + effective_quiet_seconds
@@ -474,4 +527,8 @@ def attendre_verification_humaine_cloudflare(
                 last_debug_shot = now
                 logger.debug(f"En attente Cloudflare... url={getattr(driver, 'current_url', '')}")
 
-        time.sleep(poll_seconds)
+        if challenge_attempts:
+            challenge_attempts = 0
+            current_poll_seconds = poll_seconds
+
+        time.sleep(current_poll_seconds)

@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.2.16-blue)
+![Version](https://img.shields.io/badge/version-0.2.18-blue)
 
 An English version of this text follows the French text.
 
@@ -11,7 +11,7 @@ An English version of this text follows the French text.
 
 ## Sommaire
 
-- [Nouveautés](#version--0216--20-janvier-2026)
+- [Nouveautés](#version--0218--20-janvier-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,22 +23,45 @@ An English version of this text follows the French text.
 
 ---
 
-## Version : 0.2.16 — 20 janvier 2026
+## Version : 0.2.18 — 20 janvier 2026
 
 ### Nouveautés
 
-**Améliorations (robustesse Selenium) :**
+**Robustesse Cloudflare :**
 
-- Atténuation des interactions Selenium pendant la vérification Cloudflare
-  (fenêtre "quiet" par défaut ~30s) pour limiter le polling/scan DOM.
+- Backoff exponentiel pendant les challenges persistants.
+- Pause manuelle explicite (Entrée) lors d’une vérification Cloudflare.
+- Validation plus robuste de `deep_scan_interval`.
 
-**Améliorations (documentation & dev) :**
+**Qualité / tests :**
 
-- Synchronisation de version (release 0.2.16).
+- Test unitaire pour le helper de backoff.
+- Correctif de test (`log_file` dans la portée adéquate).
+
+**Documentation :**
+
+- Ajout d’un audit Cloudflare et d’un playbook opérateur.
 
 ---
 
 ## Historique des versions
+
+### 0.2.18 — 20 janvier 2026
+
+- Backoff exponentiel pendant les challenges Cloudflare persistants.
+- Pause manuelle explicite (Entrée) lors d’une vérification Cloudflare.
+- Validation plus robuste de `deep_scan_interval`.
+- Test unitaire du helper de backoff.
+- Correctif de test (`log_file` dans la portée adéquate).
+- Ajout d’un audit Cloudflare et d’un playbook opérateur.
+
+### 0.2.17 — 20 janvier 2026
+
+- Pause silencieuse 45s après le bouton Home User pour réduire les interactions
+  pendant la vérification Cloudflare.
+- Arrêt propre si la vérification Cloudflare n'est pas résolue avant le login.
+- Prise en compte du paramètre `debug` dans `config.yaml`.
+- Durcissement des paramètres Cloudflare (validation quiet/deep scan).
 
 ### 0.2.16 — 20 janvier 2026
 
@@ -391,6 +414,7 @@ chromedriver_log: C:/Users/Utilisateur/Downloads/GlycoReport-Downloader/clarity_
 dexcom_url: "https://clarity.dexcom.eu"
 download_dir: C:/Users/Utilisateur/Downloads/GlycoReport-Downloader
 log_retention_days: 30
+debug: false
 output_dir: C:/Users/Utilisateur/Downloads/GlycoReport-Downloader
 rapports:
   [
@@ -637,6 +661,23 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 
 ## What's New (English)
 
+### Version: 0.2.18 — January 20, 2026
+
+**Cloudflare robustness:**
+
+- Exponential backoff during persistent challenges.
+- Explicit manual pause (Enter) on Cloudflare verification.
+- More robust `deep_scan_interval` validation.
+
+**Quality / tests:**
+
+- Unit test for the backoff helper.
+- Test fix (`log_file` scope).
+
+**Documentation:**
+
+- Added a Cloudflare audit and operator playbook.
+
 ### Version: 0.2.16 — January 20, 2026
 
 **Selenium Robustness Improvements:**
@@ -706,6 +747,23 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 ---
 
 ## Version History (English)
+
+### 0.2.18 — January 20, 2026
+
+- Exponential backoff during persistent Cloudflare challenges.
+- Explicit manual pause (Enter) on Cloudflare verification.
+- More robust `deep_scan_interval` validation.
+- Backoff helper unit test.
+- Test fix (`log_file` scope).
+- Added a Cloudflare audit and operator playbook.
+
+### 0.2.17 — January 20, 2026
+
+- 45s silent pause after the Home User button to reduce interactions during
+  Cloudflare verification.
+- Clean stop if Cloudflare verification is not resolved before login.
+- `debug` is now honored from `config.yaml`.
+- Stronger Cloudflare parameter validation (quiet/deep scan).
 
 ### 0.2.16 — January 20, 2026
 

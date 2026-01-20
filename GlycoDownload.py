@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
 Modifié le    : 2026-01-20
-Version       : 0.2.16
+Version       : 0.2.18
 Copyright     : Pierre Théberge
 
 Description
@@ -114,6 +114,8 @@ Modifications
 0.2.14  - 2026-01-19   [ES-19] : Attente "vérification humaine" Cloudflare (pause + reprise automatique).
 0.2.15  - 2026-01-19   [ES-19] : Robustesse post-connexion (attentes UI explicites) et ancre Cloudflare plus robuste.
 0.2.16  - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.2.17  - 2026-01-20   [ES-19] : Robustesse Cloudflare + debug config + logs (aucun changement fonctionnel majeur).
+0.2.18  - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -360,6 +362,28 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
             logger.error("Perte de connexion internet détectée avant la saisie des identifiants.")
             raise RuntimeError("Connexion internet requise pour poursuivre.")
 
+        # Si une vérification Cloudflare est affichée, attendre la page de login
+        # avant d'essayer de localiser le champ d'identifiant.
+        try:
+            attendre_verification_humaine_cloudflare(
+                driver,
+                logger,
+                (
+                    By.XPATH,
+                    "//input[( @type='text' or @type='email' or @type='password') and not(@disabled)]",
+                ),
+                log_dir,
+                NOW_STR,
+                timeout=600,
+                poll_seconds=5.0,
+                quiet_seconds=45.0,
+                deep_scan_interval=20.0,
+                debug=logger.isEnabledFor(logging.DEBUG),
+            )
+        except Exception as e:
+            logger.error(f"Attente Cloudflare avant login: {e}")
+            raise SystemExit(1)
+
         # Récupération des identifiants via config.py
         dexcom_username, dexcom_password, dexcom_country_code, dexcom_phone_number = get_dexcom_credentials()
         if not dexcom_username or not dexcom_password:
@@ -425,13 +449,38 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
             if logger.isEnabledFor(logging.DEBUG):
                 capture_screenshot(driver, logger, "avant_username_input", log_dir, NOW_STR)
 
-            # Attendre que le champ soit présent
-            try:
-                username_input = WebDriverWait(driver, 30).until(
-                    EC.presence_of_element_located((By.ID, "usernameLogin"))
+            # Attendre que le champ soit présent (avec fallbacks si l'ID change)
+            username_input = None
+            username_locators = [
+                (By.ID, "usernameLogin"),
+                (By.NAME, "username"),
+                (By.NAME, "email"),
+                (By.CSS_SELECTOR, "input[type='email']"),
+                (By.CSS_SELECTOR, "input[autocomplete='username']"),
+                (By.CSS_SELECTOR, "input[id*='user'][type='text']"),
+                (By.CSS_SELECTOR, "input[id*='email']"),
+            ]
+            for locator in username_locators:
+                try:
+                    username_input = WebDriverWait(driver, 10).until(
+                        EC.presence_of_element_located(locator)
+                    )
+                    if username_input is not None:
+                        logger.debug(f"Champ d'identifiant trouvé via {locator}")
+                        break
+                except Exception:
+                    continue
+
+            if username_input is None:
+                current_url = getattr(driver, "current_url", "")
+                try:
+                    page_title = driver.title
+                except Exception:
+                    page_title = ""
+                logger.error(
+                    "Champ usernameLogin introuvable après sélection du mode courriel/nom d'utilisateur. "
+                    f"URL actuelle: {current_url} | Titre: {page_title}"
                 )
-            except Exception as e:
-                logger.error("Champ usernameLogin introuvable après sélection du mode courriel/nom d'utilisateur.")
                 if logger.isEnabledFor(logging.DEBUG):
                     capture_screenshot(driver, logger, "erreur_username_input", log_dir, NOW_STR)
                 raise SystemExit(1)
@@ -439,7 +488,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
             # Vérifier que le champ est visible et interactif
             try:
                 WebDriverWait(driver, 10).until(EC.visibility_of(username_input))
-                WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "usernameLogin")))
+                WebDriverWait(driver, 10).until(EC.element_to_be_clickable(username_input))
             except Exception as e:
                 logger.error("Champ usernameLogin non visible ou non interactif.")
                 if logger.isEnabledFor(logging.DEBUG):
@@ -584,7 +633,7 @@ def main(args, logger, config):
     download_dir = None
     try:
         # Préparation des variables locales
-        debug_mode = args.debug
+        debug_mode = bool(args.debug or config.get("DEBUG", False))
         rapports = args.rapports or config['RAPPORTS']
         download_dir = config['DOWNLOAD_DIR']
         dir_final_base = config['DIR_FINAL_BASE']
@@ -645,6 +694,21 @@ def main(args, logger, config):
 
         if debug_mode:
             logger.debug(f"Version de Python : {sys.version}")
+            try:
+                logger.debug(f"Arguments CLI: {vars(args)}")
+            except Exception:
+                logger.debug("Arguments CLI: indisponibles")
+            logger.debug(
+                "Configuration (sanitisée): "
+                f"DOWNLOAD_DIR={download_dir} | "
+                f"DIR_FINAL_BASE={dir_final_base} | "
+                f"DEXCOM_URL={dexcom_url} | "
+                f"CHROMEDRIVER_LOG={chromedriver_log} | "
+                f"CHROME_USER_DATA_DIR={config['CHROME_USER_DATA_DIR']} | "
+                f"RAPPORTS={rapports} | "
+                f"DATE_DEBUT={date_debut_str} | DATE_FIN={date_fin_str} | "
+                f"LOG_RETENTION_DAYS={config['LOG_RETENTION_DAYS']}"
+            )
         logger.info(f"Version de l'application exécutée : {__version__}")
         logger.info(f"Rapports à traiter : {rapports}")
         logger.info(f"Dossier de téléchargement : {download_dir}")
@@ -684,6 +748,11 @@ def main(args, logger, config):
         except Exception as e:
             # La gestion d'erreur est déjà dans click_home_user_button
             raise
+
+        # Silence total après le clic Home User pour réduire les interactions
+        # pendant la vérification Cloudflare.
+        logger.info("Pause silencieuse 45s après le bouton Home User (Cloudflare)")
+        time.sleep(45)
 
         try:
             saisir_identifiants(driver, logger, log_dir, now_str)
@@ -966,9 +1035,10 @@ if __name__ == "__main__":
     # ÉTAPE 6 : Setup du logger (exécution normale)
     # ============================================
     
+    debug_flag = bool(args.debug or getattr(config, "DEBUG", False))
     logger = setup_logger(
-        args.debug, 
-        os.path.dirname(config.CHROMEDRIVER_LOG) or ".", 
+        debug_flag,
+        os.path.dirname(config.CHROMEDRIVER_LOG) or ".",
         config.NOW_STR
     )
     

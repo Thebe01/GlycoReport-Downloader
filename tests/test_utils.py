@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-13
 Modifié le    : 2026-01-20
-Version       : 0.2.16
+Version       : 0.2.18
 Copyright     : Pierre Théberge
 
 Description
@@ -33,6 +33,8 @@ Modifications
 0.2.6  - 2025-10-21   [ES-7]  : Synchronisation de version (aucun changement fonctionnel dans les tests).
 0.2.15 - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.2.16 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.2.17 - 2026-01-20   [ES-19] : Ajustements typing pour tests (aucun changement fonctionnel).
+0.2.18 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -48,6 +50,9 @@ import os
 import tempfile
 import pytest
 import time
+from typing import cast
+from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.remote.webdriver import WebDriver
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils import (
@@ -60,7 +65,8 @@ from utils import (
     renomme_prefix,
     attendre_nouveau_bouton_telecharger,
     capture_screenshot,
-    cleanup_logs
+    cleanup_logs,
+    _compute_backoff_seconds
 )
 
 # Dummy classes for Selenium objects
@@ -173,7 +179,11 @@ def test_attendre_disparition_overlay_no_overlay(dummy_driver, dummy_logger):
 def test_attendre_nouveau_bouton_telecharger_signature():
     # On ne peut pas tester le comportement réel sans Selenium, mais on peut tester la signature
     try:
-        attendre_nouveau_bouton_telecharger(DummyDriver(), DummyWebElement(), timeout=1)
+        attendre_nouveau_bouton_telecharger(
+            cast(WebDriver, DummyDriver()),
+            cast(WebElement, DummyWebElement()),
+            timeout=1,
+        )
     except Exception:
         pass  # On accepte que la fonction lève une exception ici, car il n'y a pas de vrai test à faire
 
@@ -217,10 +227,17 @@ def test_cleanup_logs_retention_zero(tmp_path):
     
     # Appelle cleanup_logs avec une rétention illimitée
     cleanup_logs(str(log_dir), retention_days=0)
-    
+
     # Vérifie que les fichiers n'ont pas été supprimés
     assert log_file.exists()
     assert screenshot_file.exists()
+
+
+def test_compute_backoff_seconds_caps():
+    assert _compute_backoff_seconds(2.0, 0, 30.0) == 2.0
+    assert _compute_backoff_seconds(2.0, 1, 30.0) == 4.0
+    assert _compute_backoff_seconds(2.0, 2, 30.0) == 8.0
+    assert _compute_backoff_seconds(2.0, 4, 30.0) == 30.0
 
 def test_cleanup_logs_removes_only_old_screenshots(tmp_path):
     # Test spécifique pour vérifier que seules les vieilles captures d'écran sont supprimées
