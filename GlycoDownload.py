@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-03-03
-#'''Last Modified On : 2025-12-22
+#'''Last Modified On : 2026-01-19
 #'''CopyRights : Pierre Théberge
 #'''Description : Script principal pour l'automatisation du téléchargement des rapports Dexcom Clarity.
 #'''              Centralisation de la configuration, gestion CLI avancée, robustesse accrue,
 #'''              logs détaillés (console, fichier, JS), gestion des exceptions et de la déconnexion.
-#'''Version : 0.2.11
+#'''Version : 0.2.14
 #'''Modifications :
 #'''Version   Date         Billet   Description
 #'''0.0.0   2025-03-03    -        Version initiale.
@@ -106,7 +106,9 @@
 #'''0.2.10  2025-12-17    ES-17    Sécurité : Masquage des informations sensibles (téléphone) dans la sortie --dry-run.
 #'''                      ES-17    Synchronisation de version.
 #'''0.2.11  2025-12-22    ES-18    Correction du délai d'attente pour la fermeture de la fenêtre de téléchargement (60s).
-#'''                      -            Reconversion à Python 3.13
+#'''                      -            Retour à Python 3.13 (après rollback v0.0.7)
+#'''0.2.12  2025-12-22    ES-3     Réparer le problème avec les rapports Comparer.
+#'''0.2.14  2026-01-19    ES-19    Ajout d'une attente "vérification humaine" Cloudflare (pause + reprise automatique) basée sur une ancre UI.
 #''' </summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -143,7 +145,8 @@ from utils import (
     attendre_nouveau_bouton_telecharger,
     capture_screenshot,
     pause_on_error,
-    cleanup_logs
+    cleanup_logs,
+    attendre_verification_humaine_cloudflare
 )
 from rapports import selection_rapport
 from version import __version__
@@ -639,6 +642,19 @@ def main(args, logger, config):
         driver.get(dexcom_url)
         wait = WebDriverWait(driver=driver, timeout=60)
 
+        # Si une vérification Cloudflare apparaît, laisser l'utilisateur la compléter puis reprendre.
+        # Ancre : bouton "Dexcom Clarity for Home Users" (landing page)
+        attendre_verification_humaine_cloudflare(
+            driver,
+            logger,
+            (By.XPATH, "//input[@type='submit' and contains(@class, 'landing-page--button')]"),
+            log_dir,
+            now_str,
+            timeout=600,
+            poll_seconds=2.0,
+            debug=debug_mode,
+        )
+
         if not check_internet():
             logger.error("Perte de connexion internet détectée avant de cliquer sur le bouton d'accueil.")
             logger.info("Arrêt du script suite à une perte de connexion internet.")
@@ -658,7 +674,20 @@ def main(args, logger, config):
             logger.error(f"Erreur lors de la saisie des identifiants ou de la connexion : {e}")
             sys.exit(1)
 
-        time.sleep(10)
+        # Après connexion, Dexcom peut rediriger/afficher une vérification humaine.
+        # Ancre : sélecteur de dates (page principale).
+        attendre_verification_humaine_cloudflare(
+            driver,
+            logger,
+            (By.XPATH, "//div[@data-test-date-range-picker-toggle]"),
+            log_dir,
+            now_str,
+            timeout=600,
+            poll_seconds=2.0,
+            debug=debug_mode,
+        )
+
+        time.sleep(2)
 
         try:
             if not check_internet():

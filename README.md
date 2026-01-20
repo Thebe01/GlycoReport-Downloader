@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.2.11-blue)
+![Version](https://img.shields.io/badge/version-0.2.14-blue)
 
 An English version of this text follows the French text.
 
@@ -11,7 +11,7 @@ An English version of this text follows the French text.
 
 ## Sommaire
 
-- [Nouveautés](#version--0211--22-décembre-2025)
+- [Nouveautés](#version--0214--19-janvier-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,30 +23,35 @@ An English version of this text follows the French text.
 
 ---
 
-## Version : 0.2.11 — 22 décembre 2025
+## Version : 0.2.14 — 19 janvier 2026
 
 ### Nouveautés
 
-**Nouvel installateur Windows :**
+**Améliorations (robustesse Selenium) :**
 
-- Distribution via un installateur Inno Setup (`.exe`) pour une installation
-  simplifiée.
-- Installation par défaut dans `{sd}\ipt\GlycoReport-Downloader` (disque
-  système, dossier utilisateur).
-- Création automatique des raccourcis et gestion des désinstallations.
-- Ne nécessite plus de droits administrateur pour l'installation.
+- Ajout d'une attente "vérification humaine" Cloudflare (pause + reprise
+  automatique) basée sur une ancre UI.
 
-**Améliorations techniques :**
+**Améliorations (documentation & dev) :**
 
-- Augmentation du délai d'attente pour la fermeture de la fenêtre de
-  téléchargement (60s) pour gérer les rapports volumineux (ex: Superposition).
-- Exclusion des fichiers temporaires `.crdownload` lors de la détection du
-  dernier fichier téléchargé.
-- Mise à jour des entêtes et synchronisation de version (ES-18).
+- Mise à jour des instructions Copilot avec une section “Debugging rapide
+  Selenium” (Windows + commandes PowerShell).
+- Clarification de documentation (notes sur helpers historiques non présents).
+- Synchronisation de la version dans le dépôt.
 
 ---
 
 ## Historique des versions
+
+### 0.2.14 — 19 janvier 2026
+
+- Ajout d'une attente "vérification humaine" Cloudflare (pause + reprise
+  automatique) basée sur une ancre UI.
+
+### 0.2.13 — 19 janvier 2026
+
+- Mise à jour des instructions Copilot (debug Selenium, commandes PowerShell).
+- Synchronisation de version.
 
 ### 0.2.11 — 22 décembre 2025
 
@@ -61,6 +66,7 @@ An English version of this text follows the French text.
   navigateur.
 - Ajout de `wait_for_page_load_with_retry` pour gérer les erreurs temporaires
   avec retry automatique.
+- Note : ces helpers ne sont pas présents dans le code actuel (v0.2.13).
 
 ### 0.2.6 — 21 octobre 2025
 
@@ -590,7 +596,7 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 
 ---
 
-# GlycoReport Downloader (English)
+## GlycoReport Downloader (English)
 
 ## Summary
 
@@ -673,6 +679,7 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 - Added `check_for_502_errors` to detect 502 errors in browser logs.
 - Added `wait_for_page_load_with_retry` to handle temporary errors with
   automatic retry.
+- Note: these helpers are not present in the current code (v0.2.12).
 
 ### 0.2.6 — October 21, 2025
 
@@ -1113,10 +1120,10 @@ For questions or bug reports: https://github.com/pierretheberge/GlycoReport-Down
 
 ---
 
-## Tests unitaires
+## Unit Tests (English)
 
-Pour exécuter tous les tests unitaires sur les fonctions utilitaires du projet,
-utilisez la commande suivante :
+To run all unit tests for the project's utility functions, use the following
+command:
 
 **Bash/CMD :**
 

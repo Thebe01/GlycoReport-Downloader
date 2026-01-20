@@ -7,7 +7,7 @@
 #	CopyRights : Pierre Théberge
 #	Description : Script pour générer les exécutables et créer l'installateur Inno Setup.
 #
-#	Version : 2.0.2
+#	Version : 2.0.3
 #	Modifications :
 #	Version   Date          Billet  Description
 #	1.0.0     2025-09-03            Version initiale (ZIP).
@@ -16,13 +16,14 @@
 #   2.0.1     2025-12-22    ES-18   Correction du chemin d'installation par défaut ({sd}\ipt).
 #   2.0.2     2025-12-22    ES-18   Correction variable inutilisée $appName.
 #                                   Correction warning architecture Inno Setup (x64compatible).
+#   2.0.3     2025-12-22    ES-3    Synchronisation de version.
 
 $ErrorActionPreference = "Stop"
 
 # --- Configuration ---
 $appName = "GlycoReport-Downloader"
 $versionFile = "version.py"
-$issFile = "Setup\GlycoReport-Downloader.iss"
+$issFile = "Setup\${appName}.iss"
 $distDir = "dist"
 $setupOutputDir = "dist_setup"
 
