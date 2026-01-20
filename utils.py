@@ -10,7 +10,7 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-01-19
+Modifié le    : 2026-01-20
 Version       : 0.2.15
 Copyright     : Pierre Théberge
 
@@ -60,6 +60,7 @@ Modifications
 0.2.13 - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.2.14 - 2026-01-19   [ES-19] : Ajout d'une attente "vérification humaine" Cloudflare (pause + reprise automatique) basée sur une ancre UI.
 0.2.15 - 2026-01-19   [ES-19] : Sécurité : validation d'URL (allowlist host + parsing) et durcissement de la détection Cloudflare.
+0.2.15 - 2026-01-20   [ES-19] : Atténuation des interactions Selenium pendant la vérification Cloudflare (fenêtre quiet + scan DOM limité).
 
 Paramètres
 ----------
@@ -282,11 +283,16 @@ def cleanup_logs(log_dir, retention_days, logger=None):
                     logger.error(msg)
 
 
-def cloudflare_challenge_detecte(driver: WebDriver) -> bool:
+def cloudflare_challenge_detecte(driver: WebDriver, *, deep_scan: bool = True) -> bool:
     """Détecte (au mieux) la présence d'un challenge Cloudflare dans l'onglet courant.
 
     Note: on ne tente PAS de contourner la vérification; ce helper sert uniquement à
     décider si l'automatisation doit se mettre en pause pour laisser l'utilisateur agir.
+
+    Args:
+        driver: WebDriver Selenium.
+        deep_scan: Si True, utilise aussi des signaux DOM/HTML (iframes/page_source).
+            Si False, se limite à un check léger via l'URL courante.
     """
     try:
         url = (driver.current_url or "").lower()
@@ -295,6 +301,9 @@ def cloudflare_challenge_detecte(driver: WebDriver) -> bool:
 
     if "cdn-cgi" in url or "challenge" in url or "turnstile" in url:
         return True
+
+    if not deep_scan:
+        return False
 
     # Certains challenges sont rendus via iframe (Turnstile) ou scripts dédiés.
     try:
@@ -345,6 +354,8 @@ def attendre_verification_humaine_cloudflare(
     now_str: str,
     timeout: int = 600,
     poll_seconds: float = 2.0,
+    quiet_seconds: float = 30.0,
+    deep_scan_interval: float = 10.0,
     debug: bool = False,
 ) -> None:
     """Attend que l'utilisateur termine une éventuelle vérification Cloudflare.
@@ -365,9 +376,34 @@ def attendre_verification_humaine_cloudflare(
     start = time.time()
     notified = False
     last_debug_shot = 0.0
+    quiet_until = 0.0
+    last_deep_scan = 0.0
 
     while True:
-        # 1) Condition de succès: l'ancre est présente/visible.
+        now = time.time()
+
+        # 1) Timeout global.
+        elapsed = now - start
+        if elapsed > timeout:
+            msg = (
+                "Timeout en attendant la vérification Cloudflare (ou le chargement de la page attendue). "
+                "Vous pouvez relancer avec --debug pour diagnostic (screenshots/logs)."
+            )
+            logger.error(msg)
+            if debug:
+                capture_screenshot(driver, logger, "cloudflare_timeout", log_dir, now_str)
+            raise TimeoutError(msg)
+
+        # 2) Fenêtre "quiet": on évite toute interaction DOM/ancre pendant que
+        # l'utilisateur répond aux prompts Cloudflare.
+        if now < quiet_until:
+            if debug and notified and (now - last_debug_shot) >= 30:
+                last_debug_shot = now
+                logger.debug(f"En attente Cloudflare (quiet)... url={getattr(driver, 'current_url', '')}")
+            time.sleep(min(poll_seconds, max(0.1, quiet_until - now)))
+            continue
+
+        # 3) Condition de succès: l'ancre est présente/visible.
         try:
             element = WebDriverWait(driver, 1).until(
                 EC.presence_of_element_located(ancre_locator)
@@ -383,36 +419,33 @@ def attendre_verification_humaine_cloudflare(
                     logger.info("Vérification Cloudflare terminée. Reprise du script.")
                 return
         except Exception:
-            # Les timeouts/interruptions de WebDriverWait sont attendus dans cette boucle de polling:
-            # on ignore l'exception et on laisse la boucle continuer avec les contrôles suivants.
+            # Les timeouts/interruptions de WebDriverWait sont attendus dans cette boucle.
             pass
 
-        # 2) Si un challenge est détecté, on laisse l'utilisateur agir.
-        challenge = cloudflare_challenge_detecte(driver)
-        if challenge and not notified:
-            notified = True
-            logger.warning(
-                "Vérification Cloudflare détectée. Complétez-la manuellement dans Chrome; reprise automatique ensuite."
-            )
-            if debug:
-                capture_screenshot(driver, logger, "cloudflare_detecte", log_dir, now_str)
+        # 4) Si un challenge est détecté, on met le script en pause (quiet_seconds)
+        # pour laisser l'utilisateur agir, et on limite les scans DOM/HTML.
+        do_deep_scan = (now - last_deep_scan) >= max(1.0, float(deep_scan_interval))
+        challenge = cloudflare_challenge_detecte(driver, deep_scan=do_deep_scan)
+        if do_deep_scan:
+            last_deep_scan = now
 
-        # 3) Timeout.
-        elapsed = time.time() - start
-        if elapsed > timeout:
-            msg = (
-                "Timeout en attendant la vérification Cloudflare (ou le chargement de la page attendue). "
-                "Vous pouvez relancer avec --debug pour diagnostic (screenshots/logs)."
-            )
-            logger.error(msg)
-            if debug:
-                capture_screenshot(driver, logger, "cloudflare_timeout", log_dir, now_str)
-            raise TimeoutError(msg)
+        if challenge:
+            if not notified:
+                notified = True
+                logger.warning(
+                    "Vérification Cloudflare détectée. Complétez-la manuellement dans Chrome; reprise automatique ensuite."
+                )
+                if debug:
+                    capture_screenshot(driver, logger, "cloudflare_detecte", log_dir, now_str)
 
-        # 4) Debug périodique (évite de spammer).
+            # Pause pour éviter du polling agressif (réduit les interactions pendant la vérification).
+            quiet_until = now + max(0.0, float(quiet_seconds))
+            continue
+
+        # 5) Debug périodique (évite de spammer).
         if debug and notified:
-            if time.time() - last_debug_shot >= 30:
-                last_debug_shot = time.time()
+            if now - last_debug_shot >= 30:
+                last_debug_shot = now
                 logger.debug(f"En attente Cloudflare... url={getattr(driver, 'current_url', '')}")
 
         time.sleep(poll_seconds)
