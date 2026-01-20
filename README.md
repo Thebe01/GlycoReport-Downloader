@@ -287,7 +287,8 @@ Si vous mettez à jour depuis une version < 0.2.3, un outil de migration est
 disponible pour nettoyer automatiquement votre configuration. L'installateur
 inclut cet outil.
 
-**Note :** l'outil de migration (`migrate.py` / `migrate.exe`) est versionné indépendamment (v1.0.1) et ne suit pas la version principale de l'application.
+**Note :** l'outil de migration (`migrate.py` / `migrate.exe`) est versionné
+indépendamment (v1.0.1) et ne suit pas la version principale de l'application.
 
 **Windows :**
 
@@ -935,7 +936,8 @@ For more information about Dexcom Clarity:
 If you are upgrading from a version < 0.2.3, a migration tool is available to
 automatically clean up your configuration. The installer includes this tool.
 
-**Note:** the migration tool (`migrate.py` / `migrate.exe`) is versioned independently (v1.0.1) and does not follow the main application version.
+**Note:** the migration tool (`migrate.py` / `migrate.exe`) is versioned
+independently (v1.0.1) and does not follow the main application version.
 
 **Windows:**
 
