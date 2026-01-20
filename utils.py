@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-01-20
-Version       : 0.2.15
+Version       : 0.2.16
 Copyright     : Pierre Théberge
 
 Description
@@ -60,7 +60,7 @@ Modifications
 0.2.13 - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.2.14 - 2026-01-19   [ES-19] : Ajout d'une attente "vérification humaine" Cloudflare (pause + reprise automatique) basée sur une ancre UI.
 0.2.15 - 2026-01-19   [ES-19] : Sécurité : validation d'URL (allowlist host + parsing) et durcissement de la détection Cloudflare.
-0.2.15 - 2026-01-20   [ES-19] : Atténuation des interactions Selenium pendant la vérification Cloudflare (fenêtre quiet + scan DOM limité).
+0.2.16 - 2026-01-20   [ES-19] : Atténuation des interactions Selenium pendant la vérification Cloudflare (fenêtre quiet + scan DOM limité).
 
 Paramètres
 ----------
@@ -371,8 +371,27 @@ def attendre_verification_humaine_cloudflare(
         now_str: Timestamp actuel (pour nommage screenshot).
         timeout: Durée max d'attente (secondes).
         poll_seconds: Intervalle entre deux vérifications.
+        quiet_seconds: Durée (en secondes) de la fenêtre "quiet" après détection Cloudflare, pendant laquelle on évite
+            d'interagir avec le DOM/ancre afin de limiter le polling et laisser l'utilisateur compléter la vérification.
+        deep_scan_interval: Fréquence (en secondes) des scans DOM/HTML "profonds" utilisés pour détecter Cloudflare.
+            Bridé à un minimum de 1.0s pour éviter des interactions trop agressives.
         debug: Active logs/screenshot supplémentaires.
     """
+    try:
+        effective_quiet_seconds = float(quiet_seconds)
+    except (TypeError, ValueError):
+        logger.warning(
+            "Valeur quiet_seconds invalide (%r). Utilisation de 0 seconde pour la fenêtre quiet.",
+            quiet_seconds,
+        )
+        effective_quiet_seconds = 0.0
+    if effective_quiet_seconds < 0.0:
+        logger.warning(
+            "Valeur quiet_seconds négative (%s). Les valeurs négatives sont traitées comme 0 seconde.",
+            effective_quiet_seconds,
+        )
+        effective_quiet_seconds = 0.0
+
     start = time.time()
     notified = False
     last_debug_shot = 0.0
@@ -400,7 +419,11 @@ def attendre_verification_humaine_cloudflare(
             if debug and notified and (now - last_debug_shot) >= 30:
                 last_debug_shot = now
                 logger.debug(f"En attente Cloudflare (quiet)... url={getattr(driver, 'current_url', '')}")
-            time.sleep(min(poll_seconds, max(0.1, quiet_until - now)))
+            # On impose un sommeil minimum de 0.1s pendant la fenêtre quiet,
+            # même si poll_seconds est très petit, tout en respectant la fin
+            # de la fenêtre quiet.
+            sleep_duration = max(0.1, min(poll_seconds, max(0.0, quiet_until - now)))
+            time.sleep(sleep_duration)
             continue
 
         # 3) Condition de succès: l'ancre est présente/visible.
@@ -424,7 +447,10 @@ def attendre_verification_humaine_cloudflare(
 
         # 4) Si un challenge est détecté, on met le script en pause (quiet_seconds)
         # pour laisser l'utilisateur agir, et on limite les scans DOM/HTML.
-        do_deep_scan = (now - last_deep_scan) >= max(1.0, float(deep_scan_interval))
+        # deep_scan_interval est bridé à un minimum de 1.0s pour éviter des scans DOM
+        # trop agressifs même si un intervalle plus court est fourni.
+        effective_deep_scan_interval = max(1.0, float(deep_scan_interval))
+        do_deep_scan = (now - last_deep_scan) >= effective_deep_scan_interval
         challenge = cloudflare_challenge_detecte(driver, deep_scan=do_deep_scan)
         if do_deep_scan:
             last_deep_scan = now
@@ -439,7 +465,7 @@ def attendre_verification_humaine_cloudflare(
                     capture_screenshot(driver, logger, "cloudflare_detecte", log_dir, now_str)
 
             # Pause pour éviter du polling agressif (réduit les interactions pendant la vérification).
-            quiet_until = now + max(0.0, float(quiet_seconds))
+            quiet_until = now + effective_quiet_seconds
             continue
 
         # 5) Debug périodique (évite de spammer).

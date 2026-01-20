@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-13
-Modifié le    : 2026-01-19
-Version       : 0.2.15
+Modifié le    : 2026-01-20
+Version       : 0.2.16
 Copyright     : Pierre Théberge
 
 Description
@@ -32,6 +32,7 @@ Modifications
 0.2.5  - 2025-10-16   [ES-10] : Ajout de tests pour la suppression des captures d'écran (.png) lors du nettoyage des logs.
 0.2.6  - 2025-10-21   [ES-7]  : Synchronisation de version (aucun changement fonctionnel dans les tests).
 0.2.15 - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.2.16 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------

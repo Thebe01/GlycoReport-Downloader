@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-01-19
-Version       : 0.2.15
+Modifié le    : 2026-01-20
+Version       : 0.2.16
 Copyright     : Pierre Théberge
 
 Description
@@ -67,6 +67,7 @@ Modifications
 0.2.13 - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.2.14 - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.2.15 - 2026-01-19   [ES-19] : Sécurité : validation stricte de dexcom_url (parsing + allowlist, HTTPS, sous-domaines).
+0.2.16 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
