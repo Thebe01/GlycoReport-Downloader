@@ -504,7 +504,7 @@ def attendre_verification_humaine_cloudflare(
             if not notified:
                 notified = True
                 logger.warning(
-                    "Vérification Cloudflare détectée. Complétez-la manuellement dans Chrome; "
+                    "Vérification Cloudflare détectée. Complétez-la manuellement dans Chrome "
                     "puis appuyez sur Entrée pour reprendre."
                 )
                 if debug:
