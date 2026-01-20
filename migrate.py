@@ -1,29 +1,41 @@
-#'''////////////////////////////////////////////////////////////////////////////////////////////////////
-#'''<summary>
-#'''FileName: migrate.py
-#'''FileType: py Source file
-#'''
-#'''Author : Pierre Théberge
-#'''Created On : 2025-10-16
-#'''Last Modified On : 2026-01-19
-#'''CopyRights : Pierre Théberge
-#'''Description : Script de migration pour GlycoReport-Downloader.
-#'''              Permet de migrer les configurations utilisateur entre versions.
-#'''              - Supprime les paramètres obsolètes du config.yaml
-#'''              - Nettoie les fichiers et dossiers devenus inutiles
-#'''              - Crée des backups avant toute modification
-#'''              - Affiche des messages colorés et informatifs
-#'''Version : 0.2.14
-#'''Modifications :
-#'''Version   Date         Billet   Description
-#'''1.0.0     2025-10-16   ES-12    Version initiale - Migration vers 0.2.4 (ChromeDriverManager)
-#'''1.0.1     2025-12-22   ES-18    Synchronisation de version.
-#'''0.2.11    2025-12-22   ES-18    Synchronisation avec la version principale.
-#'''0.2.12    2025-12-22   ES-3     Synchronisation de version.
-#'''0.2.13    2026-01-19   ES-19    Synchronisation de version.
-#'''0.2.14    2026-01-19   ES-19    Synchronisation de version.
-#'''</summary>
-#'''/////////////////////////////////////////////////////////////////////////////////////////////////////
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Format d'en-tête standard à respecter pour ce projet.
+Voir HEADER_TEMPLATE_PYTHON.md pour les détails.
+
+Module        : migrate.py
+Type          : Python module
+Auteur        : Pierre Théberge
+Compagnie     : Innovations, Performances, Technologies inc.
+Créé le       : 2025-10-16
+Modifié le    : 2026-01-19
+Version       : 0.2.15
+Copyright     : Pierre Théberge
+
+Description
+-----------
+Script de migration pour nettoyer/adapter la configuration utilisateur entre versions.
+
+Modifications
+-------------
+1.0.0  - 2025-10-16   [ES-12] : Version initiale - Migration vers 0.2.4 (ChromeDriverManager).
+1.0.1  - 2025-12-22   [ES-18] : Synchronisation de version.
+0.2.11 - 2025-12-22   [ES-18] : Synchronisation avec la version principale.
+0.2.12 - 2025-12-22   [ES-3]  : Synchronisation de version.
+0.2.13 - 2026-01-19   [ES-19] : Synchronisation de version.
+0.2.14 - 2026-01-19   [ES-19] : Synchronisation de version.
+0.2.15 - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+
+Paramètres
+----------
+N/A (script interactif).
+
+Exemple
+-------
+>>> python migrate.py
+"""
 
 import os
 import sys

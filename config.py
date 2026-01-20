@@ -1,68 +1,81 @@
-#'''////////////////////////////////////////////////////////////////////////////////////////////////////
-#'''<summary>
-#'''FileName: config.py
-#'''FileType: py Source file
-#'''
-#'''Author : Pierre Théberge
-#'''Created On : 2025-08-05
-#'''Last Modified On : 2026-01-19
-#'''CopyRights : Pierre Théberge
-#'''Description : Centralisation et sécurisation de la configuration du projet GlycoReport-Downloader.
-#'''              Lecture de tous les paramètres depuis config.yaml, normalisation systématique des chemins
-#'''              (via utils.py), gestion des erreurs et des droits d'accès, validation stricte des types,
-#'''              génération interactive de config.yaml, protection contre les vulnérabilités courantes
-#'''              (injection, mauvaise gestion des secrets, etc.).
-#'''Version : 0.2.14
-#'''Modifications :
-#'''Version   Date         Billet   Description
-#'''0.0.0     2025-08-05            Version initiale.
-#'''0.1.0     2025-08-06            Ajout de la gestion des paramètres de configuration via un fichier YAML.
-#'''0.1.1     2025-08-13            Normalisation systématique des chemins, gestion d'erreur sur les paramètres,
-#'''                                    conservation de tous les paramètres importants (chemins, URL, rapports, etc.).
-#'''0.1.2     2025-08-13            Ajout de la fonction normalize_path, harmonisation de l’utilisation des chemins.
-#'''0.1.3     2025-08-18            Suppression de la duplication de normalize_path, import depuis utils.py,
-#'''                                    harmonisation de l’utilisation des chemins dans tout le projet.
-#'''0.1.4     2025-08-18            Sécurisation du chargement de la configuration : utilisation stricte de yaml.safe_load,
-#'''                                    validation des types et de la présence des paramètres, vérification des droits d'accès,
-#'''                                    protection contre l'exposition de secrets et contre l'injection de code.
-#'''0.1.5     2025-08-22            Ajout du paramètre chromedriver_path configurable via config.yaml,
-#'''                                    valeur par défaut : "./chromedriver.exe" (même dossier que l'exécutable).
-#'''0.1.6     2025-08-22            Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
-#'''0.1.7     2025-08-25            Création automatique de config.yaml à partir de config_example.yaml si absent.
-#'''                                    Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
-#'''0.1.8     2025-08-27            Configuration interactive avancée pour config.yaml et .env.
-#'''                                    Copie minimale du profil Chrome lors de la configuration.
-#'''                                    Ajout du paramètre log_retention_days (0 = conservation illimitée).
-#'''                                    Nettoyage automatique des logs selon la rétention.
-#'''                                    Messages utilisateurs colorés et validation renforcée.
-#'''0.1.9     2025-08-28            Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
-#'''                                    Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
-#'''                                    Correction de la robustesse de la configuration initiale.
-#'''0.1.10    2025-08-28            Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
-#'''                                    Chaque suppression de log est loggée.
-#'''0.2.0     2025-08-28            Le fichier .env est désormais chiffré à l'écriture et déchiffré à la volée lors de la lecture.
-#'''                                    La fonction get_dexcom_credentials ne propose plus de saisie interactive si les identifiants sont absents.
-#'''                                    Correction de la suppression du fichier temporaire .env.tmp même en cas d'erreur.
-#'''                                    Sécurisation de l'affichage des identifiants (plus d'affichage du mot de passe en clair).
-#'''0.2.1     2025-08-29            Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
-#'''0.2.2     2025-08-29            Séparation stricte de la gestion des arguments CLI (retirée de ce module).
-#'''                                    Désactivation de tout accès à la config lors de l'affichage du help.
-#'''                                    Nettoyage des doublons de fonctions utilitaires CLI.
-#'''0.2.3     2025-10-14    ES-11   Remplacement d'une version spécifique de chromedriver par ChromeDriverManager qui charge toujours la
-#'''                        ES-11       la version courante.
-#'''                        ES-11   Modification du xpath pour le rapport statistiques horaires pour corriger l'erreur d'accès.
-#'''                        ES-11       Modifié pour rendre indépendante de la langue de l'utilisateur.
-#'''                        ES-11   Ajout de la colonne Billet dans le bloc des modifications.
-#'''0.2.4     2025-10-16    ES-12   Suppression du paramètre obsolète chromedriver_path (non utilisé depuis v0.2.3).
-#'''                        ES-12   Nettoyage du code : CHROMEDRIVER_PATH retiré de la configuration.
-#'''                        ES-12   Simplification : le répertoire chromedriver-win64/ n'est plus nécessaire.
-#'''0.2.5     2025-10-16    ES-10   Synchronisation de version (aucun changement fonctionnel).
-#'''0.2.6     2025-10-21    ES-7    Synchronisation de version (aucun changement fonctionnel).
-#'''0.2.7     2025-10-27    ES-16   Synchronisation de version (aucun changement fonctionnel).
-#'''0.2.11    2025-12-22    ES-18   Synchronisation de version.
-#'''0.2.12    2025-12-22    ES-3    Synchronisation de version.
-#''' </summary>
-#'''/////////////////////////////////////////////////////////////////////////////////////////////////////
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Format d'en-tête standard à respecter pour ce projet.
+Voir HEADER_TEMPLATE_PYTHON.md pour les détails.
+
+Module        : config.py
+Type          : Python module
+Auteur        : Pierre Théberge
+Compagnie     : Innovations, Performances, Technologies inc.
+Créé le       : 2025-08-05
+Modifié le    : 2026-01-19
+Version       : 0.2.15
+Copyright     : Pierre Théberge
+
+Description
+-----------
+Centralisation et validation de la configuration (config.yaml) et des secrets (.env chiffré).
+
+Modifications
+-------------
+0.0.0  - 2025-08-05   [N/A]  : Version initiale.
+0.1.0  - 2025-08-06   [N/A]  : Ajout de la gestion des paramètres de configuration via un fichier YAML.
+0.1.1  - 2025-08-13   [N/A]  : Normalisation systématique des chemins, gestion d'erreur sur les paramètres,
+                               conservation de tous les paramètres importants (chemins, URL, rapports, etc.).
+0.1.2  - 2025-08-13   [N/A]  : Ajout de la fonction normalize_path, harmonisation de l’utilisation des chemins.
+0.1.3  - 2025-08-18   [N/A]  : Suppression de la duplication de normalize_path, import depuis utils.py,
+                               harmonisation de l’utilisation des chemins dans tout le projet.
+0.1.4  - 2025-08-18   [N/A]  : Sécurisation du chargement de la configuration : utilisation stricte de yaml.safe_load,
+                               validation des types et de la présence des paramètres, vérification des droits d'accès,
+                               protection contre l'exposition de secrets et contre l'injection de code.
+0.1.5  - 2025-08-22   [N/A]  : Ajout du paramètre chromedriver_path configurable via config.yaml,
+                               valeur par défaut : "./chromedriver.exe" (même dossier que l'exécutable).
+0.1.6  - 2025-08-22   [N/A]  : Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
+0.1.7  - 2025-08-25   [N/A]  : Création automatique de config.yaml à partir de config_example.yaml si absent.
+                               Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
+0.1.8  - 2025-08-27   [N/A]  : Configuration interactive avancée pour config.yaml et .env.
+                               Copie minimale du profil Chrome lors de la configuration.
+                               Ajout du paramètre log_retention_days (0 = conservation illimitée).
+                               Nettoyage automatique des logs selon la rétention.
+                               Messages utilisateurs colorés et validation renforcée.
+0.1.9  - 2025-08-28   [N/A]  : Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
+                               Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
+                               Correction de la robustesse de la configuration initiale.
+0.1.10 - 2025-08-28   [N/A]  : Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
+                               Chaque suppression de log est loggée.
+0.2.0  - 2025-08-28   [N/A]  : Le fichier .env est désormais chiffré à l'écriture et déchiffré à la volée lors de la lecture.
+                               La fonction get_dexcom_credentials ne propose plus de saisie interactive si les identifiants sont absents.
+                               Correction de la suppression du fichier temporaire .env.tmp même en cas d'erreur.
+                               Sécurisation de l'affichage des identifiants (plus d'affichage du mot de passe en clair).
+0.2.1  - 2025-08-29   [N/A]  : Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
+0.2.2  - 2025-08-29   [N/A]  : Séparation stricte de la gestion des arguments CLI (retirée de ce module).
+                               Désactivation de tout accès à la config lors de l'affichage du help.
+                               Nettoyage des doublons de fonctions utilitaires CLI.
+0.2.3  - 2025-10-14   [ES-11] : Remplacement d'une version spécifique de chromedriver par ChromeDriverManager qui charge toujours la version courante.
+                               Modification du xpath pour le rapport statistiques horaires pour corriger l'erreur d'accès (indépendant de la langue de l'utilisateur).
+                               Ajout de la colonne Billet dans le bloc des modifications.
+0.2.4  - 2025-10-16   [ES-12] : Suppression du paramètre obsolète chromedriver_path (non utilisé depuis v0.2.3).
+                               Nettoyage du code : CHROMEDRIVER_PATH retiré de la configuration.
+                               Simplification : le répertoire chromedriver-win64/ n'est plus nécessaire.
+0.2.5  - 2025-10-16   [ES-10] : Synchronisation de version (aucun changement fonctionnel).
+0.2.6  - 2025-10-21   [ES-7]  : Synchronisation de version (aucun changement fonctionnel).
+0.2.7  - 2025-10-27   [ES-16] : Synchronisation de version (aucun changement fonctionnel).
+0.2.11 - 2025-12-22   [ES-18] : Synchronisation de version.
+0.2.12 - 2025-12-22   [ES-3]  : Synchronisation de version.
+0.2.13 - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.2.14 - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.2.15 - 2026-01-19   [ES-19] : Sécurité : validation stricte de dexcom_url (parsing + allowlist, HTTPS, sous-domaines).
+
+Paramètres
+----------
+N/A (module importé par l'application; la configuration provient de config.yaml et de l'environnement).
+
+Exemple
+-------
+>>> python GlycoDownload.py --dry-run
+"""
 
 import os
 import sys
@@ -71,7 +84,7 @@ from datetime import datetime, timedelta
 import yaml
 from dotenv import load_dotenv
 from colorama import init, Fore, Style
-from utils import normalize_path, pause_on_error
+from utils import normalize_path, pause_on_error, url_is_allowed
 import getpass
 import shutil
 import re
@@ -137,6 +150,20 @@ def validate_config(config):
             print_error(f"Le paramètre '{key}' doit être de type {typ.__name__}.")
             pause_on_error()
             sys.exit(1)
+
+    # Validation sécurité : dexcom_url doit être une URL HTTPS vers un host attendu (pas de check par sous-chaîne).
+    dexcom_url = config.get("dexcom_url")
+    allowed_hosts = [
+        "clarity.dexcom.eu",
+        "clarity.dexcom.com",
+    ]
+    if not url_is_allowed(str(dexcom_url), allowed_hosts, allow_subdomains=True, allowed_schemes=("https",)):
+        print_error(
+            "La valeur de 'dexcom_url' est invalide ou non autorisée. "
+            "Utilisez une URL HTTPS Dexcom Clarity (ex: https://clarity.dexcom.eu)."
+        )
+        pause_on_error()
+        sys.exit(1)
 
 # --- Fonction de copie minimale du profil Chrome ---
 def copy_minimal_chrome_profile(src_base, dst_base):
