@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.2.15-blue)
+![Version](https://img.shields.io/badge/version-0.2.16-blue)
 
 An English version of this text follows the French text.
 
@@ -11,7 +11,7 @@ An English version of this text follows the French text.
 
 ## Sommaire
 
-- [Nouveautés](#version--0215--19-janvier-2026)
+- [Nouveautés](#version--0216--20-janvier-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,30 +23,27 @@ An English version of this text follows the French text.
 
 ---
 
-## Version : 0.2.15 — 19 janvier 2026
+## Version : 0.2.16 — 20 janvier 2026
 
 ### Nouveautés
 
-**Améliorations (sécurité & validation) :**
-
-- Validation renforcée de `dexcom_url` : parsing d'URL + allowlist de hosts
-  Dexcom (HTTPS uniquement, sous-domaines autorisés).
-
 **Améliorations (robustesse Selenium) :**
 
-- Ajout d'une attente "vérification humaine" Cloudflare (pause + reprise
-  automatique) basée sur une ancre UI.
+- Atténuation des interactions Selenium pendant la vérification Cloudflare
+  (fenêtre "quiet" par défaut ~30s) pour limiter le polling/scan DOM.
 
 **Améliorations (documentation & dev) :**
 
-- Mise à jour des instructions Copilot avec une section “Debugging rapide
-  Selenium” (Windows + commandes PowerShell).
-- Clarification de documentation (notes sur helpers historiques non présents).
-- Synchronisation de la version dans le dépôt.
+- Synchronisation de version (release 0.2.16).
 
 ---
 
 ## Historique des versions
+
+### 0.2.16 — 20 janvier 2026
+
+- Atténuation des interactions Selenium pendant la vérification Cloudflare
+  (fenêtre "quiet" par défaut ~30s) pour limiter le polling/scan DOM.
 
 ### 0.2.15 — 19 janvier 2026
 
@@ -640,24 +637,24 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 
 ## What's New (English)
 
+### Version: 0.2.16 — January 20, 2026
+
+**Selenium Robustness Improvements:**
+
+- During Cloudflare “human verification”, the script temporarily reduces
+  Selenium interactions (a default ~30s “quiet” window) to limit polling/DOM
+  scanning.
+
+**Documentation & Dev Improvements:**
+
+- Version bump (release 0.2.16).
+
 ### Version: 0.2.15 — January 19, 2026
 
 **Security & Validation Improvements:**
 
 - Stronger `dexcom_url` validation: URL parsing + Dexcom host allowlist (HTTPS
   only, subdomains allowed).
-
-**Selenium Robustness Improvements:**
-
-- Added a Cloudflare “human verification” wait (pause + auto-resume) based on a
-  stable UI anchor.
-
-**Documentation & Dev Improvements:**
-
-- Updated Copilot instructions with a “Quick Selenium Debugging” section
-  (Windows + PowerShell commands).
-- Documentation clarifications (notes about historical helpers not present).
-- Repository-wide version synchronization.
 
 ### Version: 0.2.14 — January 19, 2026
 
@@ -709,6 +706,12 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 ---
 
 ## Version History (English)
+
+### 0.2.16 — January 20, 2026
+
+- During Cloudflare “human verification”, the script temporarily reduces
+  Selenium interactions (a default ~30s “quiet” window) to limit polling/DOM
+  scanning.
 
 ### 0.2.15 — January 19, 2026
 
