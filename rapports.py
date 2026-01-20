@@ -1,65 +1,79 @@
-#'''////////////////////////////////////////////////////////////////////////////////////////////////////
-#'''<summary>
-#'''FileName: rapports.py
-#'''FileType: py Source file
-#'''
-#'''Author : Pierre Théberge
-#'''Created On : 2025-08-05
-#'''Last Modified On : 2026-01-19
-#'''CopyRights : Pierre Théberge
-#'''Description : Traitement et gestion des rapports Dexcom Clarity.
-#'''              Utilisation des chemins et paramètres centralisés, logging détaillé,
-#'''              robustesse pour la détection et gestion des fichiers téléchargés,
-#'''              logging des erreurs JS lors du déplacement/renommage.
-#'''Version : 0.2.14
-#'''Modifications :
-#'''Version   Date         Billet   Description
-#'''0.0.0	2025-08-05              Version initiale.
-#'''0.0.1   2025-08-13              Logging JS navigateur, robustesse accrue sur la gestion des fichiers,
-#'''                                    utilisation systématique des chemins centralisés.
-#'''0.0.2   2025-08-13              Utilisation de capture_screenshot centralisée (utils.py) avec délai,
-#'''                                    ajout de logs pour le diagnostic.
-#'''0.1.6   2025-08-22              Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
-#'''0.1.7   2025-08-25              Création automatique de config.yaml à partir de config_example.yaml si absent.
-#'''                                    Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
-#'''0.1.8   2025-08-27              Configuration interactive avancée pour config.yaml et .env.
-#'''                                    Copie minimale du profil Chrome lors de la configuration.
-#'''                                    Ajout du paramètre log_retention_days (0 = conservation illimitée).
-#'''                                    Nettoyage automatique des logs selon la rétention.
-#'''                                    Messages utilisateurs colorés et validation renforcée.
-#'''0.1.9   2025-08-28              Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
-#'''                                    Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
-#'''                                Correction de la robustesse de la configuration initiale.
-#'''0.1.10  2025-08-28              Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
-#'''                                    Chaque suppression de log est loggée.
-#'''0.2.0   2025-08-28              Prise en charge du chiffrement/déchiffrement du fichier .env via config.py.
-#'''                                    Les identifiants Dexcom sont lus uniquement via get_dexcom_credentials (plus de saisie interactive ici).
-#'''                                    Sécurisation de la gestion des identifiants et des logs.
-#'''0.2.1   2025-08-29              Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
-#'''0.2.3   2025-10-14    ES-11     Remplacement d'une version spécifique de chromedriver par ChromeDriverManager qui charge toujours la
-#'''                      ES-11         la version courante.
-#'''                      ES-11     Modification du xpath pour le rapport statistiques horaires pour corriger l'erreur d'accès.
-#'''                      ES-11         Modifié pour rendre indépendante de la langue de l'utilisateur.
-#'''                      ES-11     Ajout de la colonne Billet dans le bloc des modifications.
-#'''0.2.4   2025-10-16    ES-12     Suppression du paramètre obsolète chromedriver_path (non utilisé depuis v0.2.3).
-#'''                      ES-12     Nettoyage du code : CHROMEDRIVER_PATH retiré de la configuration.
-#'''                      ES-12     Simplification : le répertoire chromedriver-win64/ n'est plus nécessaire.
-#'''0.2.4   2025-10-16    ES-12     Synchronisation de version (aucun changement fonctionnel).
-#'''0.2.5   2025-10-16    ES-10     Synchronisation de version (aucun changement fonctionnel).
-#'''0.2.6   2025-10-21    ES-7      Synchronisation de version (aucun changement fonctionnel).
-#'''0.2.7   2025-10-27    ES-16     Refactorisation de selection_rapport avec gestion des erreurs 502 et retry.
-#'''                      ES-16     Ajout de select_rapport_with_retry pour gérer les erreurs temporaires.
-#'''                      ES-16     Ajout de traiter_rapport pour dispatcher vers les fonctions de traitement.
-#'''                      ES-16     Suivi global des rapports échoués avec résumé final.
-#'''                      ES-16     NOTE: les helpers *with_retry ne sont pas présents dans cette version du fichier.
-#'''0.2.8   2025-11-28    ES-16     Correction du sélecteur pour le bouton 'Exporter' de la fenêtre modale.
-#'''                      ES-16     Utilisation de l'attribut 'data-test-export-dialog-export-button' pour plus de robustesse.
-#'''0.2.9   2025-11-28    ES-16     Correction du sélecteur pour le bouton 'Fermer' de la fenêtre d'export CSV.
-#'''                      ES-16     Suppression de la classe 'btn-3d' obsolète dans le sélecteur XPath.
-#'''0.2.11  2025-12-22    ES-18     Augmentation du timeout de fermeture de fenêtre (30s -> 60s) et gestion d'erreur non bloquante.
-#'''0.2.12  2025-12-22    ES-3      Synchronisation de version.
-#''' </summary>
-#'''/////////////////////////////////////////////////////////////////////////////////////////////////////
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Format d'en-tête standard à respecter pour ce projet.
+Voir HEADER_TEMPLATE_PYTHON.md pour les détails.
+
+Module        : rapports.py
+Type          : Python module
+Auteur        : Pierre Théberge
+Compagnie     : Innovations, Performances, Technologies inc.
+Créé le       : 2025-08-05
+Modifié le    : 2026-01-19
+Version       : 0.2.15
+Copyright     : Pierre Théberge
+
+Description
+-----------
+Traitement et gestion des rapports Dexcom Clarity (sélection, sous-rapports, téléchargement, renommage/déplacement).
+
+Modifications
+-------------
+0.0.0  - 2025-08-05   [N/A]  : Version initiale.
+0.0.1  - 2025-08-13   [N/A]  : Logging JS navigateur, robustesse accrue sur la gestion des fichiers,
+                               utilisation systématique des chemins centralisés.
+0.0.2  - 2025-08-13   [N/A]  : Utilisation de capture_screenshot centralisée (utils.py) avec délai,
+                               ajout de logs pour le diagnostic.
+0.1.6  - 2025-08-22   [N/A]  : Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
+0.1.7  - 2025-08-25   [N/A]  : Création automatique de config.yaml à partir de config_example.yaml si absent.
+                               Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
+0.1.8  - 2025-08-27   [N/A]  : Configuration interactive avancée pour config.yaml et .env.
+                               Copie minimale du profil Chrome lors de la configuration.
+                               Ajout du paramètre log_retention_days (0 = conservation illimitée).
+                               Nettoyage automatique des logs selon la rétention.
+                               Messages utilisateurs colorés et validation renforcée.
+0.1.9  - 2025-08-28   [N/A]  : Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
+                               Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
+                               Correction de la robustesse de la configuration initiale.
+0.1.10 - 2025-08-28   [N/A]  : Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
+                               Chaque suppression de log est loggée.
+0.2.0  - 2025-08-28   [N/A]  : Prise en charge du chiffrement/déchiffrement du fichier .env via config.py.
+                               Les identifiants Dexcom sont lus uniquement via get_dexcom_credentials (plus de saisie interactive ici).
+                               Sécurisation de la gestion des identifiants et des logs.
+0.2.1  - 2025-08-29   [N/A]  : Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
+0.2.3  - 2025-10-14   [ES-11] : Remplacement d'une version spécifique de chromedriver par ChromeDriverManager qui charge toujours la version courante.
+                               Modification du xpath pour le rapport statistiques horaires pour corriger l'erreur d'accès (indépendant de la langue de l'utilisateur).
+                               Ajout de la colonne Billet dans le bloc des modifications.
+0.2.4  - 2025-10-16   [ES-12] : Suppression du paramètre obsolète chromedriver_path (non utilisé depuis v0.2.3).
+                               Nettoyage du code : CHROMEDRIVER_PATH retiré de la configuration.
+                               Simplification : le répertoire chromedriver-win64/ n'est plus nécessaire.
+0.2.4  - 2025-10-16   [ES-12] : Synchronisation de version (aucun changement fonctionnel).
+0.2.5  - 2025-10-16   [ES-10] : Synchronisation de version (aucun changement fonctionnel).
+0.2.6  - 2025-10-21   [ES-7]  : Synchronisation de version (aucun changement fonctionnel).
+0.2.7  - 2025-10-27   [ES-16] : Refactorisation de selection_rapport avec gestion des erreurs 502 et retry.
+                               Ajout de select_rapport_with_retry pour gérer les erreurs temporaires.
+                               Ajout de traiter_rapport pour dispatcher vers les fonctions de traitement.
+                               Suivi global des rapports échoués avec résumé final.
+                               NOTE: les helpers *with_retry ne sont pas présents dans cette version du fichier.
+0.2.8  - 2025-11-28   [ES-16] : Correction du sélecteur pour le bouton 'Exporter' de la fenêtre modale.
+                               Utilisation de l'attribut 'data-test-export-dialog-export-button' pour plus de robustesse.
+0.2.9  - 2025-11-28   [ES-16] : Correction du sélecteur pour le bouton 'Fermer' de la fenêtre d'export CSV.
+                               Suppression de la classe 'btn-3d' obsolète dans le sélecteur XPath.
+0.2.11 - 2025-12-22   [ES-18] : Augmentation du timeout de fermeture de fenêtre (30s -> 60s) et gestion d'erreur non bloquante.
+0.2.12 - 2025-12-22   [ES-3]  : Synchronisation de version.
+0.2.13 - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.2.14 - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.2.15 - 2026-01-19   [ES-19] : Nettoyage mineur : suppression d'un pass redondant (aucun changement fonctionnel).
+
+Paramètres
+----------
+N/A (module importé par l'application).
+
+Exemple
+-------
+>>> python GlycoDownload.py --rapports "AGP" "Export"
+"""
 
 import os
 import time
@@ -219,7 +233,6 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
         except Exception as e:
             logger.error(f"Une erreur s'est produite lors de la fermeture de la fenêtre de téléchargement: {e}")
             # On tente quand même de continuer, le fichier est peut-être déjà là
-            pass
 
     except Exception as e:
         logger.error(f"Une erreur s'est produite lors de l'enregistrement du rapport : {e}")

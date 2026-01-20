@@ -1,31 +1,46 @@
-#'''////////////////////////////////////////////////////////////////////////////////////////////////////
-#'''<summary>
-#'''FileName: test_utils.py
-#'''FileType: py Test file
-#'''
-#'''Author : Pierre Théberge
-#'''Created On : 2025-08-13
-#'''Last Modified On : 2025-10-21
-#'''CopyRights : Pierre Théberge
-#'''Description : Tests unitaires pour toutes les fonctions utilitaires du projet GlycoReport-Downloader.
-#'''              Vérifie la robustesse et la portabilité des fonctions (normalisation des chemins, capture d'écran, etc.).
-#'''              Pour exécuter les tests, utilisez la commande : pytest tests/test_utils.py
-#'''Version : 0.2.6
-#'''Modifications :
-#'''Version   Date         Billet   Description
-#'''0.0.0    2025-08-13             Version initiale
-#'''0.0.1    2025-08-18             Ajout de tests unitaires pour toutes les fonctions utilitaires,
-#'''                                    adaptation pour la centralisation de normalize_path dans utils.py,
-#'''                                    vérification de la robustesse et de la portabilité des utilitaires.
-#'''0.1.6    2025-08-22             Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
-#'''0.2.1    2025-08-29             Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
-#'''0.2.2    2025-08-29             Synchronisation des entêtes, robustesse accrue du help, nettoyage des doublons CLI.
-#'''0.2.3    2025-10-14    ES-12    Migration vers ChromeDriverManager pour gestion automatique de ChromeDriver.
-#'''0.2.4    2025-10-16    ES-12    Synchronisation de version (aucun changement fonctionnel dans les tests).
-#'''0.2.5    2025-10-16    ES-10    Ajout de tests pour la suppression des captures d'écran (.png) lors du nettoyage des logs.
-#'''0.2.6    2025-10-21    ES-7     Synchronisation de version (aucun changement fonctionnel dans les tests).
-#''' </summary>
-#'''////////////////////////////////////////////////////////////////////////////////////////////////////
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Format d'en-tête standard à respecter pour ce projet.
+Voir HEADER_TEMPLATE_PYTHON.md pour les détails.
+
+Module        : tests/test_utils.py
+Type          : Python module
+Auteur        : Pierre Théberge
+Compagnie     : Innovations, Performances, Technologies inc.
+Créé le       : 2025-08-13
+Modifié le    : 2026-01-19
+Version       : 0.2.15
+Copyright     : Pierre Théberge
+
+Description
+-----------
+Tests unitaires pour les fonctions utilitaires partagées (utils.py).
+
+Modifications
+-------------
+0.0.0  - 2025-08-13             Version initiale.
+0.0.1  - 2025-08-18             Ajout de tests unitaires pour toutes les fonctions utilitaires,
+                                adaptation pour la centralisation de normalize_path dans utils.py,
+                                vérification de la robustesse et de la portabilité des utilitaires.
+0.1.6  - 2025-08-22             Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
+0.2.1  - 2025-08-29             Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
+0.2.2  - 2025-08-29             Synchronisation des entêtes, robustesse accrue du help, nettoyage des doublons CLI.
+0.2.3  - 2025-10-14   [ES-12] : Migration vers ChromeDriverManager pour gestion automatique de ChromeDriver.
+0.2.4  - 2025-10-16   [ES-12] : Synchronisation de version (aucun changement fonctionnel dans les tests).
+0.2.5  - 2025-10-16   [ES-10] : Ajout de tests pour la suppression des captures d'écran (.png) lors du nettoyage des logs.
+0.2.6  - 2025-10-21   [ES-7]  : Synchronisation de version (aucun changement fonctionnel dans les tests).
+0.2.15 - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+
+Paramètres
+----------
+N/A.
+
+Exemple
+-------
+>>> pytest -v --log-cli-level=INFO tests/test_utils.py
+"""
 
 import sys
 import os
@@ -37,6 +52,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from utils import (
     normalize_path,
     check_internet,
+    url_is_allowed,
     attendre_disparition_overlay,
     get_last_downloaded_file,
     get_last_downloaded_nonlog_file,
@@ -86,6 +102,25 @@ def test_normalize_path_absolute():
 def test_check_internet():
     # Ce test suppose que google.com est accessible
     assert check_internet() is True
+
+
+def test_url_is_allowed_exact_host_only():
+    allowed = ["example.com"]
+    assert url_is_allowed("https://example.com/path", allowed) is True
+    assert url_is_allowed("https://evil-example.net/example.com", allowed) is False
+    assert url_is_allowed("https://benign-looking-prefix-example.com", allowed) is False
+
+
+def test_url_is_allowed_subdomains_optional():
+    allowed = ["example.com"]
+    assert url_is_allowed("https://a.example.com", allowed, allow_subdomains=True) is True
+    assert url_is_allowed("https://a.b.example.com", allowed, allow_subdomains=True) is True
+    assert url_is_allowed("https://notexample.com", allowed, allow_subdomains=True) is False
+
+
+def test_check_internet_rejects_non_web_schemes():
+    assert check_internet("file:///C:/Windows/System32/drivers/etc/hosts") is False
+    assert check_internet("data:text/plain,hello") is False
 
 def test_get_last_downloaded_file(tmp_path):
     f1 = tmp_path / "file1.txt"

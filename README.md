@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.2.14-blue)
+![Version](https://img.shields.io/badge/version-0.2.15-blue)
 
 An English version of this text follows the French text.
 
@@ -11,7 +11,7 @@ An English version of this text follows the French text.
 
 ## Sommaire
 
-- [Nouveautés](#version--0214--19-janvier-2026)
+- [Nouveautés](#version--0215--19-janvier-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,9 +23,14 @@ An English version of this text follows the French text.
 
 ---
 
-## Version : 0.2.14 — 19 janvier 2026
+## Version : 0.2.15 — 19 janvier 2026
 
 ### Nouveautés
+
+**Améliorations (sécurité & validation) :**
+
+- Validation renforcée de `dexcom_url` : parsing d'URL + allowlist de hosts
+  Dexcom (HTTPS uniquement, sous-domaines autorisés).
 
 **Améliorations (robustesse Selenium) :**
 
@@ -42,6 +47,11 @@ An English version of this text follows the French text.
 ---
 
 ## Historique des versions
+
+### 0.2.15 — 19 janvier 2026
+
+- Validation renforcée de `dexcom_url` : parsing d'URL + allowlist de hosts
+  Dexcom (HTTPS uniquement, sous-domaines autorisés).
 
 ### 0.2.14 — 19 janvier 2026
 
@@ -66,7 +76,8 @@ An English version of this text follows the French text.
   navigateur.
 - Ajout de `wait_for_page_load_with_retry` pour gérer les erreurs temporaires
   avec retry automatique.
-- Note : ces helpers ne sont pas présents dans le code actuel (v0.2.13).
+- Note : ces helpers ne sont pas présents dans le code actuel (jusqu'à la
+  version 0.2.15).
 
 ### 0.2.6 — 21 octobre 2025
 
@@ -626,6 +637,35 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 
 ## What's New (English)
 
+### Version: 0.2.15 — January 19, 2026
+
+**Security & Validation Improvements:**
+
+- Stronger `dexcom_url` validation: URL parsing + Dexcom host allowlist (HTTPS
+  only, subdomains allowed).
+
+**Selenium Robustness Improvements:**
+
+- Added a Cloudflare “human verification” wait (pause + auto-resume) based on a
+  stable UI anchor.
+
+**Documentation & Dev Improvements:**
+
+- Updated Copilot instructions with a “Quick Selenium Debugging” section
+  (Windows + PowerShell commands).
+- Documentation clarifications (notes about historical helpers not present).
+- Repository-wide version synchronization.
+
+### Version: 0.2.14 — January 19, 2026
+
+- Added a Cloudflare “human verification” wait (pause + auto-resume) based on a
+  stable UI anchor.
+
+### Version: 0.2.13 — January 19, 2026
+
+- Updated Copilot instructions (Selenium debugging, PowerShell commands).
+- Version synchronization.
+
 ### Version: 0.2.11 — December 22, 2025
 
 **New Windows Installer:**
@@ -667,6 +707,21 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 
 ## Version History (English)
 
+### 0.2.15 — January 19, 2026
+
+- Stronger `dexcom_url` validation: URL parsing + Dexcom host allowlist (HTTPS
+  only, subdomains allowed).
+
+### 0.2.14 — January 19, 2026
+
+- Added a Cloudflare “human verification” wait (pause + auto-resume) based on a
+  stable UI anchor.
+
+### 0.2.13 — January 19, 2026
+
+- Updated Copilot instructions (Selenium debugging, PowerShell commands).
+- Version synchronization.
+
 ### 0.2.11 — December 22, 2025
 
 - Switched to Inno Setup for distribution (`.exe` installer).
@@ -679,7 +734,8 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 - Added `check_for_502_errors` to detect 502 errors in browser logs.
 - Added `wait_for_page_load_with_retry` to handle temporary errors with
   automatic retry.
-- Note: these helpers are not present in the current code (v0.2.12).
+- Note: these helpers are not present in the current codebase (up to version
+  0.2.15).
 
 ### 0.2.6 — October 21, 2025
 
@@ -1125,33 +1181,32 @@ For questions or bug reports: https://github.com/pierretheberge/GlycoReport-Down
 To run all unit tests for the project's utility functions, use the following
 command:
 
-**Bash/CMD :**
+**Bash/CMD:**
 
 ```sh
 pytest -v --log-cli-level=INFO tests/test_utils.py
 ```
 
-**PowerShell :**
+**PowerShell:**
 
 ```powershell
 pytest -v --log-cli-level=INFO tests/test_utils.py
 ```
 
-- `-v` affiche le détail de chaque test exécuté (mode verbose).
-- `--log-cli-level=INFO` affiche les messages de log générés par les fonctions
-  testées.
-- Cette commande permet de vérifier la robustesse et la portabilité de toutes
-  les fonctions utilitaires du projet.
+- `-v` shows detailed output for each test (verbose mode).
+- `--log-cli-level=INFO` shows log messages produced by the tested functions.
+- This command helps verify the robustness and portability of all the project's
+  utility functions.
 
-Assurez-vous d’avoir installé pytest :
+Make sure you have installed pytest:
 
-**Bash/CMD :**
+**Bash/CMD:**
 
 ```sh
 pip install pytest
 ```
 
-**PowerShell :**
+**PowerShell:**
 
 ```powershell
 pip install pytest
