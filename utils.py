@@ -5,12 +5,12 @@
 #'''
 #'''Author : Pierre Théberge
 #'''Created On : 2025-08-05
-#'''Last Modified On : 2025-12-22
+#'''Last Modified On : 2026-01-19
 #'''CopyRights : Pierre Théberge
 #'''Description : Fonctions utilitaires pour le projet GlycoReport-Downloader.
 #'''              Connexion internet, overlay, renommage, détection du dernier fichier téléchargé,
 #'''              logging détaillé, robustesse accrue pour le renommage, logs JS navigateur.
-#'''Version : 0.2.11
+#'''Version : 0.2.14
 #'''Modifications :
 #'''Version   Date         Billet   Description
 #'''0.0.0	2025-08-05              Version initiale.
@@ -47,7 +47,9 @@
 #'''0.2.6    2025-10-21    ES-7     Synchronisation de version (aucun changement fonctionnel).
 #'''0.2.7    2025-10-27    ES-16    Ajout de check_for_502_errors pour détecter les erreurs 502 dans les logs du navigateur.
 #'''                       ES-16    Ajout de wait_for_page_load_with_retry pour gérer les erreurs temporaires avec retry automatique.
+#'''                       ES-16    NOTE: ces helpers ne sont pas présents dans cette version du fichier.
 #'''0.2.11   2025-12-22    ES-18    Exclusion des fichiers .crdownload lors de la recherche du dernier téléchargement.
+#'''0.2.12   2025-12-22    ES-3     Synchronisation de version.
 #'''</summary>
 #'''/////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -200,3 +202,122 @@ def cleanup_logs(log_dir, retention_days, logger=None):
                 print(Fore.RED + msg)
                 if logger:
                     logger.error(msg)
+
+
+def cloudflare_challenge_detecte(driver: WebDriver) -> bool:
+    """Détecte (au mieux) la présence d'un challenge Cloudflare dans l'onglet courant.
+
+    Note: on ne tente PAS de contourner la vérification; ce helper sert uniquement à
+    décider si l'automatisation doit se mettre en pause pour laisser l'utilisateur agir.
+    """
+    try:
+        url = (driver.current_url or "").lower()
+        if "cdn-cgi" in url or "challenge" in url or "turnstile" in url:
+            return True
+    except Exception:
+        pass
+
+    try:
+        # Certains challenges sont rendus via iframe (Turnstile) ou scripts dédiés.
+        iframes = driver.find_elements(By.TAG_NAME, "iframe")
+        for iframe in iframes:
+            src = (iframe.get_attribute("src") or "").lower()
+            if "challenges.cloudflare.com" in src or "turnstile" in src:
+                return True
+    except Exception:
+        pass
+
+    try:
+        # Fallback léger : recherche de marqueurs courants dans le HTML.
+        # (On évite les regex lourdes; page_source peut être volumineux.)
+        html = (driver.page_source or "").lower()
+        markers = [
+            "challenge-platform",
+            "cf-chl",
+            "checking your browser",
+            "ray id",
+            "turnstile",
+        ]
+        return any(m in html for m in markers)
+    except Exception:
+        return False
+
+
+def attendre_verification_humaine_cloudflare(
+    driver: WebDriver,
+    logger,
+    ancre_locator: tuple,
+    log_dir: str,
+    now_str: str,
+    timeout: int = 600,
+    poll_seconds: float = 2.0,
+    debug: bool = False,
+) -> None:
+    """Attend que l'utilisateur termine une éventuelle vérification Cloudflare.
+
+    Fonction pensée pour les challenges multi-étapes: on boucle jusqu'à ce que
+    l'"ancre" (un élément Selenium stable) soit disponible.
+
+    Args:
+        driver: WebDriver Selenium.
+        logger: Logger applicatif.
+        ancre_locator: tuple Selenium (By, value) indiquant que la page attendue est prête.
+        log_dir: Répertoire de logs (pour screenshots en debug).
+        now_str: Timestamp actuel (pour nommage screenshot).
+        timeout: Durée max d'attente (secondes).
+        poll_seconds: Intervalle entre deux vérifications.
+        debug: Active logs/screenshot supplémentaires.
+    """
+    start = time.time()
+    notified = False
+    last_debug_shot = 0.0
+
+    while True:
+        # 1) Condition de succès: l'ancre est présente/visible.
+        try:
+            element = WebDriverWait(driver, 1).until(
+                EC.presence_of_element_located(ancre_locator)
+            )
+            if element is not None:
+                try:
+                    if element.is_displayed():
+                        if notified:
+                            logger.info("Vérification Cloudflare terminée. Reprise du script.")
+                        return
+                except Exception:
+                    # Si on ne peut pas lire is_displayed, la présence suffit.
+                    if notified:
+                        logger.info("Vérification Cloudflare terminée. Reprise du script.")
+                    return
+        except Exception:
+            pass
+
+        # 2) Si un challenge est détecté, on laisse l'utilisateur agir.
+        challenge = cloudflare_challenge_detecte(driver)
+        if challenge and not notified:
+            notified = True
+            logger.warning(
+                "Vérification Cloudflare détectée. Complétez-la manuellement dans Chrome; reprise automatique ensuite."
+            )
+            if debug:
+                capture_screenshot(driver, logger, "cloudflare_detecte", log_dir, now_str)
+
+        # 3) Timeout.
+        elapsed = time.time() - start
+        if elapsed > timeout:
+            msg = (
+                "Timeout en attendant la vérification Cloudflare (ou le chargement de la page attendue). "
+                "Vous pouvez relancer avec --debug pour diagnostic (screenshots/logs)."
+            )
+            logger.error(msg)
+            if debug:
+                capture_screenshot(driver, logger, "cloudflare_timeout", log_dir, now_str)
+            raise TimeoutError(msg)
+
+        # 4) Debug périodique (évite de spammer).
+        if debug and notified:
+            if time.time() - last_debug_shot >= 30:
+                last_debug_shot = time.time()
+                logger.debug(f"En attente Cloudflare... url={getattr(driver, 'current_url', '')}")
+
+        time.sleep(poll_seconds)
