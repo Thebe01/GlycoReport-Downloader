@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-10-16
-Modifié le    : 2026-01-19
-Version       : 0.2.15
+Modifié le    : 2026-01-20
+Version       : 1.0.1
 Copyright     : Pierre Théberge
 
 Description
@@ -21,12 +21,8 @@ Script de migration pour nettoyer/adapter la configuration utilisateur entre ver
 Modifications
 -------------
 1.0.0  - 2025-10-16   [ES-12] : Version initiale - Migration vers 0.2.4 (ChromeDriverManager).
-1.0.1  - 2025-12-22   [ES-18] : Synchronisation de version.
-0.2.11 - 2025-12-22   [ES-18] : Synchronisation avec la version principale.
-0.2.12 - 2025-12-22   [ES-3]  : Synchronisation de version.
-0.2.13 - 2026-01-19   [ES-19] : Synchronisation de version.
-0.2.14 - 2026-01-19   [ES-19] : Synchronisation de version.
-0.2.15 - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+1.0.1  - 2025-12-22   [ES-18] : Ajustements mineurs (aucun changement fonctionnel).
+1.0.1  - 2026-01-20   [N/A]  : Clarification : version du migrateur indépendante du module principal.
 
 Paramètres
 ----------
