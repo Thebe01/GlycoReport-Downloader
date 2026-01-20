@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-01-20
-Version       : 0.2.16
+Version       : 0.2.18
 Copyright     : Pierre Théberge
 
 Description
@@ -68,6 +68,8 @@ Modifications
 0.2.14 - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.2.15 - 2026-01-19   [ES-19] : Sécurité : validation stricte de dexcom_url (parsing + allowlist, HTTPS, sous-domaines).
 0.2.16 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.2.17 - 2026-01-20   [ES-19] : Prise en compte de debug + durcissement typage (aucun changement fonctionnel majeur).
+0.2.18 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -93,6 +95,7 @@ from cryptography.fernet import Fernet
 import subprocess
 import ast  # à mettre en haut du fichier si pas déjà importé
 import argparse
+from typing import Any, cast
 
 # Initialisation colorama pour la coloration des messages console
 init(autoreset=True)
@@ -256,7 +259,7 @@ def interactive_config():
         # Vérification spécifique pour chromedriver_log
         if key == "chromedriver_log":
             # On vérifie que ce n'est pas un dossier
-            expanded = os.path.expanduser(final_value)
+            expanded = os.path.expanduser(cast(str, final_value))
             if os.path.isdir(expanded) or expanded.endswith(("/", "\\")):
                 print_error("Le chemin du log doit être un fichier, pas un dossier. Exemple : C:/.../clarity_chromedriver.log")
                 logger.error("L'utilisateur a saisi un dossier au lieu d'un fichier pour chromedriver_log.")
@@ -275,7 +278,7 @@ def interactive_config():
 
         # Après saisie de chrome_user_data_dir, vérifier et copier si besoin
         if key == "chrome_user_data_dir":
-            chrome_user_data_dir_value = os.path.expanduser(final_value)
+            chrome_user_data_dir_value = os.path.expanduser(cast(str, final_value))
             if os.path.normpath(chrome_user_data_dir_value) != os.path.normpath(chrome_profile_default):
                 try:
                     print_info(f"Copie du profil Chrome par défaut vers {chrome_user_data_dir_value} ...")
@@ -466,7 +469,7 @@ with open(CONFIG_FILE, "r", encoding="utf-8") as f:
     config = yaml.safe_load(f) or {}
 validate_config(config)
 
-def get_param(name, required=True):
+def get_param(name, required=True) -> Any:
     """Récupère un paramètre de la configuration, ou arrête le script si absent."""
     value = config.get(name)
     if value is None and required:
@@ -475,15 +478,33 @@ def get_param(name, required=True):
         sys.exit(1)
     return value
 
+
+def _coerce_bool(value: Any, default: bool = False) -> bool:
+    """Convertit une valeur arbitraire en booléen (robuste aux chaînes)."""
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return default
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"1", "true", "yes", "y", "on"}:
+            return True
+        if normalized in {"0", "false", "no", "n", "off"}:
+            return False
+    return default
+
 # --- Extraction des paramètres principaux (exportés) ---
 if not is_help_requested():
-    DOWNLOAD_DIR = normalize_path(get_param("download_dir"))
-    OUTPUT_DIR = normalize_path(get_param("output_dir"))
-    CHROME_USER_DATA_DIR = normalize_path(get_param("chrome_user_data_dir"))
-    CHROMEDRIVER_LOG = normalize_path(get_param("chromedriver_log"))
-    DEXCOM_URL = get_param("dexcom_url")
-    RAPPORTS = get_param("rapports")
+    DOWNLOAD_DIR = normalize_path(cast(str, get_param("download_dir")))
+    OUTPUT_DIR = normalize_path(cast(str, get_param("output_dir")))
+    CHROME_USER_DATA_DIR = normalize_path(cast(str, get_param("chrome_user_data_dir")))
+    CHROMEDRIVER_LOG = normalize_path(cast(str, get_param("chromedriver_log")))
+    DEXCOM_URL = cast(str, get_param("dexcom_url"))
+    RAPPORTS = cast(list, get_param("rapports"))
     LOG_RETENTION_DAYS = int(config.get("log_retention_days", 15))
+    DEBUG = _coerce_bool(config.get("debug"), default=False)
 
     DATE_FIN = config.get("date_fin")
     if not DATE_FIN:

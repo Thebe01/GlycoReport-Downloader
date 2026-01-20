@@ -39,7 +39,6 @@ Cela rend obsolètes :
 ### Ce que fait le script
 
 1. **Nettoie config.yaml**
-
    - Supprime le paramètre obsolète `chromedriver_path`
    - Crée un backup automatique avant modification
 
@@ -208,7 +207,7 @@ Pour toute question ou problème, ouvrez une issue sur GitHub :
 
 ---
 
-# Migration Guide (English)
+## Migration Guide (English)
 
 ## Table of Contents (English)
 
@@ -244,7 +243,6 @@ This makes the following obsolete:
 ### What the Script Does
 
 1. **Cleans up config.yaml**
-
    - Removes the obsolete `chromedriver_path` parameter
    - Creates an automatic backup before modification
 
