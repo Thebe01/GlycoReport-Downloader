@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-01-20
-Version       : 0.2.18
+Version       : 0.3.0
 Copyright     : Pierre Théberge
 
 Description
@@ -97,12 +97,17 @@ def _compute_backoff_seconds(base_seconds: float, attempt: int, max_seconds: flo
 
     Args:
         base_seconds: Délai de base (secondes).
-        attempt: Nombre d'essais (0 = délai de base).
+        attempt: Nombre d'essais (0 = délai de base, doit être >= 0).
         max_seconds: Délai maximal.
+
+    Raises:
+        ValueError: Si ``attempt`` est négatif.
     """
+    if attempt < 0:
+        raise ValueError("attempt must be >= 0")
     if base_seconds <= 0:
         return max_seconds
-    delay = base_seconds * (2 ** max(0, attempt))
+    delay = base_seconds * (2 ** attempt)
     return min(max_seconds, delay)
 
 
@@ -408,6 +413,32 @@ def attendre_verification_humaine_cloudflare(
         )
         effective_quiet_seconds = 0.0
 
+    try:
+        effective_deep_scan_interval = float(deep_scan_interval)
+    except (TypeError, ValueError):
+        logger.warning(
+            "Valeur deep_scan_interval invalide (%r). Utilisation de 10.0s par défaut.",
+            deep_scan_interval,
+        )
+        effective_deep_scan_interval = 10.0
+
+    if effective_deep_scan_interval < 1.0:
+        logger.warning(
+            "Valeur deep_scan_interval trop basse (%s). Les valeurs < 1.0s sont bridées à 1.0s.",
+            effective_deep_scan_interval,
+        )
+        effective_deep_scan_interval = 1.0
+    elif effective_deep_scan_interval > 300.0:
+        logger.warning(
+            "Valeur deep_scan_interval très élevée (%s). Les valeurs > 300s peuvent quasiment désactiver le scan approfondi ; vérifiez votre configuration.",
+            effective_deep_scan_interval,
+        )
+    elif effective_deep_scan_interval > 300.0:
+        logger.warning(
+            "Valeur deep_scan_interval très élevée (%s). Les valeurs > 300s peuvent quasiment désactiver le scan approfondi ; vérifiez votre configuration.",
+            effective_deep_scan_interval,
+        )
+
     start = time.time()
     notified = False
     last_debug_shot = 0.0
@@ -480,21 +511,6 @@ def attendre_verification_humaine_cloudflare(
         # pour laisser l'utilisateur agir, et on limite les scans DOM/HTML.
         # deep_scan_interval est bridé à un minimum de 1.0s pour éviter des scans DOM
         # trop agressifs même si un intervalle plus court est fourni.
-        try:
-            effective_deep_scan_interval = float(deep_scan_interval)
-        except (TypeError, ValueError):
-            logger.warning(
-                "Valeur deep_scan_interval invalide (%r). Utilisation de 10.0s par défaut.",
-                deep_scan_interval,
-            )
-            effective_deep_scan_interval = 10.0
-
-        if effective_deep_scan_interval < 1.0:
-            logger.warning(
-                "Valeur deep_scan_interval trop basse (%s). Les valeurs < 1.0s sont bridées à 1.0s.",
-                effective_deep_scan_interval,
-            )
-            effective_deep_scan_interval = 1.0
         do_deep_scan = (now - last_deep_scan) >= effective_deep_scan_interval
         challenge = cloudflare_challenge_detecte(driver, deep_scan=do_deep_scan)
         if do_deep_scan:
@@ -511,11 +527,25 @@ def attendre_verification_humaine_cloudflare(
                     capture_screenshot(driver, logger, "cloudflare_detecte", log_dir, now_str)
 
                 # Pause totale pour limiter toute activité automatisée.
+                stdin = getattr(sys, "stdin", None)
+                is_tty = bool(getattr(stdin, "isatty", lambda: False)())
                 try:
-                    if sys.stdin.isatty():
-                        input("\nCloudflare détecté. Terminez la vérification dans Chrome, puis appuyez sur Entrée pour reprendre...")
-                except Exception:
-                    pass
+                    if is_tty:
+                        input(
+                            "\nCloudflare détecté. Terminez la vérification dans Chrome, "
+                            "puis appuyez sur Entrée pour reprendre..."
+                        )
+                    else:
+                        logger.info(
+                            "Vérification Cloudflare détectée mais aucune entrée interactive n'est disponible "
+                            "(stdin non interactif). Le script poursuivra automatiquement après la période de calme."
+                        )
+                except (EOFError, OSError, AttributeError) as exc:
+                    logger.warning(
+                        "Impossible de lire l'entrée utilisateur pendant la vérification Cloudflare (%s). "
+                        "Poursuite automatique sans confirmation manuelle.",
+                        exc,
+                    )
 
             # Pause pour éviter du polling agressif (réduit les interactions pendant la vérification).
             quiet_until = now + effective_quiet_seconds

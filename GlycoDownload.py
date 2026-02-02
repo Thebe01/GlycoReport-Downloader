@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
-Modifié le    : 2026-01-20
-Version       : 0.2.18
+Modifié le    : 2026-02-02
+Version       : 0.3.1
 Copyright     : Pierre Théberge
 
 Description
@@ -116,6 +116,8 @@ Modifications
 0.2.16  - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.2.17  - 2026-01-20   [ES-19] : Robustesse Cloudflare + debug config + logs (aucun changement fonctionnel majeur).
 0.2.18  - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.3.0   - 2026-01-29   [ES-19] : Ajout du point d'entrée --start-at-date-selection.
+0.3.1   - 2026-02-02   [ES-19] : Robustesse de pause_on_error (stdin non interactif).
 
 Paramètres
 ----------
@@ -198,6 +200,9 @@ Exemples d'utilisation :
   Simuler l'exécution sans télécharger (afficher la configuration) :
     python GlycoDownload.py --dry-run --days 7 --rapports "AGP"
 
+    Démarrer après connexion (sélection des dates seulement) :
+        python GlycoDownload.py --start-at-date-selection
+
 Rapports disponibles : Aperçu, Modèles, Superposition, Quotidien, Comparer, Statistiques, AGP, Export
 (Utilisez --list-rapports pour plus de détails)
 
@@ -233,6 +238,23 @@ Pour toute question ou signalement de bug : GitHub Issues
         '--dry-run',
         action='store_true',
         help='Simuler l\'exécution sans télécharger (affiche la configuration)'
+    )
+    general_group.add_argument(
+        '--start-at-date-selection',
+        action='store_true',
+        help='Démarrer directement avant la sélection des dates (login déjà effectué)'
+    )
+    general_group.add_argument(
+        '--attach-debugger',
+        action='store_true',
+        help='Attacher Selenium à un Chrome déjà lancé en mode debug (remote debugging)'
+    )
+    general_group.add_argument(
+        '--debugger-port',
+        type=int,
+        default=9222,
+        metavar='PORT',
+        help='Port du debugger Chrome (défaut : 9222)'
     )
     
     # Groupe des options de période
@@ -382,6 +404,17 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
             )
         except Exception as e:
             logger.error(f"Attente Cloudflare avant login: {e}")
+            logger.error(
+                "La vérification humaine Cloudflare n'a pas été complétée dans le délai prévu "
+                "(10 minutes). L'application s'arrête avant de lire vos identifiants Dexcom."
+            )
+            logger.error(
+                "Pistes de dépannage :\n"
+                "  - Relancer le script avec l'option --debug pour obtenir plus de détails et des captures d'écran.\n"
+                "  - Vérifier que votre profil Chrome permet d'accéder à Dexcom Clarity sans étape supplémentaire.\n"
+                "  - Désactiver temporairement VPN, bloqueurs de pub ou extensions pouvant perturber Cloudflare.\n"
+                "  - Réessayer plus tard : il peut s'agir d'un contrôle temporaire côté Cloudflare."
+            )
             raise SystemExit(1)
 
         # Récupération des identifiants via config.py
@@ -658,7 +691,11 @@ def main(args, logger, config):
 
         # Options Chrome
         options = Options()
-        options.add_argument(f"--user-data-dir={config['CHROME_USER_DATA_DIR']}")
+        if args.attach_debugger:
+            debugger_address = f"127.0.0.1:{args.debugger_port}"
+            options.add_experimental_option("debuggerAddress", debugger_address)
+        else:
+            options.add_argument(f"--user-data-dir={config['CHROME_USER_DATA_DIR']}")
         options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
@@ -723,55 +760,90 @@ def main(args, logger, config):
         driver.get(dexcom_url)
         wait = WebDriverWait(driver=driver, timeout=60)
 
-        # Si une vérification Cloudflare apparaît, laisser l'utilisateur la compléter puis reprendre.
-        # Ancre : bouton "Dexcom Clarity for Home Users" (landing page)
-        attendre_verification_humaine_cloudflare(
-            driver,
-            logger,
-            (By.XPATH, "//input[@type='submit' and (contains(@class, 'landing-page--button') or contains(@value, 'Dexcom Clarity for Home Users'))]"),
-            log_dir,
-            now_str,
-            timeout=600,
-            poll_seconds=2.0,
-            debug=debug_mode,
-        )
+        if args.start_at_date_selection:
+            logger.info("Mode reprise: démarrage avant sélection des dates (login déjà effectué).")
 
-        if not check_internet():
-            logger.error("Perte de connexion internet détectée avant de cliquer sur le bouton d'accueil.")
-            logger.info("Arrêt du script suite à une perte de connexion internet.")
-            sys.exit(1)
+            # Tentative rapide: la page principale est déjà accessible ?
+            try:
+                WebDriverWait(driver, 5).until(
+                    EC.presence_of_element_located((By.XPATH, "//div[@data-test-date-range-picker-toggle]"))
+                )
+            except Exception:
+                # Si la page d'accueil est encore affichée, essayer le bouton Home User.
+                try:
+                    click_home_user_button(driver, logger, log_dir, now_str)
+                    time.sleep(5)
+                except Exception:
+                    logger.warning("Bouton Home User introuvable lors du mode reprise.")
 
-        try:
-            click_home_user_button(driver, logger, log_dir, now_str)
-            time.sleep(5)
-            logger.debug("Le bouton 'Dexcom Clarity for Home Users' a été cliqué avec succès!")
-        except Exception as e:
-            # La gestion d'erreur est déjà dans click_home_user_button
-            raise
+            # Attendre l'ancre de la page principale (sélecteur de dates)
+            try:
+                attendre_verification_humaine_cloudflare(
+                    driver,
+                    logger,
+                    (By.XPATH, "//div[@data-test-date-range-picker-toggle]"),
+                    log_dir,
+                    now_str,
+                    timeout=600,
+                    poll_seconds=2.0,
+                    debug=debug_mode,
+                )
+            except Exception as e:
+                logger.error(
+                    "Impossible d'atteindre la page principale en mode reprise. "
+                    "Assurez-vous d'être déjà connecté dans le même profil Chrome."
+                )
+                raise SystemExit(1)
+        else:
+            # Si une vérification Cloudflare apparaît, laisser l'utilisateur la compléter puis reprendre.
+            # Ancre : bouton "Dexcom Clarity for Home Users" (landing page)
+            attendre_verification_humaine_cloudflare(
+                driver,
+                logger,
+                (By.XPATH, "//input[@type='submit' and (contains(@class, 'landing-page--button') or contains(@value, 'Dexcom Clarity for Home Users'))]"),
+                log_dir,
+                now_str,
+                timeout=600,
+                poll_seconds=2.0,
+                debug=debug_mode,
+            )
 
-        # Silence total après le clic Home User pour réduire les interactions
-        # pendant la vérification Cloudflare.
-        logger.info("Pause silencieuse 45s après le bouton Home User (Cloudflare)")
-        time.sleep(45)
+            if not check_internet():
+                logger.error("Perte de connexion internet détectée avant de cliquer sur le bouton d'accueil.")
+                logger.info("Arrêt du script suite à une perte de connexion internet.")
+                sys.exit(1)
 
-        try:
-            saisir_identifiants(driver, logger, log_dir, now_str)
-        except Exception as e:
-            logger.error(f"Erreur lors de la saisie des identifiants ou de la connexion : {e}")
-            sys.exit(1)
+            try:
+                click_home_user_button(driver, logger, log_dir, now_str)
+                time.sleep(5)
+                logger.debug("Le bouton 'Dexcom Clarity for Home Users' a été cliqué avec succès!")
+            except Exception as e:
+                # La gestion d'erreur est déjà dans click_home_user_button
+                raise
 
-        # Après connexion, Dexcom peut rediriger/afficher une vérification humaine.
-        # Ancre : sélecteur de dates (page principale).
-        attendre_verification_humaine_cloudflare(
-            driver,
-            logger,
-            (By.XPATH, "//div[@data-test-date-range-picker-toggle]"),
-            log_dir,
-            now_str,
-            timeout=600,
-            poll_seconds=2.0,
-            debug=debug_mode,
-        )
+            # Silence total après le clic Home User pour réduire les interactions
+            # pendant la vérification Cloudflare.
+            logger.info("Pause silencieuse 45s après le bouton Home User (Cloudflare)")
+            time.sleep(45)
+
+            try:
+                saisir_identifiants(driver, logger, log_dir, now_str)
+            except Exception as e:
+                logger.error(f"Erreur lors de la saisie des identifiants ou de la connexion : {e}")
+                sys.exit(1)
+
+            # Après connexion, Dexcom peut rediriger/afficher une vérification humaine.
+            # Ancre : sélecteur de dates (page principale).
+            attendre_verification_humaine_cloudflare(
+                driver,
+                logger,
+                (By.XPATH, "//div[@data-test-date-range-picker-toggle]"),
+                log_dir,
+                now_str,
+                timeout=600,
+                poll_seconds=2.0,
+                debug=debug_mode,
+            )
 
         try:
             if not check_internet():
@@ -908,8 +980,12 @@ def pause_on_error():
     """
     Affiche un message et attend que l'utilisateur appuie sur Entrée avant de fermer la fenêtre du terminal.
     """
-    if sys.stdin.isatty():
-        input("\nAppuyez sur Entrée pour fermer...")
+    try:
+        stdin = getattr(sys, "stdin", None)
+        if stdin is not None and getattr(stdin, "isatty", lambda: False)():
+            input("\nAppuyez sur Entrée pour fermer...")
+    except Exception:
+        pass
 
 # --- Point d'entrée du script ---
 if __name__ == "__main__":

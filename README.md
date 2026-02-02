@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.2.18-blue)
+![Version](https://img.shields.io/badge/version-0.3.1-blue)
 
 An English version of this text follows the French text.
 
@@ -11,7 +11,7 @@ An English version of this text follows the French text.
 
 ## Sommaire
 
-- [Nouveautés](#version--0218--20-janvier-2026)
+- [Nouveautés](#version--031--2-f%C3%A9vrier-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,28 +23,43 @@ An English version of this text follows the French text.
 
 ---
 
-## Version : 0.2.18 — 20 janvier 2026
+## Version : 0.3.1 — 2 février 2026
 
-### Nouveautés
+### Nouveautés (0.3.1)
 
-**Robustesse Cloudflare :**
+**Correctifs :**
 
-- Backoff exponentiel pendant les challenges persistants.
-- Pause manuelle explicite (Entrée) lors d’une vérification Cloudflare.
-- Validation plus robuste de `deep_scan_interval`.
+- Robustesse de `pause_on_error` en contexte non interactif.
+- Améliorations du script `Launch-Dexcom-And-Run.ps1` (chemins, attache
+  Chrome/Selenium, exe).
 
-**Qualité / tests :**
+---
 
-- Test unitaire pour le helper de backoff.
-- Correctif de test (`log_file` dans la portée adéquate).
+## Version : 0.3.0 — 29 janvier 2026
 
-**Documentation :**
+### Nouveautés (0.3.0)
 
-- Ajout d’un audit Cloudflare et d’un playbook opérateur.
+**Démarrage assisté :**
+
+- Ajout du point d'entrée `--start-at-date-selection` (reprise après connexion).
+- Ajout du script `Launch-Dexcom-And-Run.ps1` pour ouvrir Chrome avec le profil
+  et lancer l'app.
 
 ---
 
 ## Historique des versions
+
+### 0.3.1 — 2 février 2026
+
+- Robustesse de `pause_on_error` en contexte non interactif.
+- Améliorations du script `Launch-Dexcom-And-Run.ps1` (chemins, attache
+  Chrome/Selenium, exe).
+
+### 0.3.0 — 29 janvier 2026
+
+- Ajout du point d'entrée `--start-at-date-selection` (reprise après connexion).
+- Ajout du script `Launch-Dexcom-And-Run.ps1` pour ouvrir Chrome avec le profil
+  et lancer l'app.
 
 ### 0.2.18 — 20 janvier 2026
 
@@ -296,8 +311,9 @@ Pour plus d’informations sur Dexcom Clarity :
      sur le disque système correspondant).
    - Aucune élévation de privilèges n'est requise (sauf si vous choisissez un
      dossier protégé).
-3. **Lancez l'application** via le raccourci créé ou directement depuis le
-   dossier d'installation.
+3. **Lancez l'application** via le script `Launch-Dexcom-And-Run.ps1` (proposé
+   en fin d'installation), ou via le raccourci créé dans le dossier
+   d'installation.
 4. **Lors du premier lancement**, si les fichiers `config.yaml` ou `.env` sont
    absents, l'application vous informera et lancera la configuration initiale.
 
@@ -661,6 +677,22 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 
 ## What's New (English)
 
+### Version: 0.3.1 — February 2, 2026
+
+**Fixes:**
+
+- Hardened `pause_on_error` in non-interactive contexts.
+- Improved `Launch-Dexcom-And-Run.ps1` (paths, Chrome/Selenium attach, exe
+  lookup).
+
+### Version: 0.3.0 — January 29, 2026
+
+**Assisted startup:**
+
+- Added `--start-at-date-selection` entry point (resume after login).
+- Added `Launch-Dexcom-And-Run.ps1` to open Chrome with the profile and launch
+  the app.
+
 ### Version: 0.2.18 — January 20, 2026
 
 **Cloudflare robustness:**
@@ -747,6 +779,18 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 ---
 
 ## Version History (English)
+
+### 0.3.1 — February 2, 2026
+
+- Hardened `pause_on_error` in non-interactive contexts.
+- Improved `Launch-Dexcom-And-Run.ps1` (paths, Chrome/Selenium attach, exe
+  lookup).
+
+### 0.3.0 — January 29, 2026
+
+- Added `--start-at-date-selection` entry point (resume after login).
+- Added `Launch-Dexcom-And-Run.ps1` to open Chrome with the profile and launch
+  the app.
 
 ### 0.2.18 — January 20, 2026
 
@@ -987,8 +1031,9 @@ For more information about Dexcom Clarity:
    - Installation defaults to `C:\ipt\GlycoReport-Downloader` (or corresponding
      system drive).
    - No privilege elevation is required (unless you choose a protected folder).
-3. **Launch the application** via the created shortcut or directly from the
-   installation folder.
+3. **Launch the application** via `Launch-Dexcom-And-Run.ps1` (offered at the
+   end of the installer), or via the created shortcut in the installation
+   folder.
 4. **On first launch**, if `config.yaml` or `.env` files are missing, the
    application will inform you and start the initial configuration.
 

@@ -1,4 +1,9 @@
-# 🐍 Template d'en-tête Python - IPT inc.
+<!--
+META:
+    1.0.0 - 2026-01-29 - - : Version initiale.
+-->
+
+# 🐍 Template d'en-tête Python - IPT inc
 
 **Standard officiel pour les scripts Python**  
 Innovations, Performances, Technologies inc.

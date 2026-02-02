@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-01-20
-Version       : 0.2.18
+Version       : 0.3.0
 Copyright     : Pierre Théberge
 
 Description
