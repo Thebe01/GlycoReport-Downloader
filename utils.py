@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-01-20
-Version       : 0.3.0
+Modifié le    : 2026-02-02
+Version       : 0.3.2
 Copyright     : Pierre Théberge
 
 Description
@@ -63,6 +63,7 @@ Modifications
 0.2.16 - 2026-01-20   [ES-19] : Atténuation des interactions Selenium pendant la vérification Cloudflare (fenêtre quiet + scan DOM limité).
 0.2.17 - 2026-01-20   [ES-19] : Validation robuste des paramètres Cloudflare (quiet/deep scan).
 0.2.18 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.3.2  - 2026-02-02   [ES-19] : Ajout du filtrage des téléchargements par extension.
 
 Paramètres
 ----------
@@ -207,6 +208,44 @@ def get_last_downloaded_nonlog_file(download_dir: str, logger=None) -> Optional[
     last_file = max(files, key=os.path.getctime)
     if logger:
         logger.debug(f"[get_last_downloaded_nonlog_file] Dernier fichier valide trouvé : {last_file}")
+    return last_file
+
+def get_last_downloaded_report_file(
+    download_dir: str,
+    allowed_extensions: Optional[set[str]] = None,
+    logger=None,
+) -> Optional[str]:
+    """Retourne le dernier fichier téléchargé correspondant aux extensions attendues.
+
+    Args:
+        download_dir: Dossier de téléchargement.
+        allowed_extensions: Extensions autorisées (ex: {".pdf", ".csv"}).
+        logger: Logger optionnel.
+    """
+    if allowed_extensions is None:
+        allowed_extensions = {".pdf", ".csv"}
+
+    normalized_exts = {ext.lower() for ext in allowed_extensions}
+    files = [os.path.join(download_dir, f) for f in os.listdir(download_dir)]
+    files = [
+        f
+        for f in files
+        if os.path.isfile(f)
+        and not f.lower().endswith(".log")
+        and not f.lower().endswith(".crdownload")
+        and os.path.splitext(f)[1].lower() in normalized_exts
+    ]
+    if not files:
+        if logger:
+            logger.warning(
+                "Aucun fichier téléchargé trouvé avec extensions attendues: %s",
+                ", ".join(sorted(normalized_exts)),
+            )
+        return None
+
+    last_file = max(files, key=os.path.getctime)
+    if logger:
+        logger.debug(f"[get_last_downloaded_report_file] Dernier fichier valide trouvé : {last_file}")
     return last_file
 
 def renomme_prefix(prefix: str, date_fin: str, logger=None) -> str:

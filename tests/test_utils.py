@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-13
 Modifié le    : 2026-02-02
-Version       : 0.3.1
+Version       : 0.3.2
 Copyright     : Pierre Théberge
 
 Description
@@ -36,6 +36,7 @@ Modifications
 0.2.17 - 2026-01-20   [ES-19] : Ajustements typing pour tests (aucun changement fonctionnel).
 0.2.18 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.3.1  - 2026-02-02   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.3.2  - 2026-02-02   [ES-19] : Ajout du test pour filtrer les téléchargements par extension.
 
 Paramètres
 ----------
@@ -63,6 +64,7 @@ from utils import (
     attendre_disparition_overlay,
     get_last_downloaded_file,
     get_last_downloaded_nonlog_file,
+    get_last_downloaded_report_file,
     renomme_prefix,
     attendre_nouveau_bouton_telecharger,
     capture_screenshot,
@@ -146,6 +148,14 @@ def test_get_last_downloaded_nonlog_file(tmp_path):
     f2.write_text("b")
     result = get_last_downloaded_nonlog_file(str(tmp_path))
     assert result == str(f2)
+
+def test_get_last_downloaded_report_file_filters_extensions(tmp_path):
+    pdf_file = tmp_path / "report.pdf"
+    txt_file = tmp_path / "note.txt"
+    pdf_file.write_text("pdf")
+    txt_file.write_text("txt")
+    result = get_last_downloaded_report_file(str(tmp_path), allowed_extensions={".pdf"})
+    assert result == str(pdf_file)
 
 def test_renomme_prefix_standard(dummy_logger):
     prefix = "Apercu_20230801_1"
