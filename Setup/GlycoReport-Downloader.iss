@@ -2,7 +2,7 @@
 ; Généré automatiquement
 
 #define MyAppName "GlycoReport-Downloader"
-#define MyAppVersion "0.2.18" ; Sera mis à jour par le script PowerShell
+#define MyAppVersion "0.3.1" ; Sera mis à jour par le script PowerShell
 #define MyAppPublisher "Pierre Théberge"
 #define MyAppURL "https://github.com/pierretheberge/GlycoReport-Downloader"
 #define MyAppExeName "GlycoReport-Downloader.exe"
@@ -47,6 +47,7 @@ Source: "..\dist\README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\MIGRATION.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\migrate.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\Launch-Dexcom-And-Run.ps1"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: config.yaml n'est pas inclus pour ne pas écraser la config utilisateur lors d'une mise à jour
 
 [Icons]
@@ -55,4 +56,4 @@ Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\Launch-Dexcom-And-Run.ps1"""; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent

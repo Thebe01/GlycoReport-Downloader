@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-01-20
-Version       : 0.2.18
+Modifié le    : 2026-02-02
+Version       : 0.3.1
 Copyright     : Pierre Théberge
 
 Description
@@ -24,6 +24,8 @@ Modifications
 0.2.16 - 2026-01-20   [ES-19] : Bump de version patch (release 0.2.16).
 0.2.17 - 2026-01-20   [ES-19] : Bump de version patch (release 0.2.17).
 0.2.18 - 2026-01-20   [ES-19] : Bump de version patch (release 0.2.18).
+0.3.0  - 2026-01-29   [ES-19] : Bump de version minor (release 0.3.0).
+0.3.1  - 2026-02-02   [ES-19] : Bump de version patch (release 0.3.1).
 
 Paramètres
 ----------
@@ -35,4 +37,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.2.18"
+__version__ = "0.3.1"

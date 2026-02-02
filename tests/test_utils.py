@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-13
-Modifié le    : 2026-01-20
-Version       : 0.2.18
+Modifié le    : 2026-02-02
+Version       : 0.3.1
 Copyright     : Pierre Théberge
 
 Description
@@ -35,6 +35,7 @@ Modifications
 0.2.16 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.2.17 - 2026-01-20   [ES-19] : Ajustements typing pour tests (aucun changement fonctionnel).
 0.2.18 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.3.1  - 2026-02-02   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -238,6 +239,8 @@ def test_compute_backoff_seconds_caps():
     assert _compute_backoff_seconds(2.0, 1, 30.0) == 4.0
     assert _compute_backoff_seconds(2.0, 2, 30.0) == 8.0
     assert _compute_backoff_seconds(2.0, 4, 30.0) == 30.0
+    assert _compute_backoff_seconds(0.0, 1, 30.0) == 30.0
+    assert _compute_backoff_seconds(-1.0, 1, 30.0) == 30.0
 
 def test_cleanup_logs_removes_only_old_screenshots(tmp_path):
     # Test spécifique pour vérifier que seules les vieilles captures d'écran sont supprimées

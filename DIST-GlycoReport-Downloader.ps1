@@ -3,11 +3,11 @@
 #
 #	Auteur : Pierre Théberge
 #	Créé le : 2025-09-03
-#	Dernière modification le : 2025-12-22
+#	Dernière modification le : 2026-01-29
 #	CopyRights : Pierre Théberge
 #	Description : Script pour générer les exécutables et créer l'installateur Inno Setup.
 #
-#	Version : 2.0.3
+#	Version : 2.0.4
 #	Modifications :
 #	Version   Date          Billet  Description
 #	1.0.0     2025-09-03            Version initiale (ZIP).
@@ -17,6 +17,7 @@
 #   2.0.2     2025-12-22    ES-18   Correction variable inutilisée $appName.
 #                                   Correction warning architecture Inno Setup (x64compatible).
 #   2.0.3     2025-12-22    ES-3    Synchronisation de version.
+#   2.0.4     2026-01-29    ES-19   Ajout du script Launch-Dexcom-And-Run.ps1 dans la distribution.
 
 $ErrorActionPreference = "Stop"
 
@@ -99,7 +100,7 @@ Write-Host "Génération de l'exécutable de migration (migrate)..."
 
 # --- 4b. Copier les fichiers annexes dans dist ---
 Write-Host "Copie des fichiers annexes dans $distDir..."
-$filesToCopy = @("config_example.yaml", "README.md", "LICENSE.txt", "MIGRATION.md", ".env.example")
+$filesToCopy = @("config_example.yaml", "README.md", "LICENSE.txt", "MIGRATION.md", ".env.example", "Launch-Dexcom-And-Run.ps1")
 foreach ($file in $filesToCopy) {
     if (Test-Path $file) {
         Copy-Item $file $distDir -Force

@@ -39,6 +39,13 @@
 - Les chemins sont normalisés via `utils.normalize_path` (support de `~`,
   chemins absolus); conserver ce pattern quand on ajoute de nouveaux chemins.
 
+## Synchronisation des templates
+
+procédure de comparaison avec la source officielle et la recommandation de mise
+à jour. Voir [TEMPLATE_SYNC_CHECK.md](TEMPLATE_SYNC_CHECK.md) pour la procédure
+de comparaison La vérification doit être exécutée lorsqu’une conversation
+Copilot est activée dans ce repo.
+
 ## Patterns Selenium / robustesse
 
 - Utiliser `WebDriverWait` + `expected_conditions` (timeouts souvent 30–60s) et

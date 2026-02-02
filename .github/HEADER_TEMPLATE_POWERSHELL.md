@@ -1,4 +1,9 @@
-# 📘 Template d'en-tête PowerShell - IPT inc.
+<!--
+META:
+        1.0.1 - 2026-01-29 - ES-19 : Ajout des variables standard.
+-->
+
+# 📘 Template d'en-tête PowerShell - IPT inc
 
 **Standard officiel pour les scripts PowerShell**  
 Innovations, Performances, Technologies inc.
@@ -25,7 +30,10 @@ Innovations, Performances, Technologies inc.
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
-    0.0.0 - YYYY-MM-DD - Billet-XX : Initialisation.
+    0.0.0 - YYYY-MM-DD - Billet-XXX  : Initialisation.
+    0.1.0 - YYYY-MM-DD - -           : Ajout paramètre -Verbose.
+    0.1.1 - YYYY-MM-DD - PD-10000001 : Correction encodage UTF-8.
+    1.0.0 - YYYY-MM-DD - -           : Version de production stable.
 
 .PARAMETER Paramètre
     Description du paramètre
@@ -104,10 +112,10 @@ Changelog **complet** avec chaque version documentée.
 
 ```powershell
 .MODIFICATIONS
-    0.0.0 - 2025-11-06 : Initialisation.
-    0.1.0 - 2025-11-08 : Ajout paramètre -Verbose.
-    0.1.1 - 2025-11-09 : Correction encodage UTF-8.
-    1.0.0 - 2025-11-15 : Version de production stable.
+    0.0.0 - 2025-11-06 - Billet-XX : Initialisation.
+    0.1.0 - 2025-11-08 - -        : Ajout paramètre -Verbose.
+    0.1.1 - 2025-11-09 - PD-100   : Correction encodage UTF-8.
+    1.0.0 - 2025-11-15 - -        : Version de production stable.
 ```
 
 **Règles versioning :**
