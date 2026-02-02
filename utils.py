@@ -472,11 +472,6 @@ def attendre_verification_humaine_cloudflare(
             "Valeur deep_scan_interval très élevée (%s). Les valeurs > 300s peuvent quasiment désactiver le scan approfondi ; vérifiez votre configuration.",
             effective_deep_scan_interval,
         )
-    elif effective_deep_scan_interval > 300.0:
-        logger.warning(
-            "Valeur deep_scan_interval très élevée (%s). Les valeurs > 300s peuvent quasiment désactiver le scan approfondi ; vérifiez votre configuration.",
-            effective_deep_scan_interval,
-        )
 
     start = time.time()
     notified = False

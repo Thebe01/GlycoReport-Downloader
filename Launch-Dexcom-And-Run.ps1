@@ -148,7 +148,6 @@ try {
     Write-Host "Connectez-vous dans Chrome, terminez la vérification Cloudflare si nécessaire." -ForegroundColor Yellow
     Read-Host "Appuyez sur Entrée pour lancer GlycoReport-Downloader"
 
-
     $baseDir = Get-Location
     $exePath = Get-ExecutablePath -BaseDir $baseDir
     if (-not $exePath) {
