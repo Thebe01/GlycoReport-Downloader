@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
 Modifié le    : 2026-02-02
-Version       : 0.3.1
+Version       : 0.3.2
 Copyright     : Pierre Théberge
 
 Description
@@ -118,6 +118,7 @@ Modifications
 0.2.18  - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.3.0   - 2026-01-29   [ES-19] : Ajout du point d'entrée --start-at-date-selection.
 0.3.1   - 2026-02-02   [ES-19] : Robustesse de pause_on_error (stdin non interactif).
+0.3.2   - 2026-02-02   [ES-19] : Filtrage des fichiers téléchargés par extension.
 
 Paramètres
 ----------

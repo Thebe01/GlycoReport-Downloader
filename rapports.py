@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-01-20
-Version       : 0.3.0
+Modifié le    : 2026-02-02
+Version       : 0.3.2
 Copyright     : Pierre Théberge
 
 Description
@@ -68,6 +68,7 @@ Modifications
 0.2.16 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.2.17 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.2.18 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.3.2  - 2026-02-02   [ES-19] : Filtrage des fichiers téléchargés par extension.
 
 Paramètres
 ----------
@@ -84,7 +85,13 @@ import glob
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from utils import attendre_disparition_overlay, get_last_downloaded_nonlog_file, renomme_prefix, check_internet, capture_screenshot
+from utils import (
+    attendre_disparition_overlay,
+    get_last_downloaded_report_file,
+    renomme_prefix,
+    check_internet,
+    capture_screenshot,
+)
 
 def wait_for_csv_download(DOWNLOAD_DIR, timeout=120):
     """
@@ -125,7 +132,12 @@ def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE
         os.makedirs(dir_final)
         logger.debug(f"Répertoire créé : {dir_final}")
 
-    chemin_fichier_telecharge = get_last_downloaded_nonlog_file(DOWNLOAD_DIR)
+    allowed_exts = {".csv"} if nom_rapport == "Export" else {".pdf"}
+    chemin_fichier_telecharge = get_last_downloaded_report_file(
+        DOWNLOAD_DIR,
+        allowed_extensions=allowed_exts,
+        logger=logger,
+    )
     if chemin_fichier_telecharge:
         nom_fichier_telecharge = os.path.basename(chemin_fichier_telecharge)
         prefix, suffix = os.path.splitext(nom_fichier_telecharge)
@@ -151,7 +163,7 @@ def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE
             except Exception as e:
                 logger.error(f"Erreur lors du renommage du fichier : {e}")
     else:
-        logger.error("Aucun fichier téléchargé trouvé (hors fichiers .log).")
+        logger.error("Aucun fichier téléchargé trouvé (pdf/csv).")
         if driver is not None and log_dir is not None and now_str is not None:
             time.sleep(2)
             capture_screenshot(driver, logger, "deplace_et_renomme_rapport_error", log_dir, now_str)
