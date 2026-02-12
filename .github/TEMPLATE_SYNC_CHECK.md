@@ -1,6 +1,10 @@
 <!--
 META:
    1.0.0 - 2026-01-29 - ES-19 : Version initiale.
+   1.0.1 - 2026-02-11 - PD-188 : Chemin de référence via variable d’environnement.
+   1.0.2 - 2026-02-11 - PD-188 : $repoRoot via REPO_ROOT ou détection Git.
+   1.0.3 - 2026-02-11 - PD-188 : Templates optionnels selon le repo.
+   1.0.4 - 2026-02-11 - PD-188 : Message d’erreur REPO_ROOT corrigé.
 -->
 
 # Vérification des templates d’en-tête
@@ -10,13 +14,15 @@ référence.
 
 ## Source de référence
 
-Répertoire : C:\Users\thebe\OneDrive\Sources\IPTDevLib\prompts
+Répertoire :
+$env:IPTDEVLIB_PROMPTS (ex.
+$env:USERPROFILE\Sources\IPTDevLib\prompts)
 
 ## Fichiers à comparer
 
-- .github/HEADER_TEMPLATE_PYTHON.md
-- .github/HEADER_TEMPLATE_POWERSHELL.md
-- .github/TEMPLATE_SYNC_CHECK.md
+- .github/HEADER_TEMPLATE_PYTHON.md (optionnel selon le repo)
+- .github/HEADER_TEMPLATE_POWERSHELL.md (optionnel selon le repo)
+- .github/TEMPLATE_SYNC_CHECK.md (toujours présent)
 
 ## Procédure attendue
 
@@ -32,8 +38,21 @@ Répertoire : C:\Users\thebe\OneDrive\Sources\IPTDevLib\prompts
 ### 1) Comparer les fichiers (diff)
 
 ```powershell
-$repoRoot = "C:\Users\thebe\OneDrive\Sources\GlycoReport-Downloader"
-$officialRoot = "C:\Users\thebe\OneDrive\Sources\IPTDevLib\prompts"
+$repoRoot = $env:REPO_ROOT
+if ([string]::IsNullOrWhiteSpace($repoRoot)) {
+   try {
+      $repoRoot = (git -C $PWD rev-parse --show-toplevel 2>$null).Trim()
+   } catch {
+      $repoRoot = $null
+   }
+}
+if ([string]::IsNullOrWhiteSpace($repoRoot)) {
+   throw 'REPO_ROOT non défini. Définis $env:REPO_ROOT ou exécute depuis un repo Git.'
+}
+$officialRoot = $env:IPTDEVLIB_PROMPTS
+if ([string]::IsNullOrWhiteSpace($officialRoot)) {
+   $officialRoot = Join-Path $env:USERPROFILE "Sources\IPTDevLib\prompts"
+}
 
 $pairs = @(
    @{ Name = "Python"; Repo = Join-Path $repoRoot ".github\HEADER_TEMPLATE_PYTHON.md"; Official = Join-Path $officialRoot "HEADER_TEMPLATE_PYTHON.md" },
@@ -43,6 +62,10 @@ $pairs = @(
 
 foreach ($p in $pairs) {
    "===== $($p.Name) ====="
+   if (-not (Test-Path -LiteralPath $p.Repo)) {
+      "(Ignoré) Fichier absent dans ce repo : $($p.Repo)"
+      continue
+   }
    Compare-Object (Get-Content -LiteralPath $p.Official) (Get-Content -LiteralPath $p.Repo) -IncludeEqual:$false |
       Select-Object @{n='Side';e={$_.SideIndicator}}, @{n='Line';e={$_.InputObject}}
 }
@@ -51,12 +74,35 @@ foreach ($p in $pairs) {
 ### 2) Synchroniser depuis la source officielle (après validation)
 
 ```powershell
-$repoRoot = "C:\Users\thebe\OneDrive\Sources\GlycoReport-Downloader"
-$officialRoot = "C:\Users\thebe\OneDrive\Sources\IPTDevLib\prompts"
+$repoRoot = $env:REPO_ROOT
+if ([string]::IsNullOrWhiteSpace($repoRoot)) {
+   try {
+      $repoRoot = (git -C $PWD rev-parse --show-toplevel 2>$null).Trim()
+   } catch {
+      $repoRoot = $null
+   }
+}
+if ([string]::IsNullOrWhiteSpace($repoRoot)) {
+   throw 'REPO_ROOT non défini. Définis $env:REPO_ROOT ou exécute depuis un repo Git.'
+}
+$officialRoot = $env:IPTDEVLIB_PROMPTS
+if ([string]::IsNullOrWhiteSpace($officialRoot)) {
+   $officialRoot = Join-Path $env:USERPROFILE "Sources\IPTDevLib\prompts"
+}
 
-Copy-Item -LiteralPath (Join-Path $officialRoot "HEADER_TEMPLATE_PYTHON.md") -Destination (Join-Path $repoRoot ".github\HEADER_TEMPLATE_PYTHON.md") -Force
-Copy-Item -LiteralPath (Join-Path $officialRoot "HEADER_TEMPLATE_POWERSHELL.md") -Destination (Join-Path $repoRoot ".github\HEADER_TEMPLATE_POWERSHELL.md") -Force
-Copy-Item -LiteralPath (Join-Path $officialRoot "TEMPLATE_SYNC_CHECK.md") -Destination (Join-Path $repoRoot ".github\TEMPLATE_SYNC_CHECK.md") -Force
+$pairs = @(
+   @{ Name = "Python"; Repo = Join-Path $repoRoot ".github\HEADER_TEMPLATE_PYTHON.md"; Official = Join-Path $officialRoot "HEADER_TEMPLATE_PYTHON.md" },
+   @{ Name = "PowerShell"; Repo = Join-Path $repoRoot ".github\HEADER_TEMPLATE_POWERSHELL.md"; Official = Join-Path $officialRoot "HEADER_TEMPLATE_POWERSHELL.md" },
+   @{ Name = "TemplateSync"; Repo = Join-Path $repoRoot ".github\TEMPLATE_SYNC_CHECK.md"; Official = Join-Path $officialRoot "TEMPLATE_SYNC_CHECK.md" }
+)
+
+foreach ($p in $pairs) {
+   if (-not (Test-Path -LiteralPath $p.Repo)) {
+      "(Ignoré) Fichier absent dans ce repo : $($p.Repo)"
+      continue
+   }
+   Copy-Item -LiteralPath $p.Official -Destination $p.Repo -Force
+}
 ```
 
 ## Quand exécuter la vérification
