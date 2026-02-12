@@ -1,10 +1,12 @@
 <!--
 META:
-   1.0.0 - 2026-01-29 - ES-19 : Version initiale.
+   1.0.0 - 2026-01-29 - ES-19  : Version initiale.
    1.0.1 - 2026-02-11 - PD-188 : Chemin de référence via variable d’environnement.
    1.0.2 - 2026-02-11 - PD-188 : $repoRoot via REPO_ROOT ou détection Git.
    1.0.3 - 2026-02-11 - PD-188 : Templates optionnels selon le repo.
    1.0.4 - 2026-02-11 - PD-188 : Message d’erreur REPO_ROOT corrigé.
+   1.0.5 - 2026-02-12 - ES-3   : Validation REPO_ROOT et gestion sources
+                                  officielles manquantes.
 -->
 
 # Vérification des templates d’en-tête
@@ -49,6 +51,9 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
    throw 'REPO_ROOT non défini. Définis $env:REPO_ROOT ou exécute depuis un repo Git.'
 }
+if (-not (Test-Path -LiteralPath $repoRoot -PathType Container)) {
+   throw "REPO_ROOT invalide : $repoRoot"
+}
 $officialRoot = $env:IPTDEVLIB_PROMPTS
 if ([string]::IsNullOrWhiteSpace($officialRoot)) {
    $officialRoot = Join-Path $env:USERPROFILE "Sources\IPTDevLib\prompts"
@@ -64,6 +69,10 @@ foreach ($p in $pairs) {
    "===== $($p.Name) ====="
    if (-not (Test-Path -LiteralPath $p.Repo)) {
       "(Ignoré) Fichier absent dans ce repo : $($p.Repo)"
+      continue
+   }
+   if (-not (Test-Path -LiteralPath $p.Official)) {
+      "(Ignoré) Fichier officiel introuvable : $($p.Official)"
       continue
    }
    Compare-Object (Get-Content -LiteralPath $p.Official) (Get-Content -LiteralPath $p.Repo) -IncludeEqual:$false |
@@ -85,6 +94,9 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
    throw 'REPO_ROOT non défini. Définis $env:REPO_ROOT ou exécute depuis un repo Git.'
 }
+if (-not (Test-Path -LiteralPath $repoRoot -PathType Container)) {
+   throw "REPO_ROOT invalide : $repoRoot"
+}
 $officialRoot = $env:IPTDEVLIB_PROMPTS
 if ([string]::IsNullOrWhiteSpace($officialRoot)) {
    $officialRoot = Join-Path $env:USERPROFILE "Sources\IPTDevLib\prompts"
@@ -100,6 +112,9 @@ foreach ($p in $pairs) {
    if (-not (Test-Path -LiteralPath $p.Repo)) {
       "(Ignoré) Fichier absent dans ce repo : $($p.Repo)"
       continue
+   }
+   if (-not (Test-Path -LiteralPath $p.Official)) {
+      throw "Source officielle introuvable : $($p.Official)"
    }
    Copy-Item -LiteralPath $p.Official -Destination $p.Repo -Force
 }
