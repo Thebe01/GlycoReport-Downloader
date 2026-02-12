@@ -15,6 +15,7 @@ Innovations, Performances, Technologies inc.
 ```powershell
 # Format d'en-tête standard à respecter pour ce projet.
 # Voir HEADER_TEMPLATE_POWERSHELL.md pour les détails.
+
 <#
 .SYNOPSIS
     [Description courte du script en une ligne]
@@ -399,6 +400,6 @@ Dans VS Code, tapez `headerps` puis `Tab` :
 ---
 
 **Document créé le** : 2025-11-06  
-**Version** : 1.0.0  
+**Version** : 1.0.1  
 **Mainteneur** : Pierre Théberge  
 **Compagnie** : Innovations, Performances, Technologies inc.
