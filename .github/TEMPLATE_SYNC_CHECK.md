@@ -68,7 +68,7 @@ $pairs = @(
 
 foreach ($p in $pairs) {
    "===== $($p.Name) ====="
-   if (-not (Test-Path -LiteralPath $p.Repo)) {
+   if (-not (Test-Path -LiteralPath $p.Repo -PathType Leaf)) {
       "(Ignoré) Fichier absent dans ce repo : $($p.Repo)"
       continue
    }
@@ -110,7 +110,7 @@ $pairs = @(
 )
 
 foreach ($p in $pairs) {
-   if (-not (Test-Path -LiteralPath $p.Repo)) {
+   if (-not (Test-Path -LiteralPath $p.Repo -PathType Leaf)) {
       "(Ignoré) Fichier absent dans ce repo : $($p.Repo)"
       continue
    }
