@@ -7,6 +7,7 @@ META:
    1.0.4 - 2026-02-11 - PD-188 : Message d’erreur REPO_ROOT corrigé.
    1.0.5 - 2026-02-12 - ES-3   : Validation REPO_ROOT et gestion sources
                                   officielles manquantes.
+   1.0.6 - 2026-02-12 - ES-3   : Validation fichier officiel en mode Leaf.
 -->
 
 # Vérification des templates d’en-tête
@@ -71,7 +72,7 @@ foreach ($p in $pairs) {
       "(Ignoré) Fichier absent dans ce repo : $($p.Repo)"
       continue
    }
-   if (-not (Test-Path -LiteralPath $p.Official)) {
+   if (-not (Test-Path -LiteralPath $p.Official -PathType Leaf)) {
       "(Ignoré) Fichier officiel introuvable : $($p.Official)"
       continue
    }
