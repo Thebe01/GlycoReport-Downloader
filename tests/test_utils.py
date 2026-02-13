@@ -197,6 +197,19 @@ def test_get_last_downloaded_report_file_returns_most_recent(tmp_path):
     result = get_last_downloaded_report_file(str(tmp_path), allowed_extensions={".pdf"})
     assert result == str(new_pdf)
 
+def test_get_last_downloaded_report_file_normalizes_extensions_without_dots(tmp_path):
+    pdf_file = tmp_path / "report.pdf"
+    csv_file = tmp_path / "export.csv"
+    txt_file = tmp_path / "note.txt"
+    pdf_file.write_text("pdf")
+    time.sleep(1)
+    csv_file.write_text("csv")
+    time.sleep(1)
+    txt_file.write_text("txt")
+    # Test with extensions without dots - should normalize to .pdf and .csv
+    result = get_last_downloaded_report_file(str(tmp_path), allowed_extensions={"pdf", "csv"})
+    assert result == str(csv_file)  # csv is the most recent among pdf and csv
+
 def test_renomme_prefix_standard(dummy_logger):
     prefix = "Apercu_20230801_1"
     date_fin = "20230813"
