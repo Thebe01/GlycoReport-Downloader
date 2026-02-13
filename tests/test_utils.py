@@ -204,7 +204,6 @@ def test_get_last_downloaded_report_file_normalizes_extensions_without_dots(tmp_
     pdf_file.write_text("pdf")
     time.sleep(1)
     csv_file.write_text("csv")
-    time.sleep(1)
     txt_file.write_text("txt")
     # Test with extensions without dots - should normalize to .pdf and .csv
     result = get_last_downloaded_report_file(str(tmp_path), allowed_extensions={"pdf", "csv"})
