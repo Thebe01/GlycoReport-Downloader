@@ -503,7 +503,7 @@ Pour plus d’informations sur Dexcom Clarity :
    d'installation.
 
 - Requiert `chrome_user_data_dir` dans `config.yaml`.
-- Requiert `GlycoReport-Downloader.exe` a la racine du dossier courant ou dans
+- Requiert `GlycoReport-Downloader.exe` à la racine du dossier courant ou dans
   `dist/`.
 
 1. **Lors du premier lancement**, si les fichiers `config.yaml` ou `.env` sont
