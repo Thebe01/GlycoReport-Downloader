@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-02-02
-Version       : 0.3.2
+Modifié le    : 2026-02-12
+Version       : 0.3.13
 Copyright     : Pierre Théberge
 
 Description
@@ -27,6 +27,17 @@ Modifications
 0.3.0  - 2026-01-29   [ES-19] : Bump de version minor (release 0.3.0).
 0.3.1  - 2026-02-02   [ES-19] : Bump de version patch (release 0.3.1).
 0.3.2  - 2026-02-02   [ES-19] : Bump de version patch (release 0.3.2).
+0.3.3  - 2026-02-02   [ES-19] : Bump de version patch (release 0.3.3).
+0.3.4  - 2026-02-12   [ES-3]  : Bump de version patch (release 0.3.4).
+0.3.5  - 2026-02-12   [ES-3]  : Bump de version patch (release 0.3.5).
+0.3.6  - 2026-02-12   [ES-3]  : Bump de version patch (release 0.3.6).
+0.3.7  - 2026-02-12   [ES-3]  : Attente contenu graphique + délai génération PDF Comparer.
+0.3.8  - 2026-02-12   [ES-3]  : Fermeture/réouverture modale Comparer entre sous-rapports.
+0.3.9  - 2026-02-12   [ES-3]  : Navigation /overview et /reports avec dates pour Comparer.
+0.3.10 - 2026-02-12   [ES-3]  : Retry clics Comparer et navigation overview->reports.
+0.3.11 - 2026-02-12   [ES-3]  : Navigation URL base /i pour Comparer.
+0.3.12 - 2026-02-12   [ES-3]  : Acces direct /compare/overlay et /compare/daily.
+0.3.13 - 2026-02-12   [ES-3]  : Comparer: telecharger Tendances seulement (bug Dexcom).
 
 Paramètres
 ----------
@@ -38,4 +49,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.3.2"
+__version__ = "0.3.13"

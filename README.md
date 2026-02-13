@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.3.1-blue)
+![Version](https://img.shields.io/badge/version-0.3.13-blue)
 
 An English version of this text follows the French text.
 
@@ -11,7 +11,7 @@ An English version of this text follows the French text.
 
 ## Sommaire
 
-- [Nouveautés](#version--031--2-f%C3%A9vrier-2026)
+- [Nouveautés](#version--0313--12-f%C3%A9vrier-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -20,6 +20,133 @@ An English version of this text follows the French text.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.3.13 — 12 février 2026
+
+### Nouveautés (0.3.13)
+
+**Correctifs :**
+
+- Comparer: téléchargement limité à Tendances (bug Dexcom sur Superposition et
+  Quotidien), avec avertissement dans les logs.
+
+---
+
+## Version : 0.3.12 — 12 février 2026
+
+### Nouveautés (0.3.12)
+
+**Correctifs :**
+
+- Accès direct aux sous-rapports Comparer via /compare/overlay et
+  /compare/daily.
+
+---
+
+## Version : 0.3.11 — 12 février 2026
+
+### Nouveautés (0.3.11)
+
+**Correctifs :**
+
+- Navigation via l'URL base
+  [https://clarity.dexcom.eu/i](https://clarity.dexcom.eu/i) pour Comparer.
+
+---
+
+## Version : 0.3.10 — 12 février 2026
+
+### Nouveautés (0.3.10)
+
+**Correctifs :**
+
+- Retry des clics Comparer (stale element) et navigation overview -> reports.
+
+---
+
+## Version : 0.3.9 — 12 février 2026
+
+### Nouveautés (0.3.9)
+
+**Correctifs :**
+
+- Navigation vers l'aperçu avec dates, puis retour /reports pour éviter le gel
+  Comparer.
+
+---
+
+## Version : 0.3.8 — 12 février 2026
+
+### Nouveautés (0.3.8)
+
+**Correctifs :**
+
+- Fermeture/réouverture de la modale Comparer entre chaque sous-rapport pour
+  forcer la régénération des PDF.
+
+---
+
+## Version : 0.3.7 — 12 février 2026
+
+### Nouveautés (0.3.7)
+
+**Correctifs :**
+
+- Attente du contenu graphique et délai supplémentaire pour génération PDF
+  (sous-rapports Comparer).
+
+---
+
+## Version : 0.3.6 — 12 février 2026
+
+### Nouveautés (0.3.6)
+
+**Correctifs :**
+
+- Stabilisation renforcée des sous-rapports Comparer.
+
+---
+
+## Version : 0.3.5 — 12 février 2026
+
+### Nouveautés (0.3.5)
+
+**Correctifs :**
+
+- Stabilisation des sous-rapports Comparer.
+- Forçage du dossier de téléchargement via Chrome (download_dir).
+
+---
+
+## Version : 0.3.4 — 12 février 2026
+
+### Nouveautés (0.3.4)
+
+**Correctifs :**
+
+- Correction du téléchargement des sous-rapports Comparer.
+
+---
+
+## Version : 0.3.3 — 2 février 2026
+
+### Nouveautés (0.3.3)
+
+**Correctifs :**
+
+- Normalisation des extensions attendues (téléchargements).
+
+---
+
+## Version : 0.3.2 — 2 février 2026
+
+### Nouveautés (0.3.2)
+
+**Correctifs :**
+
+- Filtrage des fichiers téléchargés par extension.
 
 ---
 
@@ -48,6 +175,61 @@ An English version of this text follows the French text.
 ---
 
 ## Historique des versions
+
+### 0.3.13 — 12 février 2026
+
+- Comparer: téléchargement limité à Tendances (bug Dexcom sur Superposition et
+  Quotidien), avec avertissement dans les logs.
+
+### 0.3.12 — 12 février 2026
+
+- Accès direct aux sous-rapports Comparer via /compare/overlay et
+  /compare/daily.
+
+### 0.3.11 — 12 février 2026
+
+- Navigation via l'URL base
+  [https://clarity.dexcom.eu/i](https://clarity.dexcom.eu/i) pour Comparer.
+
+### 0.3.10 — 12 février 2026
+
+- Retry des clics Comparer (stale element) et navigation overview -> reports.
+
+### 0.3.9 — 12 février 2026
+
+- Navigation vers l'aperçu avec dates, puis retour /reports pour éviter le gel
+  Comparer.
+
+### 0.3.8 — 12 février 2026
+
+- Fermeture/réouverture de la modale Comparer entre chaque sous-rapport pour
+  forcer la régénération des PDF.
+
+### 0.3.7 — 12 février 2026
+
+- Attente du contenu graphique et délai supplémentaire pour génération PDF
+  (sous-rapports Comparer).
+
+### 0.3.6 — 12 février 2026
+
+- Stabilisation renforcée des sous-rapports Comparer.
+
+### 0.3.5 — 12 février 2026
+
+- Stabilisation des sous-rapports Comparer.
+- Forçage du dossier de téléchargement via Chrome (download_dir).
+
+### 0.3.4 — 12 février 2026
+
+- Correction du téléchargement des sous-rapports Comparer.
+
+### 0.3.3 — 2 février 2026
+
+- Normalisation des extensions attendues (téléchargements).
+
+### 0.3.2 — 2 février 2026
+
+- Filtrage des fichiers téléchargés par extension.
 
 ### 0.3.1 — 2 février 2026
 
@@ -524,7 +706,7 @@ This script automates the download of glycemic reports from your
 Dexcom Clarity account. It supports multiple report types, customizable periods,
 and exports data in PDF or CSV format.
 
-For more information: https://github.com/pierretheberge/GlycoReport-Downloader
+For more information: [https://github.com/pierretheberge/GlycoReport-Downloader](https://github.com/pierretheberge/GlycoReport-Downloader)
 
 general options:
   -h, --help            Show this help message and exit
@@ -572,7 +754,7 @@ Configuration:
   - Credentials: .env (encrypted, requires ENV_DEXCOM_KEY variable)
   - Logs: defined in config.yaml (log_retention_days)
 
-For questions or bug reports: https://github.com/pierretheberge/GlycoReport-Downloader/issues
+For questions or bug reports: [https://github.com/pierretheberge/GlycoReport-Downloader/issues](https://github.com/pierretheberge/GlycoReport-Downloader/issues)
 ```
 
 ---
@@ -599,6 +781,13 @@ pytest -v --log-cli-level=INFO tests/test_utils.py
   testées.
 - Cette commande permet de vérifier la robustesse et la portabilité de toutes
   les fonctions utilitaires du projet.
+
+**Note tests fonctionnels :** l'application n'exécute pas le téléchargement tant
+que l'usager n'est pas connecté. Pour les tests end-to-end, lancez d'abord
+`Launch-Dexcom-And-Run.ps1`, terminez la connexion, puis laissez le script
+relancer l'app (mode reprise).
+
+Voir aussi: [tests/TEST_STRATEGY.md](tests/TEST_STRATEGY.md).
 
 Assurez-vous d’avoir installé pytest :
 
@@ -676,6 +865,83 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 ---
 
 ## What's New (English)
+
+### Version: 0.3.13 — February 12, 2026
+
+**Fixes:**
+
+- Comparer: download limited to Trends (Dexcom bug on Overlay and Daily), with a
+  log warning.
+
+### Version: 0.3.12 — February 12, 2026
+
+**Fixes:**
+
+- Directly open Comparer sub-reports via /compare/overlay and /compare/daily.
+
+### Version: 0.3.11 — February 12, 2026
+
+**Fixes:**
+
+- Navigate via base URL
+  [https://clarity.dexcom.eu/i](https://clarity.dexcom.eu/i) for Comparer.
+
+### Version: 0.3.10 — February 12, 2026
+
+**Fixes:**
+
+- Retry Comparer clicks (stale element) and navigate overview -> reports.
+
+### Version: 0.3.9 — February 12, 2026
+
+**Fixes:**
+
+- Navigate to overview with dates, then back to /reports to avoid Comparer
+  freeze.
+
+### Version: 0.3.8 — February 12, 2026
+
+**Fixes:**
+
+- Close/reopen Comparer modal between each sub-report to force PDF regeneration.
+
+### Version: 0.3.7 — February 12, 2026
+
+**Fixes:**
+
+- Wait for graphic content and additional delay for PDF generation (Comparer
+  sub-reports).
+
+### Version: 0.3.6 — February 12, 2026
+
+**Fixes:**
+
+- Further stabilized Comparer sub-reports.
+
+### Version: 0.3.5 — February 12, 2026
+
+**Fixes:**
+
+- Stabilized Comparer sub-reports.
+- Forced Chrome download directory (download_dir).
+
+### Version: 0.3.4 — February 12, 2026
+
+**Fixes:**
+
+- Fixed Comparer sub-report downloads.
+
+### Version: 0.3.3 — February 2, 2026
+
+**Fixes:**
+
+- Normalized expected download extensions.
+
+### Version: 0.3.2 — February 2, 2026
+
+**Fixes:**
+
+- Filtered downloaded files by extension.
 
 ### Version: 0.3.1 — February 2, 2026
 
@@ -779,6 +1045,59 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 ---
 
 ## Version History (English)
+
+### 0.3.13 — February 12, 2026
+
+- Comparer: download limited to Trends (Dexcom bug on Overlay and Daily), with a
+  log warning.
+
+### 0.3.12 — February 12, 2026
+
+- Directly open Comparer sub-reports via /compare/overlay and /compare/daily.
+
+### 0.3.11 — February 12, 2026
+
+- Navigate via base URL
+  [https://clarity.dexcom.eu/i](https://clarity.dexcom.eu/i) for Comparer.
+
+### 0.3.10 — February 12, 2026
+
+- Retry Comparer clicks (stale element) and navigate overview -> reports.
+
+### 0.3.9 — February 12, 2026
+
+- Navigate to overview with dates, then back to /reports to avoid Comparer
+  freeze.
+
+### 0.3.8 — February 12, 2026
+
+- Close/reopen Comparer modal between each sub-report to force PDF regeneration.
+
+### 0.3.7 — February 12, 2026
+
+- Wait for graphic content and additional delay for PDF generation (Comparer
+  sub-reports).
+
+### 0.3.6 — February 12, 2026
+
+- Further stabilized Comparer sub-reports.
+
+### 0.3.5 — February 12, 2026
+
+- Stabilized Comparer sub-reports.
+- Forced Chrome download directory (download_dir).
+
+### 0.3.4 — February 12, 2026
+
+- Fixed Comparer sub-report downloads.
+
+### 0.3.3 — February 2, 2026
+
+- Normalized expected download extensions.
+
+### 0.3.2 — February 2, 2026
+
+- Filtered downloaded files by extension.
 
 ### 0.3.1 — February 2, 2026
 
@@ -1309,6 +1628,12 @@ pytest -v --log-cli-level=INFO tests/test_utils.py
 - `--log-cli-level=INFO` shows log messages produced by the tested functions.
 - This command helps verify the robustness and portability of all the project's
   utility functions.
+
+**Functional test note:** the app does not proceed until the user is logged in.
+For end-to-end tests, run `Launch-Dexcom-And-Run.ps1` first, complete the login,
+then let the script relaunch the app (resume mode).
+
+See also: [tests/TEST_STRATEGY.md](tests/TEST_STRATEGY.md).
 
 Make sure you have installed pytest:
 

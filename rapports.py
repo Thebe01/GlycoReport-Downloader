@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-02-02
-Version       : 0.3.2
+Modifié le    : 2026-02-12
+Version       : 0.3.13
 Copyright     : Pierre Théberge
 
 Description
@@ -69,6 +69,17 @@ Modifications
 0.2.17 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.2.18 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.3.2  - 2026-02-02   [ES-19] : Filtrage des fichiers téléchargés par extension.
+0.3.3  - 2026-02-02   [ES-19] : Normalisation des extensions attendues (téléchargements).
+0.3.4  - 2026-02-12   [ES-3]  : Correction du téléchargement des sous-rapports Comparer.
+0.3.5  - 2026-02-12   [ES-3]  : Stabilisation des sous-rapports Comparer.
+0.3.6  - 2026-02-12   [ES-3]  : Stabilisation renforcée des sous-rapports Comparer.
+0.3.7  - 2026-02-12   [ES-3]  : Attente contenu graphique + délai génération PDF Comparer.
+0.3.8  - 2026-02-12   [ES-3]  : Fermeture/réouverture modale Comparer entre sous-rapports.
+0.3.9  - 2026-02-12   [ES-3]  : Navigation /overview et /reports avec dates pour Comparer.
+0.3.10 - 2026-02-12   [ES-3]  : Retry clics Comparer et navigation overview->reports.
+0.3.11 - 2026-02-12   [ES-3]  : Navigation URL base /i pour Comparer.
+0.3.12 - 2026-02-12   [ES-3]  : Acces direct /compare/overlay et /compare/daily.
+0.3.13 - 2026-02-12   [ES-3]  : Comparer: telecharger Tendances seulement (bug Dexcom).
 
 Paramètres
 ----------
@@ -83,10 +94,12 @@ import os
 import time
 import glob
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import StaleElementReferenceException, WebDriverException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from utils import (
     attendre_disparition_overlay,
+    attendre_nouveau_bouton_telecharger,
     get_last_downloaded_report_file,
     renomme_prefix,
     check_internet,
@@ -324,67 +337,111 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
     """
     logger.info(f"Traitement des rapports {nom_rapport}")
     try:
-        xpath_rapport = f"//button[normalize-space()='{nom_rapport}']"
-        selection_rapport_button = WebDriverWait(driver, 30).until(
-            EC.element_to_be_clickable((By.XPATH, xpath_rapport))
-        )
-        driver.execute_script("arguments[0].scrollIntoView(true);", selection_rapport_button)
-        time.sleep(1)
-        try:
-            selection_rapport_button.click()
-        except Exception:
-            driver.execute_script("arguments[0].click();", selection_rapport_button)
-        time.sleep(2)
+        def get_base_url():
+            return driver.current_url.split("#")[0]
 
-        # Tendances
+        def click_element_with_retry(xpath, label, attempts=3):
+            last_exc = None
+            for _ in range(attempts):
+                try:
+                    element = WebDriverWait(driver, 30).until(
+                        EC.element_to_be_clickable((By.XPATH, xpath))
+                    )
+                    driver.execute_script("arguments[0].scrollIntoView(true);", element)
+                    time.sleep(1)
+                    try:
+                        element.click()
+                    except Exception:
+                        driver.execute_script("arguments[0].click();", element)
+                    return
+                except (StaleElementReferenceException, WebDriverException) as exc:
+                    last_exc = exc
+                    time.sleep(1)
+            if last_exc is not None:
+                raise last_exc
+
+        def ouvrir_modale_comparer():
+            """Ouvre la modale du rapport Comparer."""
+            try:
+                base_url = get_base_url()
+                driver.get(base_url)
+                WebDriverWait(driver, 60).until(lambda d: base_url in d.current_url)
+            except Exception:
+                logger.debug("Navigation vers l'URL base non confirmee; poursuite.")
+            attendre_disparition_overlay(driver, 30, logger=logger, debug=args.debug)
+            xpath_rapport = f"//button[normalize-space()='{nom_rapport}']"
+            click_element_with_retry(xpath_rapport, "bouton comparer")
+            time.sleep(2)
+            logger.debug("Modale Comparer ouverte.")
+
+        def fermer_modale_rapport():
+            """Ferme la modale en naviguant vers l'URL base."""
+            try:
+                base_url = get_base_url()
+                driver.get(base_url)
+                WebDriverWait(driver, 60).until(lambda d: base_url in d.current_url)
+                time.sleep(2)
+                attendre_disparition_overlay(driver, 30, logger=logger, debug=args.debug)
+                logger.debug("Modale de rapport fermee (navigation vers URL base).")
+            except Exception as e:
+                logger.debug(f"Erreur lors de la fermeture de modale: {e}")
+
+        def click_compare_link(link_xpath, url_fragment, label):
+            """Sélectionne un sous-rapport dans la modale Comparer."""
+            click_element_with_retry(link_xpath, label)
+            WebDriverWait(driver, 60).until(lambda d: url_fragment in d.current_url)
+            attendre_contenu_graphique(label)
+
+        def attendre_contenu_graphique(label):
+            # Attendre que le contenu graphique soit charge
+            # Attendre que le contenu graphique soit charge
+            try:
+                WebDriverWait(driver, 60).until(
+                    EC.presence_of_element_located(
+                        (By.XPATH, "//canvas|//svg[@class='chart']|//div[contains(@class,'chart')]|//table[contains(@class,'table')]")
+                    )
+                )
+                logger.debug("Contenu graphique charge pour %s.", label)
+            except Exception:
+                logger.debug("Contenu graphique non confirme pour %s; poursuite.", label)
+            attendre_disparition_overlay(driver, 30, logger=logger, debug=args.debug)
+            time.sleep(3)
+
+        def ouvrir_page_comparer(route, label):
+            """Ouvre directement un sous-rapport Comparer via l'URL."""
+            base_url = get_base_url()
+            target_url = f"{base_url}#/compare/{route}"
+            driver.get(target_url)
+            WebDriverWait(driver, 60).until(lambda d: f"/compare/{route}" in d.current_url)
+            attendre_contenu_graphique(label)
+
+        # Tendances: ouvrir modale -> selectionner -> telecharger -> fermer
         rapport_comparer = "Comparer-Tendances"
         logger.info(f"Traitement du rapport {rapport_comparer}")
+        ouvrir_modale_comparer()
         xpath_tendances = "//a[contains(@href, '/compare/trends') and contains(@class, 'data-page__report-choice-button--trends') and normalize-space(.//div)='Tendances']"
-        tendances_link = WebDriverWait(driver, 30).until(
-            EC.element_to_be_clickable((By.XPATH, xpath_tendances))
-        )
-        driver.execute_script("arguments[0].scrollIntoView(true);", tendances_link)
-        time.sleep(1)
-        try:
-            tendances_link.click()
-        except Exception:
-            driver.execute_script("arguments[0].click();", tendances_link)
-        time.sleep(2)
+        click_compare_link(xpath_tendances, "/compare/trends", "Tendances")
         telechargement_rapport(rapport_comparer, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+        fermer_modale_rapport()
 
-        # Superposition
-        rapport_comparer = "Comparer-Superposition"
-        logger.info(f"Traitement du rapport {rapport_comparer}")
-        xpath_superposition = "//a[contains(@href, '/compare/overlay') and contains(@class, 'data-page__report-choice-button--overlay') and .//div[@title='Superposition' and normalize-space()='Superposition']]"
-        superposition_link = WebDriverWait(driver, 30).until(
-            EC.element_to_be_clickable((By.XPATH, xpath_superposition))
+        logger.warning(
+            "Comparer: probleme connu cote Dexcom, Superposition et Quotidien non telecharges."
         )
-        driver.execute_script("arguments[0].scrollIntoView(true);", superposition_link)
-        time.sleep(1)
-        try:
-            superposition_link.click()
-        except Exception:
-            driver.execute_script("arguments[0].click();", superposition_link)
-        time.sleep(2)
-        telechargement_rapport(rapport_comparer, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
 
-        # Quotidien
-        rapport_comparer = "Comparer-Quotidien"
-        logger.info(f"Traitement du rapport {rapport_comparer}")
-        xpath_quotidien = (
-            "//a[contains(@href, '/compare/daily') "
-            "and contains(@class, 'data-page__report-choice-button--daily') "
-            "and .//div[@title='Quotidien' and normalize-space()='Quotidien']]"
-        )
-        quotidien_link = WebDriverWait(driver, 60).until(
-            EC.element_to_be_clickable((By.XPATH, xpath_quotidien))
-        )
-        driver.execute_script("arguments[0].scrollIntoView(true);", quotidien_link)
-        time.sleep(2)
-        driver.execute_script("arguments[0].click();", quotidien_link)
-        WebDriverWait(driver, 60).until(lambda d: "/compare/daily" in d.current_url)
-        time.sleep(10)
-        telechargement_rapport(rapport_comparer, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+        # NOTE: Bug Dexcom - les sous-rapports Comparer suivants generent le meme PDF.
+        # TODO: Re-activer quand le site Dexcom sera corrige.
+        #
+        # # Superposition: ouvrir directement la page /compare/overlay
+        # rapport_comparer = "Comparer-Superposition"
+        # logger.info(f"Traitement du rapport {rapport_comparer}")
+        # ouvrir_page_comparer("overlay", "Superposition")
+        # telechargement_rapport(rapport_comparer, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+        #
+        # # Quotidien: ouvrir directement la page /compare/daily
+        # rapport_comparer = "Comparer-Quotidien"
+        # logger.info(f"Traitement du rapport {rapport_comparer}")
+        # ouvrir_page_comparer("daily", "Quotidien")
+        # telechargement_rapport(rapport_comparer, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
 
     except Exception as e:
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
