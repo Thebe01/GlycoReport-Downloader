@@ -394,7 +394,6 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
 
         def attendre_contenu_graphique(label):
             # Attendre que le contenu graphique soit charge
-            # Attendre que le contenu graphique soit charge
             try:
                 WebDriverWait(driver, 60).until(
                     EC.presence_of_element_located(
