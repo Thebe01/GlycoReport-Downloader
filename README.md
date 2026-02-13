@@ -706,7 +706,7 @@ This script automates the download of glycemic reports from your
 Dexcom Clarity account. It supports multiple report types, customizable periods,
 and exports data in PDF or CSV format.
 
-For more information: [https://github.com/pierretheberge/GlycoReport-Downloader](https://github.com/pierretheberge/GlycoReport-Downloader)
+For more information: [https://github.com/thebe01/GlycoReport-Downloader](https://github.com/thebe01/GlycoReport-Downloader)
 
 general options:
   -h, --help            Show this help message and exit
@@ -754,7 +754,7 @@ Configuration:
   - Credentials: .env (encrypted, requires ENV_DEXCOM_KEY variable)
   - Logs: defined in config.yaml (log_retention_days)
 
-For questions or bug reports: [https://github.com/pierretheberge/GlycoReport-Downloader/issues](https://github.com/pierretheberge/GlycoReport-Downloader/issues)
+For questions or bug reports: [https://github.com/thebe01/GlycoReport-Downloader/issues](https://github.com/thebe01/GlycoReport-Downloader/issues)
 ```
 
 ---
@@ -1554,7 +1554,7 @@ This script automates the download of glycemic reports from your
 Dexcom Clarity account. It supports multiple report types, customizable periods,
 and exports data in PDF or CSV format.
 
-For more information: https://github.com/pierretheberge/GlycoReport-Downloader
+For more information: https://github.com/thebe01/GlycoReport-Downloader
 
 general options:
   -h, --help            Show this help message and exit
@@ -1602,7 +1602,7 @@ Configuration:
   - Credentials: .env (encrypted, requires ENV_DEXCOM_KEY variable)
   - Logs: defined in config.yaml (log_retention_days)
 
-For questions or bug reports: https://github.com/pierretheberge/GlycoReport-Downloader/issues
+For questions or bug reports: https://github.com/thebe01/GlycoReport-Downloader/issues
 ```
 
 ---
