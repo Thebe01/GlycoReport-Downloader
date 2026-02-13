@@ -407,6 +407,9 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
             attendre_disparition_overlay(driver, 30, logger=logger, debug=args.debug)
             time.sleep(3)
 
+        # NOTE: Cette fonction est conservee pour une utilisation future.
+        # Actuellement non utilisee en raison d'un bug Dexcom (voir ligne 431).
+        # Sera reactivee une fois que Dexcom aura corrige le probleme de PDF dupliques.
         def ouvrir_page_comparer(route, label):
             """Ouvre directement un sous-rapport Comparer via l'URL."""
             base_url = get_base_url()
