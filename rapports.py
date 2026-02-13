@@ -406,7 +406,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
             time.sleep(3)
 
         # NOTE: Cette fonction est conservee pour une utilisation future.
-        # Actuellement non utilisee en raison d'un bug Dexcom (voir ligne 431).
+        # Actuellement non utilisee en raison d'un bug Dexcom (voir ligne 432).
         # Sera reactivee une fois que Dexcom aura corrige le probleme de PDF dupliques.
         def ouvrir_page_comparer(route, label):
             """Ouvre directement un sous-rapport Comparer via l'URL."""
