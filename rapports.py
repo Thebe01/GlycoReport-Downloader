@@ -99,7 +99,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from utils import (
     attendre_disparition_overlay,
-    attendre_nouveau_bouton_telecharger,
     get_last_downloaded_report_file,
     renomme_prefix,
     check_internet,
