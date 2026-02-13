@@ -7,6 +7,9 @@
 
 An English version of this text follows the French text.
 
+Note: La version francaise est la source de verite. La version anglaise est une
+traduction stricte de la version francaise.
+
 ---
 
 ## Sommaire
@@ -433,7 +436,7 @@ usagers francophones et en anglais pour les autres.
 ## Release disponible
 
 Une archive ZIP prête à l’emploi est disponible dans la section
-[Releases](https://github.com/<ton-utilisateur>/<ton-repo>/releases) du projet
+[Releases](https://github.com/thebe01/GlycoReport-Downloader/releases) du projet
 GitHub. Téléchargez l’archive `.zip` pour Windows, puis décompressez-la pour
 obtenir tous les fichiers nécessaires (voir instructions ci-dessous).
 
@@ -488,15 +491,22 @@ Pour plus d’informations sur Dexcom Clarity :
 
 1. **Téléchargez l'installateur** (`GlycoReport-Downloader_Setup_x.x.x.exe`)
    depuis la page Releases du projet.
-2. **Exécutez l'installateur**.
-   - L'installation se fait par défaut dans `C:\ipt\GlycoReport-Downloader` (ou
-     sur le disque système correspondant).
-   - Aucune élévation de privilèges n'est requise (sauf si vous choisissez un
-     dossier protégé).
-3. **Lancez l'application** via le script `Launch-Dexcom-And-Run.ps1` (proposé
+1. **Exécutez l'installateur**.
+
+- L'installation se fait par défaut dans `C:\ipt\GlycoReport-Downloader` (ou sur
+  le disque système correspondant).
+- Aucune élévation de privilèges n'est requise (sauf si vous choisissez un
+  dossier protégé).
+
+1. **Lancez l'application** via le script `Launch-Dexcom-And-Run.ps1` (proposé
    en fin d'installation), ou via le raccourci créé dans le dossier
    d'installation.
-4. **Lors du premier lancement**, si les fichiers `config.yaml` ou `.env` sont
+
+- Requiert `chrome_user_data_dir` dans `config.yaml`.
+- Requiert `GlycoReport-Downloader.exe` à la racine du dossier courant ou dans
+  `dist/`.
+
+1. **Lors du premier lancement**, si les fichiers `config.yaml` ou `.env` sont
    absents, l'application vous informera et lancera la configuration initiale.
 
 ### Migration depuis une version antérieure
@@ -558,7 +568,9 @@ pour faciliter la création d'un package prêt à distribuer. Ce script :
 - Vérifie la présence de tous les fichiers nécessaires à la distribution
 - Compile l'installateur Inno Setup (`.iss`)
 - Génère l'installateur final dans le dossier `dist_setup` (ex:
-  `GlycoReport-Downloader_Setup_0.2.11.exe`)
+  `GlycoReport-Downloader_Setup_x.x.x.exe`)
+- Copie `config_example.yaml`, `README.md`, `LICENSE.txt`, `MIGRATION.md`,
+  `.env.example` et `Launch-Dexcom-And-Run.ps1` dans `dist/`.
 
 **Prérequis pour la compilation :**
 
@@ -661,10 +673,10 @@ logs, etc.) sont **normalisés automatiquement** :
 
 1. Lancez le script. Une clé d’encryption sera générée et une commande
    PowerShell à copier/coller s’affichera.
-2. Collez cette commande dans la fenêtre PowerShell qui s’ouvre, puis tapez
+1. Collez cette commande dans la fenêtre PowerShell qui s’ouvre, puis tapez
    `Exit`.
-3. Relancez le script pour poursuivre la configuration.
-4. Lors de la création du `.env`, les informations saisies seront chiffrées
+1. Relancez le script pour poursuivre la configuration.
+1. Lors de la création du `.env`, les informations saisies seront chiffrées
    automatiquement.
 
 ---
@@ -706,7 +718,7 @@ This script automates the download of glycemic reports from your
 Dexcom Clarity account. It supports multiple report types, customizable periods,
 and exports data in PDF or CSV format.
 
-For more information: [https://github.com/pierretheberge/GlycoReport-Downloader](https://github.com/pierretheberge/GlycoReport-Downloader)
+For more information: [https://github.com/thebe01/GlycoReport-Downloader](https://github.com/thebe01/GlycoReport-Downloader)
 
 general options:
   -h, --help            Show this help message and exit
@@ -754,7 +766,7 @@ Configuration:
   - Credentials: .env (encrypted, requires ENV_DEXCOM_KEY variable)
   - Logs: defined in config.yaml (log_retention_days)
 
-For questions or bug reports: [https://github.com/pierretheberge/GlycoReport-Downloader/issues](https://github.com/pierretheberge/GlycoReport-Downloader/issues)
+For questions or bug reports: [https://github.com/thebe01/GlycoReport-Downloader/issues](https://github.com/thebe01/GlycoReport-Downloader/issues)
 ```
 
 ---
@@ -837,6 +849,9 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 ---
 
 ## GlycoReport Downloader (English)
+
+Note: The French version is the source of truth. The English version is a strict
+translation of the French version.
 
 ## Summary
 
@@ -1292,9 +1307,9 @@ and in English for others.
 ## Release Available (English)
 
 A ready-to-use ZIP archive is available in the
-[Releases](https://github.com/<your-username>/<your-repo>/releases) section of
-the GitHub project. Download the `.zip` for Windows, then extract it to get all
-necessary files (see instructions below).
+[Releases](https://github.com/thebe01/GlycoReport-Downloader/releases) section
+of the GitHub project. Download the `.zip` for Windows, then extract it to get
+all necessary files (see instructions below).
 
 ---
 
@@ -1346,14 +1361,21 @@ For more information about Dexcom Clarity:
 
 1. **Download the installer** (`GlycoReport-Downloader_Setup_x.x.x.exe`) from
    the project Releases page.
-2. **Run the installer**.
-   - Installation defaults to `C:\ipt\GlycoReport-Downloader` (or corresponding
-     system drive).
-   - No privilege elevation is required (unless you choose a protected folder).
-3. **Launch the application** via `Launch-Dexcom-And-Run.ps1` (offered at the
+1. **Run the installer**.
+
+- Installation defaults to `C:\ipt\GlycoReport-Downloader` (or corresponding
+  system drive).
+- No privilege elevation is required (unless you choose a protected folder).
+
+1. **Launch the application** via `Launch-Dexcom-And-Run.ps1` (offered at the
    end of the installer), or via the created shortcut in the installation
    folder.
-4. **On first launch**, if `config.yaml` or `.env` files are missing, the
+
+- Requires `chrome_user_data_dir` in `config.yaml`.
+- Requires `GlycoReport-Downloader.exe` at the current folder root or in
+  `dist/`.
+
+1. **On first launch**, if `config.yaml` or `.env` files are missing, the
    application will inform you and start the initial configuration.
 
 ### Migrating from an Earlier Version
@@ -1412,7 +1434,9 @@ to facilitate the creation of a ready-to-distribute package. This script:
 - Checks for the presence of all necessary distribution files
 - Compiles the Inno Setup installer (`.iss`)
 - Generates the final installer in the `dist_setup` folder (e.g.,
-  `GlycoReport-Downloader_Setup_0.2.11.exe`)
+  `GlycoReport-Downloader_Setup_x.x.x.exe`)
+- Copies `config_example.yaml`, `README.md`, `LICENSE.txt`, `MIGRATION.md`,
+  `.env.example`, and `Launch-Dexcom-And-Run.ps1` into `dist/`.
 
 **Prerequisites for compilation:**
 
@@ -1511,9 +1535,9 @@ All paths used in the project (download folders, profiles, logs, etc.) are
 
 1. Run the script. An encryption key will be generated, and a PowerShell command
    to copy/paste will be displayed.
-2. Paste this command into the PowerShell window that opens, then type `Exit`.
-3. Rerun the script to continue the configuration.
-4. When creating the `.env`, the entered information will be automatically
+1. Paste this command into the PowerShell window that opens, then type `Exit`.
+1. Rerun the script to continue the configuration.
+1. When creating the `.env`, the entered information will be automatically
    encrypted.
 
 ---
@@ -1554,7 +1578,7 @@ This script automates the download of glycemic reports from your
 Dexcom Clarity account. It supports multiple report types, customizable periods,
 and exports data in PDF or CSV format.
 
-For more information: https://github.com/pierretheberge/GlycoReport-Downloader
+For more information: https://github.com/thebe01/GlycoReport-Downloader
 
 general options:
   -h, --help            Show this help message and exit
@@ -1602,7 +1626,7 @@ Configuration:
   - Credentials: .env (encrypted, requires ENV_DEXCOM_KEY variable)
   - Logs: defined in config.yaml (log_retention_days)
 
-For questions or bug reports: https://github.com/pierretheberge/GlycoReport-Downloader/issues
+For questions or bug reports: https://github.com/thebe01/GlycoReport-Downloader/issues
 ```
 
 ---
