@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-02-02
-Version       : 0.3.2
+Modifié le    : 2026-02-12
+Version       : 0.3.13
 Copyright     : Pierre Théberge
 
 Description
@@ -64,6 +64,10 @@ Modifications
 0.2.17 - 2026-01-20   [ES-19] : Validation robuste des paramètres Cloudflare (quiet/deep scan).
 0.2.18 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.3.2  - 2026-02-02   [ES-19] : Ajout du filtrage des téléchargements par extension.
+0.3.3  - 2026-02-02   [ES-19] : Normalisation des extensions attendues (téléchargements).
+0.3.4  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
+0.3.5  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
+0.3.6  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -225,7 +229,10 @@ def get_last_downloaded_report_file(
     if allowed_extensions is None:
         allowed_extensions = {".pdf", ".csv"}
 
-    normalized_exts = {ext.lower() for ext in allowed_extensions}
+    normalized_exts = {
+        (ext if ext.startswith(".") else f".{ext}").lower()
+        for ext in allowed_extensions
+    }
     files = [os.path.join(download_dir, f) for f in os.listdir(download_dir)]
     files = [
         f

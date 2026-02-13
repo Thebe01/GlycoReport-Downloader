@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-13
-Modifié le    : 2026-02-02
-Version       : 0.3.2
+Modifié le    : 2026-02-12
+Version       : 0.3.13
 Copyright     : Pierre Théberge
 
 Description
@@ -37,6 +37,10 @@ Modifications
 0.2.18 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.3.1  - 2026-02-02   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.3.2  - 2026-02-02   [ES-19] : Ajout du test pour filtrer les téléchargements par extension.
+0.3.3  - 2026-02-02   [ES-19] : Normalisation des extensions attendues (téléchargements).
+0.3.4  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
+0.3.5  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
+0.3.6  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -156,6 +160,42 @@ def test_get_last_downloaded_report_file_filters_extensions(tmp_path):
     txt_file.write_text("txt")
     result = get_last_downloaded_report_file(str(tmp_path), allowed_extensions={".pdf"})
     assert result == str(pdf_file)
+
+def test_get_last_downloaded_report_file_multiple_extensions(tmp_path):
+    pdf_file = tmp_path / "report.pdf"
+    csv_file = tmp_path / "export.csv"
+    pdf_file.write_text("pdf")
+    time.sleep(1)
+    csv_file.write_text("csv")
+    result = get_last_downloaded_report_file(str(tmp_path), allowed_extensions={".pdf", ".csv"})
+    assert result == str(csv_file)
+
+def test_get_last_downloaded_report_file_no_match_returns_none(tmp_path):
+    txt_file = tmp_path / "note.txt"
+    txt_file.write_text("txt")
+    result = get_last_downloaded_report_file(str(tmp_path), allowed_extensions={".pdf"})
+    assert result is None
+
+def test_get_last_downloaded_report_file_ignores_log_and_crdownload(tmp_path):
+    pdf_file = tmp_path / "report.pdf"
+    log_file = tmp_path / "latest.log"
+    crdownload_file = tmp_path / "partial.crdownload"
+    pdf_file.write_text("pdf")
+    time.sleep(1)
+    log_file.write_text("log")
+    time.sleep(1)
+    crdownload_file.write_text("partial")
+    result = get_last_downloaded_report_file(str(tmp_path), allowed_extensions={".pdf"})
+    assert result == str(pdf_file)
+
+def test_get_last_downloaded_report_file_returns_most_recent(tmp_path):
+    old_pdf = tmp_path / "old.pdf"
+    new_pdf = tmp_path / "new.pdf"
+    old_pdf.write_text("old")
+    time.sleep(1)
+    new_pdf.write_text("new")
+    result = get_last_downloaded_report_file(str(tmp_path), allowed_extensions={".pdf"})
+    assert result == str(new_pdf)
 
 def test_renomme_prefix_standard(dummy_logger):
     prefix = "Apercu_20230801_1"

@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
-Modifié le    : 2026-02-02
-Version       : 0.3.2
+Modifié le    : 2026-02-12
+Version       : 0.3.13
 Copyright     : Pierre Théberge
 
 Description
@@ -119,6 +119,10 @@ Modifications
 0.3.0   - 2026-01-29   [ES-19] : Ajout du point d'entrée --start-at-date-selection.
 0.3.1   - 2026-02-02   [ES-19] : Robustesse de pause_on_error (stdin non interactif).
 0.3.2   - 2026-02-02   [ES-19] : Filtrage des fichiers téléchargés par extension.
+0.3.3   - 2026-02-02   [ES-19] : Normalisation des extensions attendues (téléchargements).
+0.3.4   - 2026-02-12   [ES-3]  : Correction du téléchargement des sous-rapports Comparer.
+0.3.5   - 2026-02-12   [ES-3]  : Forçage du download_dir et stabilisation Comparer.
+0.3.6   - 2026-02-12   [ES-3]  : Stabilisation renforcée des sous-rapports Comparer.
 
 Paramètres
 ----------
@@ -729,6 +733,16 @@ def main(args, logger, config):
 
         # Initialisation du WebDriver
         driver = webdriver.Chrome(service=service, options=options)
+
+        # Forcer le dossier de téléchargement (utile même en mode attach-debugger)
+        try:
+            os.makedirs(download_dir, exist_ok=True)
+            driver.execute_cdp_cmd(
+                "Page.setDownloadBehavior",
+                {"behavior": "allow", "downloadPath": download_dir},
+            )
+        except Exception as e:
+            logger.warning(f"Impossible de forcer download_dir via CDP: {e}")
 
         if debug_mode:
             logger.debug(f"Version de Python : {sys.version}")
