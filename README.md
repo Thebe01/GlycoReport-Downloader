@@ -3,15 +3,18 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.2.6-blue)
+![Version](https://img.shields.io/badge/version-0.3.13-blue)
 
 An English version of this text follows the French text.
+
+Note: La version francaise est la source de verite. La version anglaise est une
+traduction stricte de la version francaise.
 
 ---
 
 ## Sommaire
 
-- [Nouveautés](#version--025--21-octobre-2025)
+- [Nouveautés](#version--0313--12-f%C3%A9vrier-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,32 +26,278 @@ An English version of this text follows the French text.
 
 ---
 
-## Version : 0.2.6 — 21 octobre 2025
+## Version : 0.3.13 — 12 février 2026
 
-### Nouveautés
+### Nouveautés (0.3.13)
 
-**Améliorations de l'aide et des options CLI :**
+**Correctifs :**
 
-- Aide (`--help`) complètement repensée avec description détaillée, exemples
-  d'utilisation et groupes d'arguments organisés
-- Nouvelle option `--list-rapports` pour afficher la liste complète des rapports
-  disponibles avec descriptions
-- Nouvelle option `--dry-run` pour simuler l'exécution et afficher la
-  configuration sans télécharger
-- Validation améliorée des dates avec messages d'erreur explicites et colorés
-- Les options d'aide fonctionnent maintenant **avant** la validation des
-  fichiers de configuration
+- Comparer: téléchargement limité à Tendances (bug Dexcom sur Superposition et
+  Quotidien), avec avertissement dans les logs.
 
-**Améliorations du nettoyage des logs :**
+---
 
-- Les captures d'écran (fichiers `.png`) générées en mode debug sont maintenant
-  automatiquement supprimées lors du nettoyage des logs selon la période de
-  rétention configurée
-- Amélioration de la gestion de l'espace disque
+## Version : 0.3.12 — 12 février 2026
+
+### Nouveautés (0.3.12)
+
+**Correctifs :**
+
+- Accès direct aux sous-rapports Comparer via /compare/overlay et
+  /compare/daily.
+
+---
+
+## Version : 0.3.11 — 12 février 2026
+
+### Nouveautés (0.3.11)
+
+**Correctifs :**
+
+- Navigation via l'URL base
+  [https://clarity.dexcom.eu/i](https://clarity.dexcom.eu/i) pour Comparer.
+
+---
+
+## Version : 0.3.10 — 12 février 2026
+
+### Nouveautés (0.3.10)
+
+**Correctifs :**
+
+- Retry des clics Comparer (stale element) et navigation overview -> reports.
+
+---
+
+## Version : 0.3.9 — 12 février 2026
+
+### Nouveautés (0.3.9)
+
+**Correctifs :**
+
+- Navigation vers l'aperçu avec dates, puis retour /reports pour éviter le gel
+  Comparer.
+
+---
+
+## Version : 0.3.8 — 12 février 2026
+
+### Nouveautés (0.3.8)
+
+**Correctifs :**
+
+- Fermeture/réouverture de la modale Comparer entre chaque sous-rapport pour
+  forcer la régénération des PDF.
+
+---
+
+## Version : 0.3.7 — 12 février 2026
+
+### Nouveautés (0.3.7)
+
+**Correctifs :**
+
+- Attente du contenu graphique et délai supplémentaire pour génération PDF
+  (sous-rapports Comparer).
+
+---
+
+## Version : 0.3.6 — 12 février 2026
+
+### Nouveautés (0.3.6)
+
+**Correctifs :**
+
+- Stabilisation renforcée des sous-rapports Comparer.
+
+---
+
+## Version : 0.3.5 — 12 février 2026
+
+### Nouveautés (0.3.5)
+
+**Correctifs :**
+
+- Stabilisation des sous-rapports Comparer.
+- Forçage du dossier de téléchargement via Chrome (download_dir).
+
+---
+
+## Version : 0.3.4 — 12 février 2026
+
+### Nouveautés (0.3.4)
+
+**Correctifs :**
+
+- Correction du téléchargement des sous-rapports Comparer.
+
+---
+
+## Version : 0.3.3 — 2 février 2026
+
+### Nouveautés (0.3.3)
+
+**Correctifs :**
+
+- Normalisation des extensions attendues (téléchargements).
+
+---
+
+## Version : 0.3.2 — 2 février 2026
+
+### Nouveautés (0.3.2)
+
+**Correctifs :**
+
+- Filtrage des fichiers téléchargés par extension.
+
+---
+
+## Version : 0.3.1 — 2 février 2026
+
+### Nouveautés (0.3.1)
+
+**Correctifs :**
+
+- Robustesse de `pause_on_error` en contexte non interactif.
+- Améliorations du script `Launch-Dexcom-And-Run.ps1` (chemins, attache
+  Chrome/Selenium, exe).
+
+---
+
+## Version : 0.3.0 — 29 janvier 2026
+
+### Nouveautés (0.3.0)
+
+**Démarrage assisté :**
+
+- Ajout du point d'entrée `--start-at-date-selection` (reprise après connexion).
+- Ajout du script `Launch-Dexcom-And-Run.ps1` pour ouvrir Chrome avec le profil
+  et lancer l'app.
 
 ---
 
 ## Historique des versions
+
+### 0.3.13 — 12 février 2026
+
+- Comparer: téléchargement limité à Tendances (bug Dexcom sur Superposition et
+  Quotidien), avec avertissement dans les logs.
+
+### 0.3.12 — 12 février 2026
+
+- Accès direct aux sous-rapports Comparer via /compare/overlay et
+  /compare/daily.
+
+### 0.3.11 — 12 février 2026
+
+- Navigation via l'URL base
+  [https://clarity.dexcom.eu/i](https://clarity.dexcom.eu/i) pour Comparer.
+
+### 0.3.10 — 12 février 2026
+
+- Retry des clics Comparer (stale element) et navigation overview -> reports.
+
+### 0.3.9 — 12 février 2026
+
+- Navigation vers l'aperçu avec dates, puis retour /reports pour éviter le gel
+  Comparer.
+
+### 0.3.8 — 12 février 2026
+
+- Fermeture/réouverture de la modale Comparer entre chaque sous-rapport pour
+  forcer la régénération des PDF.
+
+### 0.3.7 — 12 février 2026
+
+- Attente du contenu graphique et délai supplémentaire pour génération PDF
+  (sous-rapports Comparer).
+
+### 0.3.6 — 12 février 2026
+
+- Stabilisation renforcée des sous-rapports Comparer.
+
+### 0.3.5 — 12 février 2026
+
+- Stabilisation des sous-rapports Comparer.
+- Forçage du dossier de téléchargement via Chrome (download_dir).
+
+### 0.3.4 — 12 février 2026
+
+- Correction du téléchargement des sous-rapports Comparer.
+
+### 0.3.3 — 2 février 2026
+
+- Normalisation des extensions attendues (téléchargements).
+
+### 0.3.2 — 2 février 2026
+
+- Filtrage des fichiers téléchargés par extension.
+
+### 0.3.1 — 2 février 2026
+
+- Robustesse de `pause_on_error` en contexte non interactif.
+- Améliorations du script `Launch-Dexcom-And-Run.ps1` (chemins, attache
+  Chrome/Selenium, exe).
+
+### 0.3.0 — 29 janvier 2026
+
+- Ajout du point d'entrée `--start-at-date-selection` (reprise après connexion).
+- Ajout du script `Launch-Dexcom-And-Run.ps1` pour ouvrir Chrome avec le profil
+  et lancer l'app.
+
+### 0.2.18 — 20 janvier 2026
+
+- Backoff exponentiel pendant les challenges Cloudflare persistants.
+- Pause manuelle explicite (Entrée) lors d’une vérification Cloudflare.
+- Validation plus robuste de `deep_scan_interval`.
+- Test unitaire du helper de backoff.
+- Correctif de test (`log_file` dans la portée adéquate).
+- Ajout d’un audit Cloudflare et d’un playbook opérateur.
+
+### 0.2.17 — 20 janvier 2026
+
+- Pause silencieuse 45s après le bouton Home User pour réduire les interactions
+  pendant la vérification Cloudflare.
+- Arrêt propre si la vérification Cloudflare n'est pas résolue avant le login.
+- Prise en compte du paramètre `debug` dans `config.yaml`.
+- Durcissement des paramètres Cloudflare (validation quiet/deep scan).
+
+### 0.2.16 — 20 janvier 2026
+
+- Atténuation des interactions Selenium pendant la vérification Cloudflare
+  (fenêtre "quiet" par défaut ~30s) pour limiter le polling/scan DOM.
+
+### 0.2.15 — 19 janvier 2026
+
+- Validation renforcée de `dexcom_url` : parsing d'URL + allowlist de hosts
+  Dexcom (HTTPS uniquement, sous-domaines autorisés).
+
+### 0.2.14 — 19 janvier 2026
+
+- Ajout d'une attente "vérification humaine" Cloudflare (pause + reprise
+  automatique) basée sur une ancre UI.
+
+### 0.2.13 — 19 janvier 2026
+
+- Mise à jour des instructions Copilot (debug Selenium, commandes PowerShell).
+- Synchronisation de version.
+
+### 0.2.11 — 22 décembre 2025
+
+- Passage à Inno Setup pour la distribution (installateur `.exe`).
+- Correction du timeout pour les rapports volumineux (Superposition).
+- Exclusion des fichiers `.crdownload` dans la détection des téléchargements.
+- Mise à jour de la documentation et des entêtes.
+
+### 0.2.7 — 27 octobre 2025
+
+- Ajout de `check_for_502_errors` pour détecter les erreurs 502 dans les logs du
+  navigateur.
+- Ajout de `wait_for_page_load_with_retry` pour gérer les erreurs temporaires
+  avec retry automatique.
+- Note : ces helpers ne sont pas présents dans le code actuel (jusqu'à la
+  version 0.2.15).
 
 ### 0.2.6 — 21 octobre 2025
 
@@ -187,7 +436,7 @@ usagers francophones et en anglais pour les autres.
 ## Release disponible
 
 Une archive ZIP prête à l’emploi est disponible dans la section
-[Releases](https://github.com/<ton-utilisateur>/<ton-repo>/releases) du projet
+[Releases](https://github.com/thebe01/GlycoReport-Downloader/releases) du projet
 GitHub. Téléchargez l’archive `.zip` pour Windows, puis décompressez-la pour
 obtenir tous les fichiers nécessaires (voir instructions ci-dessous).
 
@@ -233,32 +482,41 @@ Pour plus d’informations sur Dexcom Clarity :
 
 - Windows 10 ou supérieur
 - [Python 3.10+](https://www.python.org/downloads/) (pour l’utilisation en mode
-  script)
+  script uniquement)
 - Google Chrome installé
-- Droits administrateur pour définir la variable d’environnement système
+- Droits administrateur pour définir la variable d’environnement système (si
+  nécessaire pour le chiffrement)
 
 ### Procédure
 
-1. **Téléchargez l'archive ZIP du release** depuis la page Releases du projet.
-2. **Décompressez tout le contenu du ZIP** dans un dossier de votre choix (ex :
-   `C:\GlycoReport-Downloader`).
-   - Le dossier doit contenir :
-     - `GlycoReport-Downloader.exe`
-     - `config_example.yaml`
-     - `.env.example`
-     - `migrate.exe` (outil de migration, optionnel)
-     - `MIGRATION.md` (documentation de migration, optionnel)
-3. **Lancez `GlycoReport-Downloader.exe`** en double-cliquant ou via le
-   terminal.
-4. **Lors du premier lancement**, si les fichiers `config.yaml` ou `.env` sont
+1. **Téléchargez l'installateur** (`GlycoReport-Downloader_Setup_x.x.x.exe`)
+   depuis la page Releases du projet.
+1. **Exécutez l'installateur**.
+
+- L'installation se fait par défaut dans `C:\ipt\GlycoReport-Downloader` (ou sur
+  le disque système correspondant).
+- Aucune élévation de privilèges n'est requise (sauf si vous choisissez un
+  dossier protégé).
+
+1. **Lancez l'application** via le script `Launch-Dexcom-And-Run.ps1` (proposé
+   en fin d'installation), ou via le raccourci créé dans le dossier
+   d'installation.
+
+- Requiert `chrome_user_data_dir` dans `config.yaml`.
+- Requiert `GlycoReport-Downloader.exe` à la racine du dossier courant ou dans
+  `dist/`.
+
+1. **Lors du premier lancement**, si les fichiers `config.yaml` ou `.env` sont
    absents, l'application vous informera et lancera la configuration initiale.
-5. **Les fichiers de configuration seront créés dans le même dossier que
-   l'exécutable.**
 
 ### Migration depuis une version antérieure
 
 Si vous mettez à jour depuis une version < 0.2.3, un outil de migration est
-disponible pour nettoyer automatiquement votre configuration :
+disponible pour nettoyer automatiquement votre configuration. L'installateur
+inclut cet outil.
+
+**Note :** l'outil de migration (`migrate.py` / `migrate.exe`) est versionné
+indépendamment (v1.0.1) et ne suit pas la version principale de l'application.
 
 **Windows :**
 
@@ -308,10 +566,15 @@ pour faciliter la création d'un package prêt à distribuer. Ce script :
 
 - Génère l'exécutable Windows avec PyInstaller
 - Vérifie la présence de tous les fichiers nécessaires à la distribution
-- Copie les fichiers `.env.example`, `config_example.yaml`, `LICENSE.txt`,
-  `README.md` dans le dossier `dist`
-- Crée une archive ZIP (`GlycoReport-Downloader.zip`) à la racine du projet à
-  partir du contenu du dossier `dist`
+- Compile l'installateur Inno Setup (`.iss`)
+- Génère l'installateur final dans le dossier `dist_setup` (ex:
+  `GlycoReport-Downloader_Setup_x.x.x.exe`)
+- Copie `config_example.yaml`, `README.md`, `LICENSE.txt`, `MIGRATION.md`,
+  `.env.example` et `Launch-Dexcom-And-Run.ps1` dans `dist/`.
+
+**Prérequis pour la compilation :**
+
+- [Inno Setup 6](https://jrsoftware.org/isinfo.php) doit être installé.
 
 **Note** : Depuis la version 0.2.3, ChromeDriverManager télécharge
 automatiquement la version appropriée de ChromeDriver, il n'est donc plus
@@ -322,7 +585,7 @@ nécessaire d'inclure le dossier `chromedriver-win64` dans la distribution.
 Ouvre un terminal PowerShell à la racine du projet et exécute :
 
 ```powershell
-[DIST-GlycoReport-Downloader.ps1]
+.\DIST-GlycoReport-Downloader.ps1
 ```
 
 ---
@@ -361,6 +624,7 @@ chromedriver_log: C:/Users/Utilisateur/Downloads/GlycoReport-Downloader/clarity_
 dexcom_url: "https://clarity.dexcom.eu"
 download_dir: C:/Users/Utilisateur/Downloads/GlycoReport-Downloader
 log_retention_days: 30
+debug: false
 output_dir: C:/Users/Utilisateur/Downloads/GlycoReport-Downloader
 rapports:
   [
@@ -409,10 +673,10 @@ logs, etc.) sont **normalisés automatiquement** :
 
 1. Lancez le script. Une clé d’encryption sera générée et une commande
    PowerShell à copier/coller s’affichera.
-2. Collez cette commande dans la fenêtre PowerShell qui s’ouvre, puis tapez
+1. Collez cette commande dans la fenêtre PowerShell qui s’ouvre, puis tapez
    `Exit`.
-3. Relancez le script pour poursuivre la configuration.
-4. Lors de la création du `.env`, les informations saisies seront chiffrées
+1. Relancez le script pour poursuivre la configuration.
+1. Lors de la création du `.env`, les informations saisies seront chiffrées
    automatiquement.
 
 ---
@@ -454,7 +718,7 @@ This script automates the download of glycemic reports from your
 Dexcom Clarity account. It supports multiple report types, customizable periods,
 and exports data in PDF or CSV format.
 
-For more information: https://github.com/pierretheberge/GlycoReport-Downloader
+For more information: [https://github.com/thebe01/GlycoReport-Downloader](https://github.com/thebe01/GlycoReport-Downloader)
 
 general options:
   -h, --help            Show this help message and exit
@@ -502,7 +766,7 @@ Configuration:
   - Credentials: .env (encrypted, requires ENV_DEXCOM_KEY variable)
   - Logs: defined in config.yaml (log_retention_days)
 
-For questions or bug reports: https://github.com/pierretheberge/GlycoReport-Downloader/issues
+For questions or bug reports: [https://github.com/thebe01/GlycoReport-Downloader/issues](https://github.com/thebe01/GlycoReport-Downloader/issues)
 ```
 
 ---
@@ -529,6 +793,13 @@ pytest -v --log-cli-level=INFO tests/test_utils.py
   testées.
 - Cette commande permet de vérifier la robustesse et la portabilité de toutes
   les fonctions utilitaires du projet.
+
+**Note tests fonctionnels :** l'application n'exécute pas le téléchargement tant
+que l'usager n'est pas connecté. Pour les tests end-to-end, lancez d'abord
+`Launch-Dexcom-And-Run.ps1`, terminez la connexion, puis laissez le script
+relancer l'app (mode reprise).
+
+Voir aussi: [tests/TEST_STRATEGY.md](tests/TEST_STRATEGY.md).
 
 Assurez-vous d’avoir installé pytest :
 
@@ -577,7 +848,10 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 
 ---
 
-# GlycoReport Downloader (English)
+## GlycoReport Downloader (English)
+
+Note: The French version is the source of truth. The English version is a strict
+translation of the French version.
 
 ## Summary
 
@@ -607,6 +881,163 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 
 ## What's New (English)
 
+### Version: 0.3.13 — February 12, 2026
+
+**Fixes:**
+
+- Comparer: download limited to Trends (Dexcom bug on Overlay and Daily), with a
+  log warning.
+
+### Version: 0.3.12 — February 12, 2026
+
+**Fixes:**
+
+- Directly open Comparer sub-reports via /compare/overlay and /compare/daily.
+
+### Version: 0.3.11 — February 12, 2026
+
+**Fixes:**
+
+- Navigate via base URL
+  [https://clarity.dexcom.eu/i](https://clarity.dexcom.eu/i) for Comparer.
+
+### Version: 0.3.10 — February 12, 2026
+
+**Fixes:**
+
+- Retry Comparer clicks (stale element) and navigate overview -> reports.
+
+### Version: 0.3.9 — February 12, 2026
+
+**Fixes:**
+
+- Navigate to overview with dates, then back to /reports to avoid Comparer
+  freeze.
+
+### Version: 0.3.8 — February 12, 2026
+
+**Fixes:**
+
+- Close/reopen Comparer modal between each sub-report to force PDF regeneration.
+
+### Version: 0.3.7 — February 12, 2026
+
+**Fixes:**
+
+- Wait for graphic content and additional delay for PDF generation (Comparer
+  sub-reports).
+
+### Version: 0.3.6 — February 12, 2026
+
+**Fixes:**
+
+- Further stabilized Comparer sub-reports.
+
+### Version: 0.3.5 — February 12, 2026
+
+**Fixes:**
+
+- Stabilized Comparer sub-reports.
+- Forced Chrome download directory (download_dir).
+
+### Version: 0.3.4 — February 12, 2026
+
+**Fixes:**
+
+- Fixed Comparer sub-report downloads.
+
+### Version: 0.3.3 — February 2, 2026
+
+**Fixes:**
+
+- Normalized expected download extensions.
+
+### Version: 0.3.2 — February 2, 2026
+
+**Fixes:**
+
+- Filtered downloaded files by extension.
+
+### Version: 0.3.1 — February 2, 2026
+
+**Fixes:**
+
+- Hardened `pause_on_error` in non-interactive contexts.
+- Improved `Launch-Dexcom-And-Run.ps1` (paths, Chrome/Selenium attach, exe
+  lookup).
+
+### Version: 0.3.0 — January 29, 2026
+
+**Assisted startup:**
+
+- Added `--start-at-date-selection` entry point (resume after login).
+- Added `Launch-Dexcom-And-Run.ps1` to open Chrome with the profile and launch
+  the app.
+
+### Version: 0.2.18 — January 20, 2026
+
+**Cloudflare robustness:**
+
+- Exponential backoff during persistent challenges.
+- Explicit manual pause (Enter) on Cloudflare verification.
+- More robust `deep_scan_interval` validation.
+
+**Quality / tests:**
+
+- Unit test for the backoff helper.
+- Test fix (`log_file` scope).
+
+**Documentation:**
+
+- Added a Cloudflare audit and operator playbook.
+
+### Version: 0.2.16 — January 20, 2026
+
+**Selenium Robustness Improvements:**
+
+- During Cloudflare “human verification”, the script temporarily reduces
+  Selenium interactions (a default ~30s “quiet” window) to limit polling/DOM
+  scanning.
+
+**Documentation & Dev Improvements:**
+
+- Version bump (release 0.2.16).
+
+### Version: 0.2.15 — January 19, 2026
+
+**Security & Validation Improvements:**
+
+- Stronger `dexcom_url` validation: URL parsing + Dexcom host allowlist (HTTPS
+  only, subdomains allowed).
+
+### Version: 0.2.14 — January 19, 2026
+
+- Added a Cloudflare “human verification” wait (pause + auto-resume) based on a
+  stable UI anchor.
+
+### Version: 0.2.13 — January 19, 2026
+
+- Updated Copilot instructions (Selenium debugging, PowerShell commands).
+- Version synchronization.
+
+### Version: 0.2.11 — December 22, 2025
+
+**New Windows Installer:**
+
+- Distribution via Inno Setup installer (`.exe`) for simplified installation.
+- Default installation in `{sd}\ipt\GlycoReport-Downloader` (system drive, user
+  folder).
+- Automatic creation of shortcuts and uninstallation management.
+- No longer requires administrator rights for installation.
+
+**Technical Improvements:**
+
+- Increased timeout for download window closure (60s) to handle large reports
+  (e.g., Overlay).
+- Exclusion of temporary `.crdownload` files when detecting the last downloaded
+  file.
+- Header updates and version synchronization (ES-18).
+
 ### Version: 0.2.6 — October 21, 2025
 
 **CLI Help and Options Improvements:**
@@ -629,6 +1060,124 @@ Pour le texte complet de la licence, voir le fichier [LICENSE.txt](LICENSE.txt).
 ---
 
 ## Version History (English)
+
+### 0.3.13 — February 12, 2026
+
+- Comparer: download limited to Trends (Dexcom bug on Overlay and Daily), with a
+  log warning.
+
+### 0.3.12 — February 12, 2026
+
+- Directly open Comparer sub-reports via /compare/overlay and /compare/daily.
+
+### 0.3.11 — February 12, 2026
+
+- Navigate via base URL
+  [https://clarity.dexcom.eu/i](https://clarity.dexcom.eu/i) for Comparer.
+
+### 0.3.10 — February 12, 2026
+
+- Retry Comparer clicks (stale element) and navigate overview -> reports.
+
+### 0.3.9 — February 12, 2026
+
+- Navigate to overview with dates, then back to /reports to avoid Comparer
+  freeze.
+
+### 0.3.8 — February 12, 2026
+
+- Close/reopen Comparer modal between each sub-report to force PDF regeneration.
+
+### 0.3.7 — February 12, 2026
+
+- Wait for graphic content and additional delay for PDF generation (Comparer
+  sub-reports).
+
+### 0.3.6 — February 12, 2026
+
+- Further stabilized Comparer sub-reports.
+
+### 0.3.5 — February 12, 2026
+
+- Stabilized Comparer sub-reports.
+- Forced Chrome download directory (download_dir).
+
+### 0.3.4 — February 12, 2026
+
+- Fixed Comparer sub-report downloads.
+
+### 0.3.3 — February 2, 2026
+
+- Normalized expected download extensions.
+
+### 0.3.2 — February 2, 2026
+
+- Filtered downloaded files by extension.
+
+### 0.3.1 — February 2, 2026
+
+- Hardened `pause_on_error` in non-interactive contexts.
+- Improved `Launch-Dexcom-And-Run.ps1` (paths, Chrome/Selenium attach, exe
+  lookup).
+
+### 0.3.0 — January 29, 2026
+
+- Added `--start-at-date-selection` entry point (resume after login).
+- Added `Launch-Dexcom-And-Run.ps1` to open Chrome with the profile and launch
+  the app.
+
+### 0.2.18 — January 20, 2026
+
+- Exponential backoff during persistent Cloudflare challenges.
+- Explicit manual pause (Enter) on Cloudflare verification.
+- More robust `deep_scan_interval` validation.
+- Backoff helper unit test.
+- Test fix (`log_file` scope).
+- Added a Cloudflare audit and operator playbook.
+
+### 0.2.17 — January 20, 2026
+
+- 45s silent pause after the Home User button to reduce interactions during
+  Cloudflare verification.
+- Clean stop if Cloudflare verification is not resolved before login.
+- `debug` is now honored from `config.yaml`.
+- Stronger Cloudflare parameter validation (quiet/deep scan).
+
+### 0.2.16 — January 20, 2026
+
+- During Cloudflare “human verification”, the script temporarily reduces
+  Selenium interactions (a default ~30s “quiet” window) to limit polling/DOM
+  scanning.
+
+### 0.2.15 — January 19, 2026
+
+- Stronger `dexcom_url` validation: URL parsing + Dexcom host allowlist (HTTPS
+  only, subdomains allowed).
+
+### 0.2.14 — January 19, 2026
+
+- Added a Cloudflare “human verification” wait (pause + auto-resume) based on a
+  stable UI anchor.
+
+### 0.2.13 — January 19, 2026
+
+- Updated Copilot instructions (Selenium debugging, PowerShell commands).
+- Version synchronization.
+
+### 0.2.11 — December 22, 2025
+
+- Switched to Inno Setup for distribution (`.exe` installer).
+- Fixed timeout for large reports (Overlay).
+- Excluded `.crdownload` files from download detection.
+- Updated documentation and headers.
+
+### 0.2.7 — October 27, 2025
+
+- Added `check_for_502_errors` to detect 502 errors in browser logs.
+- Added `wait_for_page_load_with_retry` to handle temporary errors with
+  automatic retry.
+- Note: these helpers are not present in the current codebase (up to version
+  0.2.15).
 
 ### 0.2.6 — October 21, 2025
 
@@ -758,9 +1307,9 @@ and in English for others.
 ## Release Available (English)
 
 A ready-to-use ZIP archive is available in the
-[Releases](https://github.com/<your-username>/<your-repo>/releases) section of
-the GitHub project. Download the `.zip` for Windows, then extract it to get all
-necessary files (see instructions below).
+[Releases](https://github.com/thebe01/GlycoReport-Downloader/releases) section
+of the GitHub project. Download the `.zip` for Windows, then extract it to get
+all necessary files (see instructions below).
 
 ---
 
@@ -803,30 +1352,39 @@ For more information about Dexcom Clarity:
 ### Prerequisites
 
 - Windows 10 or higher
-- [Python 3.10+](https://www.python.org/downloads/) (for script mode)
+- [Python 3.10+](https://www.python.org/downloads/) (for script mode only)
 - Google Chrome installed
-- Administrator rights to set the system environment variable
+- Administrator rights to set the system environment variable (if necessary for
+  encryption)
 
 ### Procedure
 
-1. **Download the ZIP archive from the release** page.
-2. **Extract all ZIP contents** into a folder of your choice (e.g.,
-   `C:\GlycoReport-Downloader`).
-   - The folder should contain:
-     - `GlycoReport-Downloader.exe`
-     - `config_example.yaml`
-     - `.env.example`
-     - `migrate.exe` (migration tool, optional)
-     - `MIGRATION.md` (migration documentation, optional)
-3. **Run `GlycoReport-Downloader.exe`** by double-clicking or via the terminal.
-4. **On first launch**, if `config.yaml` or `.env` files are missing, the
+1. **Download the installer** (`GlycoReport-Downloader_Setup_x.x.x.exe`) from
+   the project Releases page.
+1. **Run the installer**.
+
+- Installation defaults to `C:\ipt\GlycoReport-Downloader` (or corresponding
+  system drive).
+- No privilege elevation is required (unless you choose a protected folder).
+
+1. **Launch the application** via `Launch-Dexcom-And-Run.ps1` (offered at the
+   end of the installer), or via the created shortcut in the installation
+   folder.
+
+- Requires `chrome_user_data_dir` in `config.yaml`.
+- Requires `GlycoReport-Downloader.exe` at the current folder root or in
+  `dist/`.
+
+1. **On first launch**, if `config.yaml` or `.env` files are missing, the
    application will inform you and start the initial configuration.
-5. **Configuration files will be created in the same folder as the executable.**
 
 ### Migrating from an Earlier Version
 
 If you are upgrading from a version < 0.2.3, a migration tool is available to
-automatically clean up your configuration:
+automatically clean up your configuration. The installer includes this tool.
+
+**Note:** the migration tool (`migrate.py` / `migrate.exe`) is versioned
+independently (v1.0.1) and does not follow the main application version.
 
 **Windows:**
 
@@ -874,10 +1432,15 @@ to facilitate the creation of a ready-to-distribute package. This script:
 
 - Generates the Windows executable with PyInstaller
 - Checks for the presence of all necessary distribution files
-- Copies `.env.example`, `config_example.yaml`, `LICENSE.txt`, `README.md` to
-  the `dist` folder
-- Creates a ZIP archive (`GlycoReport-Downloader.zip`) in the `dist` folder from
-  its contents
+- Compiles the Inno Setup installer (`.iss`)
+- Generates the final installer in the `dist_setup` folder (e.g.,
+  `GlycoReport-Downloader_Setup_x.x.x.exe`)
+- Copies `config_example.yaml`, `README.md`, `LICENSE.txt`, `MIGRATION.md`,
+  `.env.example`, and `Launch-Dexcom-And-Run.ps1` into `dist/`.
+
+**Prerequisites for compilation:**
+
+- [Inno Setup 6](https://jrsoftware.org/isinfo.php) must be installed.
 
 **Note**: Since version 0.2.3, ChromeDriverManager automatically downloads the
 appropriate ChromeDriver version, so it is no longer necessary to include the
@@ -972,9 +1535,9 @@ All paths used in the project (download folders, profiles, logs, etc.) are
 
 1. Run the script. An encryption key will be generated, and a PowerShell command
    to copy/paste will be displayed.
-2. Paste this command into the PowerShell window that opens, then type `Exit`.
-3. Rerun the script to continue the configuration.
-4. When creating the `.env`, the entered information will be automatically
+1. Paste this command into the PowerShell window that opens, then type `Exit`.
+1. Rerun the script to continue the configuration.
+1. When creating the `.env`, the entered information will be automatically
    encrypted.
 
 ---
@@ -1015,7 +1578,7 @@ This script automates the download of glycemic reports from your
 Dexcom Clarity account. It supports multiple report types, customizable periods,
 and exports data in PDF or CSV format.
 
-For more information: https://github.com/pierretheberge/GlycoReport-Downloader
+For more information: https://github.com/thebe01/GlycoReport-Downloader
 
 general options:
   -h, --help            Show this help message and exit
@@ -1063,43 +1626,48 @@ Configuration:
   - Credentials: .env (encrypted, requires ENV_DEXCOM_KEY variable)
   - Logs: defined in config.yaml (log_retention_days)
 
-For questions or bug reports: https://github.com/pierretheberge/GlycoReport-Downloader/issues
+For questions or bug reports: https://github.com/thebe01/GlycoReport-Downloader/issues
 ```
 
 ---
 
-## Tests unitaires
+## Unit Tests (English)
 
-Pour exécuter tous les tests unitaires sur les fonctions utilitaires du projet,
-utilisez la commande suivante :
+To run all unit tests for the project's utility functions, use the following
+command:
 
-**Bash/CMD :**
+**Bash/CMD:**
 
 ```sh
 pytest -v --log-cli-level=INFO tests/test_utils.py
 ```
 
-**PowerShell :**
+**PowerShell:**
 
 ```powershell
 pytest -v --log-cli-level=INFO tests/test_utils.py
 ```
 
-- `-v` affiche le détail de chaque test exécuté (mode verbose).
-- `--log-cli-level=INFO` affiche les messages de log générés par les fonctions
-  testées.
-- Cette commande permet de vérifier la robustesse et la portabilité de toutes
-  les fonctions utilitaires du projet.
+- `-v` shows detailed output for each test (verbose mode).
+- `--log-cli-level=INFO` shows log messages produced by the tested functions.
+- This command helps verify the robustness and portability of all the project's
+  utility functions.
 
-Assurez-vous d’avoir installé pytest :
+**Functional test note:** the app does not proceed until the user is logged in.
+For end-to-end tests, run `Launch-Dexcom-And-Run.ps1` first, complete the login,
+then let the script relaunch the app (resume mode).
 
-**Bash/CMD :**
+See also: [tests/TEST_STRATEGY.md](tests/TEST_STRATEGY.md).
+
+Make sure you have installed pytest:
+
+**Bash/CMD:**
 
 ```sh
 pip install pytest
 ```
 
-**PowerShell :**
+**PowerShell:**
 
 ```powershell
 pip install pytest
