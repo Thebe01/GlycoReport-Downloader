@@ -58,13 +58,3 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 [Run]
 Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\Launch-Dexcom-And-Run.ps1"""; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
-
-
-
-
-
-
-
-
-
-
