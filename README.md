@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.3.13-blue)
+![Version](https://img.shields.io/badge/version-0.3.14-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0313--12-f%C3%A9vrier-2026)
+- [Nouveautés](#version--0314--13-f%C3%A9vrier-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,16 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.3.14 — 13 février 2026
+
+### Nouveautés (0.3.14)
+
+**Correctifs :**
+
+- Ajout d'un suffixe de periode aux noms de rapports (ex: "-14j" ou "-14d").
 
 ---
 
@@ -178,6 +188,10 @@ traduction stricte de la version francaise.
 ---
 
 ## Historique des versions
+
+### 0.3.14 — 13 février 2026
+
+- Ajout d'un suffixe de periode aux noms de rapports (ex: "-14j" ou "-14d").
 
 ### 0.3.13 — 12 février 2026
 
@@ -881,6 +895,12 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.3.14 — February 13, 2026
+
+**Fixes:**
+
+- Add a period suffix to report names (e.g., "-14j" or "-14d").
+
 ### Version: 0.3.13 — February 12, 2026
 
 **Fixes:**
@@ -1060,6 +1080,10 @@ translation of the French version.
 ---
 
 ## Version History (English)
+
+### 0.3.14 — February 13, 2026
+
+- Add a period suffix to report names (e.g., "-14j" or "-14d").
 
 ### 0.3.13 — February 12, 2026
 

@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
-Modifié le    : 2026-02-12
-Version       : 0.3.13
+Modifié le    : 2026-02-13
+Version       : 0.3.14
 Copyright     : Pierre Théberge
 
 Description
@@ -916,6 +916,7 @@ def main(args, logger, config):
             download_dir,
             dir_final_base,
             date_fin_str,
+            date_debut_str,
             args
         )
 
