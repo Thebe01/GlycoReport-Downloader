@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-02-12
-Version       : 0.3.13
+Modifié le    : 2026-02-13
+Version       : 0.3.14
 Copyright     : Pierre Théberge
 
 Description
@@ -80,6 +80,7 @@ Modifications
 0.3.11 - 2026-02-12   [ES-3]  : Navigation URL base /i pour Comparer.
 0.3.12 - 2026-02-12   [ES-3]  : Acces direct /compare/overlay et /compare/daily.
 0.3.13 - 2026-02-12   [ES-3]  : Comparer: telecharger Tendances seulement (bug Dexcom).
+0.3.14 - 2026-02-13   [ES-11] : Ajout suffixe de periode dans les noms de fichiers.
 
 Paramètres
 ----------
@@ -93,6 +94,8 @@ Exemple
 import os
 import time
 import glob
+import locale
+from datetime import datetime
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import StaleElementReferenceException, WebDriverException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -126,7 +129,32 @@ def wait_for_csv_download(DOWNLOAD_DIR, timeout=120):
         time.sleep(1)
     return False
 
-def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, driver=None, log_dir=None, now_str=None):
+def get_period_suffix(date_debut, date_fin, args, logger=None):
+    """Retourne un suffixe de periode (ex: 14j/14d) ou None."""
+    if not date_debut or not date_fin:
+        return None
+
+    if args is not None and getattr(args, "days", None):
+        jours = args.days
+    else:
+        try:
+            debut = datetime.strptime(date_debut, "%Y-%m-%d")
+            fin = datetime.strptime(date_fin, "%Y-%m-%d")
+            jours = (fin - debut).days + 1
+        except Exception as exc:
+            if logger:
+                logger.debug("Impossible de calculer la periode: %s", exc)
+            return None
+
+    if jours is None or jours <= 0:
+        return None
+
+    langue = locale.getdefaultlocale()[0] if locale.getdefaultlocale() else None
+    unite = "j" if langue and langue.lower().startswith("fr") else "d"
+    return f"{jours}{unite}"
+
+
+def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT=None, args=None, driver=None, log_dir=None, now_str=None):
     """
     Déplace et renomme le rapport téléchargé dans le dossier final.
 
@@ -154,9 +182,11 @@ def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE
         nom_fichier_telecharge = os.path.basename(chemin_fichier_telecharge)
         prefix, suffix = os.path.splitext(nom_fichier_telecharge)
         suffix = suffix[1:] if suffix.startswith('.') else suffix
+        period_suffix = get_period_suffix(DATE_DEBUT, DATE_FIN, args, logger=logger)
+        suffix_periode = f"-{period_suffix}" if period_suffix else ""
 
         if nom_rapport == "Export":
-            nouveau_nom_fichier = f"Clarity_Exporter_Théberge_Pierre_{DATE_FIN}.csv"
+            nouveau_nom_fichier = f"Clarity_Exporter_Théberge_Pierre_{DATE_FIN}{suffix_periode}.csv"
             destination = os.path.join(dir_final, nouveau_nom_fichier)
             logger.debug(f"Renommage Export : {chemin_fichier_telecharge} -> {destination}")
             try:
@@ -166,7 +196,7 @@ def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE
                 logger.error(f"Erreur lors du renommage du fichier Export : {e}")
         else:
             nouveau_prefix = renomme_prefix(prefix, DATE_FIN, logger=logger)
-            nouveau_nom_fichier = nouveau_prefix + "_" + nom_rapport + "." + suffix
+            nouveau_nom_fichier = nouveau_prefix + "_" + nom_rapport + suffix_periode + "." + suffix
             destination = os.path.join(dir_final, nouveau_nom_fichier)
             logger.debug(f"Renommage du fichier : {chemin_fichier_telecharge} -> {destination}")
             try:
@@ -191,7 +221,7 @@ def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE
         except Exception as e:
             logger.warning(f"Impossible de récupérer les logs du navigateur : {e}")
 
-def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args):
+def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
     """
     Télécharge le rapport spécifié et le déplace dans le dossier final.
 
@@ -264,9 +294,9 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
     except Exception as e:
         logger.error(f"Une erreur s'est produite lors de l'enregistrement du rapport : {e}")
         return
-    deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, driver)
+    deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args, driver)
 
-def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args):
+def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
     """
     Traite un rapport standard en le sélectionnant puis en le téléchargeant.
 
@@ -292,36 +322,36 @@ def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         except Exception:
             driver.execute_script("arguments[0].click();", selection_rapport_button)
         time.sleep(2)
-        telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+        telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
     except Exception as e:
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}", exc_info=args.debug)
         return
 
-def traitement_rapport_apercu(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args):
+def traitement_rapport_apercu(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
     """
     Traite le rapport Aperçu.
     """
-    traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+    traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
 
-def traitement_rapports_modeles(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args):
+def traitement_rapports_modeles(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
     """
     Traite le rapport Modèles.
     """
-    traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+    traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
 
-def traitement_rapport_superposition(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args):
+def traitement_rapport_superposition(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
     """
     Traite le rapport Superposition.
     """
-    traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+    traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
 
-def traitement_rapport_quotidien(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args):
+def traitement_rapport_quotidien(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
     """
     Traite le rapport Quotidien.
     """
-    traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+    traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
 
-def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args):
+def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
     """
     Traite le rapport Comparer et ses sous-rapports (Tendances, Superposition, Quotidien).
 
@@ -422,7 +452,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         ouvrir_modale_comparer()
         xpath_tendances = "//a[contains(@href, '/compare/trends') and contains(@class, 'data-page__report-choice-button--trends') and normalize-space(.//div)='Tendances']"
         click_compare_link(xpath_tendances, "/compare/trends", "Tendances")
-        telechargement_rapport(rapport_comparer, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+        telechargement_rapport(rapport_comparer, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
         fermer_modale_rapport()
 
         logger.warning(
@@ -450,7 +480,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
             logger.error("Stack trace complète : ", exc_info=True)
         return
 
-def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args):
+def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
     """
     Traite le rapport Statistiques et ses sous-rapports (Quotidien, Par heure).
 
@@ -508,7 +538,7 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
         except Exception:
             driver.execute_script("arguments[0].click();", quotidien_link)
         time.sleep(2)
-        telechargement_rapport(rapport_statistiques, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+        telechargement_rapport(rapport_statistiques, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
 
         # Par heure
         rapport_statistiques = "Statistiques-Horaires"
@@ -524,19 +554,19 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
         except Exception:
             driver.execute_script("arguments[0].click();", horaire_link)
         time.sleep(2)
-        telechargement_rapport(rapport_statistiques, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+        telechargement_rapport(rapport_statistiques, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
 
     except Exception as e:
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
         return
 
-def traitement_rapport_agp(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args):
+def traitement_rapport_agp(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
     """
     Traite le rapport AGP.
     """
-    traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+    traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
 
-def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args):
+def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
     """
     Traite l'export CSV Dexcom Clarity.
 
@@ -596,11 +626,11 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
 
     if wait_for_csv_download(DOWNLOAD_DIR):
         logger.info("Fichier CSV exporté détecté et téléchargement terminé.")
-        deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, driver)
+        deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args, driver)
     else:
         logger.error("Le téléchargement du fichier CSV n'a pas été détecté ou n'est pas terminé après 2 minutes.")
 
-def selection_rapport(RAPPORTS, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args):
+def selection_rapport(RAPPORTS, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
     """
     Sélectionne et traite chaque rapport de la liste RAPPORTS.
 
@@ -615,20 +645,20 @@ def selection_rapport(RAPPORTS, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DA
     """
     for rapport in RAPPORTS:
         if rapport == "Aperçu":
-            traitement_rapport_apercu(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+            traitement_rapport_apercu(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
         elif rapport == "Modèles":
-            traitement_rapports_modeles(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+            traitement_rapports_modeles(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
         elif rapport == "Superposition":
-            traitement_rapport_superposition(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+            traitement_rapport_superposition(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
         elif rapport == "Quotidien":
-            traitement_rapport_quotidien(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+            traitement_rapport_quotidien(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
         elif rapport == "Comparer":
-            traitement_rapport_comparer(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+            traitement_rapport_comparer(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
         elif rapport == "Statistiques":
-            traitement_rapport_statistiques(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+            traitement_rapport_statistiques(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
         elif rapport == "AGP":
-            traitement_rapport_agp(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+            traitement_rapport_agp(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
         elif rapport == "Export":
-            traitement_export_csv(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
+            traitement_export_csv(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
         else:
             logger.error(f"Rapport inconnu : {rapport}. Veuillez vérifier la liste des rapports.")

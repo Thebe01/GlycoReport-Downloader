@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.3.13-blue)
+![Version](https://img.shields.io/badge/version-0.3.14-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0313--12-f%C3%A9vrier-2026)
+- [Nouveautés](#version--0314--13-f%C3%A9vrier-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,16 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.3.14 — 13 février 2026
+
+### Nouveautés (0.3.14)
+
+**Correctifs :**
+
+- Ajout d'un suffixe de periode aux noms de rapports (ex: "-14j" ou "-14d").
 
 ---
 
@@ -178,6 +188,10 @@ traduction stricte de la version francaise.
 ---
 
 ## Historique des versions
+
+### 0.3.14 — 13 février 2026
+
+- Ajout d'un suffixe de periode aux noms de rapports (ex: "-14j" ou "-14d").
 
 ### 0.3.13 — 12 février 2026
 
@@ -601,6 +615,8 @@ Ouvre un terminal PowerShell à la racine du projet et exécute :
     `config.yaml`,
   - ou encore en passant `--date_debut` et `--date_fin` en argument.
 
+Note : `--days` est uniquement disponible en ligne de commande.
+
 Exemple :
 
 - Si nous sommes le 2025-08-18 et que vous ne passez aucun paramètre, la période
@@ -625,6 +641,8 @@ dexcom_url: "https://clarity.dexcom.eu"
 download_dir: C:/Users/Utilisateur/Downloads/GlycoReport-Downloader
 log_retention_days: 30
 debug: false
+date_debut: 2025-01-01
+date_fin: 2025-01-31
 output_dir: C:/Users/Utilisateur/Downloads/GlycoReport-Downloader
 rapports:
   [
@@ -638,6 +656,21 @@ rapports:
     "Export",
   ]
 ```
+
+Parametres disponibles dans `config.yaml` :
+
+- `chrome_user_data_dir` : dossier du profil Chrome utilise par Selenium.
+- `chromedriver_log` : chemin du log ChromeDriver.
+- `dexcom_url` : URL de Dexcom Clarity (ex: [https://clarity.dexcom.eu](https://clarity.dexcom.eu)).
+- `download_dir` : dossier de telechargement Selenium.
+- `output_dir` : dossier de sortie final (supporte le placeholder `AAAA`).
+- `rapports` : liste des rapports a generer.
+- `log_retention_days` : retention des logs en jours (0 = illimite).
+- `debug` : active le mode debug (logs detailles, captures d'ecran).
+- `date_debut` : date de debut par defaut (AAAA-MM-JJ).
+- `date_fin` : date de fin par defaut (AAAA-MM-JJ).
+
+Note : `--days` est un parametre CLI uniquement (pas un champ `config.yaml`).
 
 La clé d'encryption pour le fichier `.env` est stockée dans la variable
 d'environnement système `ENV_DEXCOM_KEY`.
@@ -671,17 +704,19 @@ logs, etc.) sont **normalisés automatiquement** :
 
 ## Procédure de première utilisation
 
-1. Lancez le script. Une clé d’encryption sera générée et une commande
-   PowerShell à copier/coller s’affichera.
+1. Lancez `Launch-Dexcom-And-Run.ps1`. Une clé d’encryption sera générée et une
+   commande PowerShell à copier/coller s’affichera.
 1. Collez cette commande dans la fenêtre PowerShell qui s’ouvre, puis tapez
    `Exit`.
-1. Relancez le script pour poursuivre la configuration.
+1. Relancez `Launch-Dexcom-And-Run.ps1` pour poursuivre la configuration.
 1. Lors de la création du `.env`, les informations saisies seront chiffrées
    automatiquement.
 
 ---
 
 ## Paramètres de la ligne de commande
+
+Le lancement standard se fait via `Launch-Dexcom-And-Run.ps1`.
 
 - `-h`, `--help` : Afficher l'aide et quitter.
 - `-v`, `--version` : Afficher la version et quitter.
@@ -712,61 +747,61 @@ usage: GlycoReport-Downloader [-h] [--version] [--debug] [--dry-run]
                                [--rapports REPORT [REPORT ...]]
                                [--list-rapports]
 
-GlycoReport Downloader v0.2.6 - Automated Dexcom Clarity report download
+GlycoReport Downloader v0.2.6 - Telechargement automatise des rapports Dexcom Clarity
 
-This script automates the download of glycemic reports from your
-Dexcom Clarity account. It supports multiple report types, customizable periods,
-and exports data in PDF or CSV format.
+Ce script automatise le telechargement des rapports glycemiques depuis votre
+compte Dexcom Clarity. Il supporte plusieurs types de rapports, des periodes
+personnalisables, et exporte les donnees en PDF ou CSV.
 
-For more information: [https://github.com/thebe01/GlycoReport-Downloader](https://github.com/thebe01/GlycoReport-Downloader)
+Pour plus d'informations : [https://github.com/thebe01/GlycoReport-Downloader](https://github.com/thebe01/GlycoReport-Downloader)
 
-general options:
-  -h, --help            Show this help message and exit
-  --version, -v         Display version and exit
-  --debug, -d           Enable debug mode (detailed logs, screenshots)
-  --dry-run             Simulate execution without downloading (displays configuration)
+options generales :
+  -h, --help            Afficher cette aide et quitter
+  --version, -v         Afficher la version et quitter
+  --debug, -d           Activer le mode debug (logs detailles, captures d'ecran)
+  --dry-run             Simuler l'execution sans telecharger (affiche la configuration)
 
-report period:
-  Define the download period (default: last 14 days)
+periode des rapports :
+  Definir la periode de telechargement (par defaut : 14 derniers jours)
 
-  --days N              Number of days to include (7, 14, 30 or 90)
+  --days N              Nombre de jours a inclure (7, 14, 30 ou 90)
   --date_debut YYYY-MM-DD
-                        Start date in YYYY-MM-DD format (e.g., 2025-01-01)
+                        Date de debut au format YYYY-MM-DD (ex: 2025-01-01)
   --date_fin YYYY-MM-DD
-                        End date in YYYY-MM-DD format (e.g., 2025-01-31)
+                        Date de fin au format YYYY-MM-DD (ex: 2025-01-31)
 
-report selection:
-  Choose reports to download (default: all configured reports)
+selection des rapports :
+  Choisir les rapports a telecharger (par defaut : tous les rapports configures)
 
   --rapports REPORT [REPORT ...]
-                        List of reports (e.g., "Aperçu" "AGP" "Statistiques")
-  --list-rapports       Display list of available reports and exit
+                        Liste des rapports (ex: "Aperçu" "AGP" "Statistiques")
+  --list-rapports       Afficher la liste des rapports disponibles et quitter
 
-Usage examples:
-  Download all reports for the last 14 days (default):
-    python GlycoDownload.py
+Exemples d'utilisation :
+  Telecharger tous les rapports des 14 derniers jours (par defaut) :
+    .\Launch-Dexcom-And-Run.ps1
 
-  Download only the Overview report for the last 7 days:
-    python GlycoDownload.py --days 7 --rapports "Aperçu"
+  Telecharger uniquement le rapport Apercu des 7 derniers jours :
+    .\Launch-Dexcom-And-Run.ps1
 
-  Download multiple reports for a specific period:
-    python GlycoDownload.py --date_debut 2025-01-01 --date_fin 2025-01-31 --rapports "Aperçu" "AGP"
+  Telecharger plusieurs rapports pour une periode specifique :
+    .\Launch-Dexcom-And-Run.ps1
 
-  Debug mode with all reports for the last 30 days:
-    python GlycoDownload.py --debug --days 30
+  Mode debug avec tous les rapports des 30 derniers jours :
+    .\Launch-Dexcom-And-Run.ps1
 
-  Test configuration without downloading:
-    python GlycoDownload.py --dry-run
+  Simuler l'execution sans telecharger :
+    .\Launch-Dexcom-And-Run.ps1
 
-Available reports: Aperçu, Modèles, Superposition, Quotidien, Comparer, Statistiques, AGP, Export
-(Use --list-rapports for more details)
+Rapports disponibles : Aperçu, Modeles, Superposition, Quotidien, Comparer, Statistiques, AGP, Export
+(Utilisez --list-rapports pour plus de details)
 
-Configuration:
-  - File: config.yaml (automatically created on first launch)
-  - Credentials: .env (encrypted, requires ENV_DEXCOM_KEY variable)
-  - Logs: defined in config.yaml (log_retention_days)
+Configuration :
+  - Fichier : config.yaml (cree automatiquement au premier lancement)
+  - Identifiants : .env (chiffre, necessite la variable ENV_DEXCOM_KEY)
+  - Logs : definis dans config.yaml (log_retention_days)
 
-For questions or bug reports: [https://github.com/thebe01/GlycoReport-Downloader/issues](https://github.com/thebe01/GlycoReport-Downloader/issues)
+Pour questions ou signalement de bug : [https://github.com/thebe01/GlycoReport-Downloader/issues](https://github.com/thebe01/GlycoReport-Downloader/issues)
 ```
 
 ---
@@ -880,6 +915,12 @@ translation of the French version.
 ---
 
 ## What's New (English)
+
+### Version: 0.3.14 — February 13, 2026
+
+**Fixes:**
+
+- Add a period suffix to report names (e.g., "-14j" or "-14d").
 
 ### Version: 0.3.13 — February 12, 2026
 
@@ -1060,6 +1101,10 @@ translation of the French version.
 ---
 
 ## Version History (English)
+
+### 0.3.14 — February 13, 2026
+
+- Add a period suffix to report names (e.g., "-14j" or "-14d").
 
 ### 0.3.13 — February 12, 2026
 
@@ -1466,6 +1511,8 @@ Open a PowerShell terminal at the project root and run:
   - or by explicitly setting `date_debut` and `date_fin` in `config.yaml`,
   - or by passing `--date_debut` and `--date_fin` as arguments.
 
+Note: `--days` is only available on the command line.
+
 Example:
 
 - If today is 2025-08-18 and you pass no parameters, the period will be from
@@ -1489,6 +1536,9 @@ chromedriver_log: C:/Users/YourUser/Downloads/GlycoReport-Downloader/clarity_chr
 dexcom_url: "https://clarity.dexcom.eu"
 download_dir: C:/Users/YourUser/Downloads/GlycoReport-Downloader
 log_retention_days: 30
+debug: false
+date_debut: 2025-01-01
+date_fin: 2025-01-31
 output_dir: C:/Users/YourUser/Downloads/GlycoReport-Downloader
 rapports:
   [
@@ -1502,6 +1552,21 @@ rapports:
     "Export",
   ]
 ```
+
+Available parameters in `config.yaml`:
+
+- `chrome_user_data_dir`: Chrome profile directory used by Selenium.
+- `chromedriver_log`: ChromeDriver log path.
+- `dexcom_url`: Dexcom Clarity URL (e.g., [https://clarity.dexcom.eu](https://clarity.dexcom.eu)).
+- `download_dir`: Selenium download directory.
+- `output_dir`: final output directory (supports the `AAAA` placeholder).
+- `rapports`: list of reports to generate.
+- `log_retention_days`: log retention in days (0 = unlimited).
+- `debug`: enables debug mode (detailed logs, screenshots).
+- `date_debut`: default start date (YYYY-MM-DD).
+- `date_fin`: default end date (YYYY-MM-DD).
+
+Note: `--days` is a CLI-only option (not a `config.yaml` field).
 
 The encryption key for the `.env` file is stored in the system environment
 variable `ENV_DEXCOM_KEY`.
@@ -1533,16 +1598,18 @@ All paths used in the project (download folders, profiles, logs, etc.) are
 
 ## First-Time Use Procedure (English)
 
-1. Run the script. An encryption key will be generated, and a PowerShell command
-   to copy/paste will be displayed.
+1. Run `Launch-Dexcom-And-Run.ps1`. An encryption key will be generated, and a
+  PowerShell command to copy/paste will be displayed.
 1. Paste this command into the PowerShell window that opens, then type `Exit`.
-1. Rerun the script to continue the configuration.
+1. Rerun `Launch-Dexcom-And-Run.ps1` to continue the configuration.
 1. When creating the `.env`, the entered information will be automatically
    encrypted.
 
 ---
 
 ## Command Line Parameters (English)
+
+The standard launch is done via `Launch-Dexcom-And-Run.ps1`.
 
 - `-h`, `--help`: Display help and exit.
 - `-v`, `--version`: Display version and exit.
@@ -1604,19 +1671,19 @@ report selection:
 
 Usage examples:
   Download all reports for the last 14 days (default):
-    python GlycoDownload.py
+    .\Launch-Dexcom-And-Run.ps1
 
   Download only the Overview report for the last 7 days:
-    python GlycoDownload.py --days 7 --rapports "Aperçu"
+    .\Launch-Dexcom-And-Run.ps1
 
   Download multiple reports for a specific period:
-    python GlycoDownload.py --date_debut 2025-01-01 --date_fin 2025-01-31 --rapports "Aperçu" "AGP"
+    .\Launch-Dexcom-And-Run.ps1
 
   Debug mode with all reports for the last 30 days:
-    python GlycoDownload.py --debug --days 30
+    .\Launch-Dexcom-And-Run.ps1
 
   Test configuration without downloading:
-    python GlycoDownload.py --dry-run
+    .\Launch-Dexcom-And-Run.ps1
 
 Available reports: Aperçu, Modèles, Superposition, Quotidien, Comparer, Statistiques, AGP, Export
 (Use --list-rapports for more details)

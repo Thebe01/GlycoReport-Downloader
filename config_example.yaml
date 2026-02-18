@@ -4,21 +4,26 @@
 #               Sert de modèle pour générer un config.yaml utilisateur.
 #               Tous les paramètres nécessaires sont présents avec des valeurs portables (~ et /).
 # Auteur : Pierre Théberge
-# Dernière modification : 2025-10-16
+# Dernière modification : 2026-02-17
 #   - 2025-08-18 : Adaptation à la nouvelle interface Dexcom (champ usernameLogin, bouton 'Pas maintenant').
 #   - 2025-08-22 : Ajout du paramètre chromedriver_path pour configurer le chemin du binaire ChromeDriver.
 #   - 2025-10-14 : Modification de la période de rétention des logs de 15 à 30 jours.
 #   - 2025-10-14 : (v0.2.3) Migration vers ChromeDriverManager pour gestion automatique de ChromeDriver.
 #   - 2025-10-16 : (v0.2.4) Suppression du paramètre obsolète chromedriver_path (non utilisé depuis v0.2.3).
 #                  ChromeDriverManager télécharge automatiquement la version appropriée.
+#   - 2026-02-17 : Ajout des paramètres debug/date_debut/date_fin et note de lancement via Launch-Dexcom-And-Run.ps1.
 #/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # config_example.yaml
+# Lancement recommande : utiliser Launch-Dexcom-And-Run.ps1
 download_dir: "~/Downloads/Dexcom_download"
 output_dir: "~/Downloads/Dexcom_download"
 dexcom_url: "https://clarity.dexcom.eu"
 chromedriver_log: "~/Downloads/Dexcom_download/clarity_chromedriver.log"
 chrome_user_data_dir: "~/Chrome_Clarity_Profile"
+debug: false
+date_debut: "2025-01-01"
+date_fin: "2025-01-31"
 rapports:
   [
     "Aperçu",
