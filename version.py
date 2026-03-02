@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-02-13
-Version       : 0.3.14
+Modifié le    : 2026-02-26
+Version       : 0.3.15
 Copyright     : Pierre Théberge
 
 Description
@@ -39,6 +39,7 @@ Modifications
 0.3.12 - 2026-02-12   [ES-3]  : Acces direct /compare/overlay et /compare/daily.
 0.3.13 - 2026-02-12   [ES-3]  : Comparer: telecharger Tendances seulement (bug Dexcom).
 0.3.14 - 2026-02-13   [ES-11] : Ajout suffixe de periode dans les noms de fichiers.
+0.3.15 - 2026-02-26   [ES-6]  : Bump de version patch et harmonisation XPath independants de la langue.
 
 Paramètres
 ----------
@@ -50,4 +51,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.3.14"
+__version__ = "0.3.15"

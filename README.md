@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.3.14-blue)
+![Version](https://img.shields.io/badge/version-0.3.15-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0314--13-f%C3%A9vrier-2026)
+- [Nouveautés](#version--0315--26-f%C3%A9vrier-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,16 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.3.15 — 26 février 2026
+
+### Nouveautés (0.3.15)
+
+**Correctifs :**
+
+- Harmonisation des XPath pour réduire la dépendance à la langue du navigateur.
 
 ---
 
@@ -661,7 +671,8 @@ Parametres disponibles dans `config.yaml` :
 
 - `chrome_user_data_dir` : dossier du profil Chrome utilise par Selenium.
 - `chromedriver_log` : chemin du log ChromeDriver.
-- `dexcom_url` : URL de Dexcom Clarity (ex: [https://clarity.dexcom.eu](https://clarity.dexcom.eu)).
+- `dexcom_url` : URL de Dexcom Clarity (ex:
+  [https://clarity.dexcom.eu](https://clarity.dexcom.eu)).
 - `download_dir` : dossier de telechargement Selenium.
 - `output_dir` : dossier de sortie final (supporte le placeholder `AAAA`).
 - `rapports` : liste des rapports a generer.
@@ -916,6 +927,12 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.3.15 — February 26, 2026
+
+**Fixes:**
+
+- Harmonized XPath selectors to reduce dependency on browser language.
+
 ### Version: 0.3.14 — February 13, 2026
 
 **Fixes:**
@@ -1101,6 +1118,10 @@ translation of the French version.
 ---
 
 ## Version History (English)
+
+### 0.3.15 — February 26, 2026
+
+- Harmonized XPath selectors to reduce dependency on browser language.
 
 ### 0.3.14 — February 13, 2026
 
@@ -1557,7 +1578,8 @@ Available parameters in `config.yaml`:
 
 - `chrome_user_data_dir`: Chrome profile directory used by Selenium.
 - `chromedriver_log`: ChromeDriver log path.
-- `dexcom_url`: Dexcom Clarity URL (e.g., [https://clarity.dexcom.eu](https://clarity.dexcom.eu)).
+- `dexcom_url`: Dexcom Clarity URL (e.g.,
+  [https://clarity.dexcom.eu](https://clarity.dexcom.eu)).
 - `download_dir`: Selenium download directory.
 - `output_dir`: final output directory (supports the `AAAA` placeholder).
 - `rapports`: list of reports to generate.
@@ -1599,7 +1621,7 @@ All paths used in the project (download folders, profiles, logs, etc.) are
 ## First-Time Use Procedure (English)
 
 1. Run `Launch-Dexcom-And-Run.ps1`. An encryption key will be generated, and a
-  PowerShell command to copy/paste will be displayed.
+   PowerShell command to copy/paste will be displayed.
 1. Paste this command into the PowerShell window that opens, then type `Exit`.
 1. Rerun `Launch-Dexcom-And-Run.ps1` to continue the configuration.
 1. When creating the `.env`, the entered information will be automatically
