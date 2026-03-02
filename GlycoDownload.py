@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
-Modifié le    : 2026-02-13
-Version       : 0.3.14
+Modifié le    : 2026-02-26
+Version       : 0.3.15
 Copyright     : Pierre Théberge
 
 Description
@@ -123,6 +123,7 @@ Modifications
 0.3.4   - 2026-02-12   [ES-3]  : Correction du téléchargement des sous-rapports Comparer.
 0.3.5   - 2026-02-12   [ES-3]  : Forçage du download_dir et stabilisation Comparer.
 0.3.6   - 2026-02-12   [ES-3]  : Stabilisation renforcée des sous-rapports Comparer.
+0.3.15  - 2026-02-26   [ES-6]  : Harmonisation des XPath pour reduire la dependance a la langue du navigateur.
 
 Paramètres
 ----------
@@ -441,7 +442,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
             phone_link = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((
                     By.XPATH,
-                    "//a[contains(@href, 'phone') or contains(@class, 'phone') or contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'téléphone') or contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'phone')]"
+                    "//a[contains(@href, 'phone') or contains(@class, 'phone')]"
                 ))
             )
             phone_link.click()
@@ -622,16 +623,21 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
     except Exception as e:
         logger.exception(f"Erreur lors de la saisie des identifiants ou de la connexion : {e}")
         raise SystemExit(1)
-def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=10):
+def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=10, required=True):
     """
     Clique sur le bouton 'Dexcom Clarity for Home Users' sur la page d'accueil.
-    Arrête le script en cas d'échec.
+
+    Args:
+        required (bool): Si True, loggue en erreur + screenshot et lève une exception.
+                         Si False, loggue en warning et retourne False sans lever.
+
+    Returns:
+        bool: True si le bouton a été cliqué, False sinon.
     """
     try:
         xpath = (
             "//input[@type='submit' and ("
             "contains(@class, 'landing-page--button') "
-            "or contains(@value, 'Dexcom Clarity for Home Users')"
             ")]"
         )
         button = WebDriverWait(driver, timeout).until(
@@ -640,10 +646,17 @@ def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=10):
         driver.execute_script("arguments[0].scrollIntoView(true);", button)
         button.click()
         logger.debug("Le bouton 'Dexcom Clarity for Home Users' a été cliqué avec succès!")
+        return True
     except Exception as e:
-        time.sleep(2)
-        capture_screenshot(driver, logger, "home_user_button_error", log_dir, NOW_STR)
-        logger.error(f"Une erreur s'est produite au moment de cliquer sur le bouton 'Dexcom Clarity for Home Users' : {e}")
+        if required:
+            time.sleep(2)
+            capture_screenshot(driver, logger, "home_user_button_error", log_dir, NOW_STR)
+            logger.error(f"Une erreur s'est produite au moment de cliquer sur le bouton 'Dexcom Clarity for Home Users' : {e}")
+            raise
+        logger.warning(
+            "Bouton 'Dexcom Clarity for Home Users' introuvable en mode reprise; poursuite du flux sans clic."
+        )
+        return False
 
 def setup_logger(debug, log_dir, now_str):
     # Créer le répertoire de logs s'il n'existe pas
@@ -786,8 +799,9 @@ def main(args, logger, config):
             except Exception:
                 # Si la page d'accueil est encore affichée, essayer le bouton Home User.
                 try:
-                    click_home_user_button(driver, logger, log_dir, now_str)
-                    time.sleep(5)
+                    clicked = click_home_user_button(driver, logger, log_dir, now_str, required=False)
+                    if clicked:
+                        time.sleep(5)
                 except Exception:
                     logger.warning("Bouton Home User introuvable lors du mode reprise.")
 
@@ -815,7 +829,7 @@ def main(args, logger, config):
             attendre_verification_humaine_cloudflare(
                 driver,
                 logger,
-                (By.XPATH, "//input[@type='submit' and (contains(@class, 'landing-page--button') or contains(@value, 'Dexcom Clarity for Home Users'))]"),
+                (By.XPATH, "//input[@type='submit' and contains(@class, 'landing-page--button')]"),
                 log_dir,
                 now_str,
                 timeout=600,
@@ -829,7 +843,7 @@ def main(args, logger, config):
                 sys.exit(1)
 
             try:
-                click_home_user_button(driver, logger, log_dir, now_str)
+                click_home_user_button(driver, logger, log_dir, now_str, required=True)
                 time.sleep(5)
                 logger.debug("Le bouton 'Dexcom Clarity for Home Users' a été cliqué avec succès!")
             except Exception as e:
@@ -943,7 +957,7 @@ def main(args, logger, config):
                 
             time.sleep(2)
             logout_link = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'cui-link__logout') and contains(., 'Déconnexion')]"))
+                EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'cui-link__logout')]"))
             )
             logout_link.click()
             logger.info("Déconnexion effectuée avec succès.")
