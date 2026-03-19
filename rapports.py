@@ -3,15 +3,15 @@
 
 """
 Format d'en-tête standard à respecter pour ce projet.
-Voir HEADER_TEMPLATE_PYTHON.md pour les détails.
+Voir .github/HEADER_TEMPLATE_PYTHON.md pour les détails.
 
 Module        : rapports.py
 Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-02-26
-Version       : 0.3.15
+Modifié le    : 2026-03-19
+Version       : 0.3.16
 Copyright     : Pierre Théberge
 
 Description
@@ -82,6 +82,7 @@ Modifications
 0.3.13 - 2026-02-12   [ES-3]  : Comparer: telecharger Tendances seulement (bug Dexcom).
 0.3.14 - 2026-02-13   [ES-11] : Ajout suffixe de periode dans les noms de fichiers.
 0.3.15 - 2026-02-26   [ES-6]  : Harmonisation des XPath pour reduire la dependance a la langue du navigateur.
+0.3.16 - 2026-03-19   [ES-15] : Synchronisation de version et robustesse fallback URL pour Statistiques.
 
 Paramètres
 ----------
@@ -165,7 +166,13 @@ def _get_report_xpath_candidates(nom_rapport: str) -> list[str]:
 def _find_clickable_with_xpath_candidates(driver, xpath_candidates: list[str], timeout: int = 30):
     """Cherche un élément cliquable via plusieurs XPath candidats."""
     last_error = None
-    per_try_timeout = max(3, min(10, timeout // max(1, len(xpath_candidates))))
+    nb_candidates = max(1, len(xpath_candidates))
+    if nb_candidates == 1:
+        # Un seul XPath: on utilise tout le budget timeout.
+        per_try_timeout = max(3, timeout)
+    else:
+        # Plusieurs XPath: on répartit le budget et on borne chaque essai.
+        per_try_timeout = max(3, min(10, timeout // nb_candidates))
     for xpath in xpath_candidates:
         try:
             return WebDriverWait(driver, per_try_timeout).until(
@@ -337,7 +344,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
             current_url,
             current_title,
         )
-        xpath_bouton = "//button[.//img[contains(@src, 'download') or contains(@src, 'cui_download')]]"
+        xpath_bouton = "//button[.//img[contains(@src, 'download')]]"
         bouton = WebDriverWait(driver, 60).until(
             EC.element_to_be_clickable((By.XPATH, xpath_bouton))
         )
@@ -651,6 +658,11 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
         selection_rapport_button = _find_clickable_with_xpath_candidates(driver, xpath_candidates, timeout=30)
         driver.execute_script("arguments[0].scrollIntoView(true);", selection_rapport_button)
         time.sleep(1)
+        # Capturer l'URL de base avant la navigation, pour le fallback URL dans ouvrir_stats_route.
+        try:
+            base_url_stats = driver.current_url.split("#")[0]
+        except Exception:
+            base_url_stats = ""
         try:
             selection_rapport_button.click()
         except Exception:
@@ -672,10 +684,11 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
                     driver.execute_script("arguments[0].click();", link)
             except Exception:
                 # Fallback: navigation directe si le lien n'est pas disponible/cliquable.
+                # Utiliser l'URL capturée avant la navigation (indépendante de la région).
                 try:
-                    base_url = driver.current_url.split("#")[0]
+                    base_url = driver.current_url.split("#")[0] or base_url_stats
                 except Exception:
-                    base_url = "https://clarity.dexcom.eu/i"
+                    base_url = base_url_stats
                 target_url = f"{base_url}#/statistics/{route}"
                 logger.debug("Navigation directe fallback vers %s (%s)", target_url, label)
                 driver.get(target_url)

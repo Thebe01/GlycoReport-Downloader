@@ -3,15 +3,15 @@
 
 """
 Format d'en-tête standard à respecter pour ce projet.
-Voir HEADER_TEMPLATE_PYTHON.md pour les détails.
+Voir .github/HEADER_TEMPLATE_PYTHON.md pour les détails.
 
 Module        : GlycoDownload.py
 Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
-Modifié le    : 2026-02-26
-Version       : 0.3.15
+Modifié le    : 2026-03-19
+Version       : 0.3.16
 Copyright     : Pierre Théberge
 
 Description
@@ -124,6 +124,7 @@ Modifications
 0.3.5   - 2026-02-12   [ES-3]  : Forçage du download_dir et stabilisation Comparer.
 0.3.6   - 2026-02-12   [ES-3]  : Stabilisation renforcée des sous-rapports Comparer.
 0.3.15  - 2026-02-26   [ES-6]  : Harmonisation des XPath pour reduire la dependance a la langue du navigateur.
+0.3.16  - 2026-03-19   [ES-15] : Synchronisation de version et documentation (retention logs par defaut a 30 jours).
 
 Paramètres
 ----------
@@ -628,8 +629,13 @@ def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=10, require
     Clique sur le bouton 'Dexcom Clarity for Home Users' sur la page d'accueil.
 
     Args:
+        driver: Instance Selenium WebDriver.
+        logger: Logger Python de l'appelant.
+        log_dir (str): Dossier de destination pour les screenshots d'erreur.
+        NOW_STR (str): Horodatage formaté utilisé dans les noms de fichiers de screenshot.
+        timeout (int): Délai d'attente maximum (en secondes) pour trouver le bouton. Défaut : 10.
         required (bool): Si True, loggue en erreur + screenshot et lève une exception.
-                         Si False, loggue en warning et retourne False sans lever.
+                         Si False, loggue en warning et retourne False sans lever. Défaut : True.
 
     Returns:
         bool: True si le bouton a été cliqué, False sinon.

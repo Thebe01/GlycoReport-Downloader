@@ -3,15 +3,15 @@
 
 """
 Format d'en-tête standard à respecter pour ce projet.
-Voir HEADER_TEMPLATE_PYTHON.md pour les détails.
+Voir .github/HEADER_TEMPLATE_PYTHON.md pour les détails.
 
 Module        : config.py
 Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-02-26
-Version       : 0.3.15
+Modifié le    : 2026-03-19
+Version       : 0.3.16
 Copyright     : Pierre Théberge
 
 Description
@@ -75,7 +75,10 @@ Modifications
 0.3.4  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
 0.3.5  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
 0.3.6  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
-0.3.15 - 2026-02-26   [ES-6]  : Synchronisation de version (harmonisation XPath independants de la langue).
+0.3.15 - 2026-02-26   [ES-6]  : Synchronisation de version (aucun changement fonctionnel dans ce module).
+0.3.16 - 2026-03-19   [ES-15] : Configuration des logs : valeur par defaut de log_retention_days portee a 30 jours.
+                               Alignement de la retention par defaut lors de la saisie interactive et du chargement de la configuration.
+                               Synchronisation de version et mise a jour de la documentation release.
 
 Paramètres
 ----------
@@ -234,7 +237,7 @@ def interactive_config():
         value = example_config[key]
         # Valeur par défaut pour la rétention des logs
         if key == "log_retention_days":
-            value = 15
+            value = 30
             prompt = (
                 f"{Fore.CYAN}Entrez la valeur pour '{key}' [{value}] (0 = conservation illimitée) : {Style.RESET_ALL}"
             )
@@ -509,7 +512,7 @@ if not is_help_requested():
     CHROMEDRIVER_LOG = normalize_path(cast(str, get_param("chromedriver_log")))
     DEXCOM_URL = cast(str, get_param("dexcom_url"))
     RAPPORTS = cast(list, get_param("rapports"))
-    LOG_RETENTION_DAYS = int(config.get("log_retention_days", 15))
+    LOG_RETENTION_DAYS = int(config.get("log_retention_days", 30))
     DEBUG = _coerce_bool(config.get("debug"), default=False)
 
     DATE_FIN = config.get("date_fin")
