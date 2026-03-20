@@ -19,7 +19,7 @@
 download_dir: "~/Downloads/Dexcom_download"
 output_dir: "~/Downloads/Dexcom_download"
 dexcom_url: "https://clarity.dexcom.eu"
-chromedriver_log: "~/Downloads/Dexcom_download/clarity_chromedriver.log"
+chromedriver_log: "~/Downloads/Dexcom_download/log/clarity_chromedriver.log"
 chrome_user_data_dir: "~/Chrome_Clarity_Profile"
 debug: false
 date_debut: "2025-01-01"

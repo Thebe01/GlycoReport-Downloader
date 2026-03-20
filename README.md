@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.3.15-blue)
+![Version](https://img.shields.io/badge/version-0.3.16-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0315--26-f%C3%A9vrier-2026)
+- [Nouveautés](#version--0316--19-mars-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,19 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.3.16 — 19 mars 2026
+
+### Nouveautés (0.3.16)
+
+**Correctifs :**
+
+- Valeur par défaut de `log_retention_days` fixée à 30 jours dans la configuration.
+- Déplacement du fichier `chromedriver_log` par défaut dans le sous-répertoire `log/` du dossier de téléchargement.
+- Fallback de navigation des sous-pages Statistiques rendu indépendant de la région Dexcom configurée.
+- Synchronisation des entêtes de modules Python et de la documentation de version.
 
 ---
 
@@ -927,6 +940,15 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.3.16 — March 19, 2026
+
+**Fixes:**
+
+- Default `log_retention_days` value set to 30 days in configuration.
+- Moved the default `chromedriver_log` file into the `log/` subdirectory under the download folder.
+- Made the Statistics sub-page navigation fallback independent of the configured Dexcom region.
+- Synchronized Python module headers and release documentation.
+
 ### Version: 0.3.15 — February 26, 2026
 
 **Fixes:**
@@ -1118,6 +1140,13 @@ translation of the French version.
 ---
 
 ## Version History (English)
+
+### 0.3.16 — March 19, 2026
+
+- Default `log_retention_days` value set to 30 days in configuration.
+- Moved the default `chromedriver_log` file into the `log/` subdirectory under the download folder.
+- Made the Statistics sub-page navigation fallback independent of the configured Dexcom region.
+- Synchronized Python module headers and release documentation.
 
 ### 0.3.15 — February 26, 2026
 

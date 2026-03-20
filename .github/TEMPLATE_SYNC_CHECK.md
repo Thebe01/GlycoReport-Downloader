@@ -1,13 +1,16 @@
 <!--
 META:
-   1.0.0 - 2026-01-29 - ES-19  : Version initiale.
-   1.0.1 - 2026-02-11 - PD-188 : Chemin de référence via variable d’environnement.
-   1.0.2 - 2026-02-11 - PD-188 : $repoRoot via REPO_ROOT ou détection Git.
-   1.0.3 - 2026-02-11 - PD-188 : Templates optionnels selon le repo.
-   1.0.4 - 2026-02-11 - PD-188 : Message d’erreur REPO_ROOT corrigé.
-   1.0.5 - 2026-02-12 - ES-3   : Validation REPO_ROOT et gestion sources
-                                  officielles manquantes.
-   1.0.6 - 2026-02-12 - ES-3   : Validation fichier officiel en mode Leaf.
+    1.0.0 - 2026-01-29 - ES-19  : Version initiale.
+    1.0.1 - 2026-02-11 - PD-188 : Chemin de référence via variable d'environnement.
+    1.0.2 - 2026-02-11 - PD-188 : $repoRoot via REPO_ROOT ou détection Git.
+    1.0.3 - 2026-02-11 - PD-188 : Templates optionnels selon le repo.
+    1.0.4 - 2026-02-11 - PD-188 : Message d'erreur REPO_ROOT corrigé.
+    1.0.5 - 2026-02-12 - ES-3   : Validation REPO_ROOT et gestion sources
+                                   officielles manquantes.
+    1.0.6 - 2026-02-12 - ES-3   : Validation fichier officiel en mode Leaf.
+    1.0.7 - 2026-03-19 - ES-15  : Ajout du déclenchement à l'activation d'une conversation Copilot.
+    1.0.8 - 2026-03-19 - ES-15  : Ajout de la section finale standard du document.
+    1.0.9 - 2026-03-19 - ES-15  : Règle une version par séance sauf indication contraire.
 -->
 
 # Vérification des templates d’en-tête
@@ -35,6 +38,8 @@ $env:USERPROFILE\Sources\IPTDevLib\prompts)
 3. Si des écarts sont détectés, suggérer une mise à jour du repo pour s’aligner
    sur la source.
 4. Ne pas modifier automatiquement sans validation explicite.
+5. Regrouper les changements d’une même séance dans une seule version et une
+   seule entrée .MODIFICATIONS, sauf indication contraire explicite.
 
 ## Procédure PowerShell (pwsh)
 
@@ -114,7 +119,7 @@ foreach ($p in $pairs) {
       "(Ignoré) Fichier absent dans ce repo : $($p.Repo)"
       continue
    }
-   if (-not (Test-Path -LiteralPath $p.Official)) {
+   if (-not (Test-Path -LiteralPath $p.Official -PathType Leaf)) {
       throw "Source officielle introuvable : $($p.Official)"
    }
    Copy-Item -LiteralPath $p.Official -Destination $p.Repo -Force
@@ -125,3 +130,11 @@ foreach ($p in $pairs) {
 
 - Après une mise à jour de IPTDevLib\prompts.
 - Avant une release du repo.
+- À l'activation d'une conversation Copilot dans ce repo.
+
+---
+
+**Document créé le** : 2026-01-29  
+**Version** : 1.0.9  
+**Mainteneur** : Pierre Théberge  
+**Compagnie** : Innovations, Performances, Technologies inc.

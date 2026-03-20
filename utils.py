@@ -3,15 +3,15 @@
 
 """
 Format d'en-tête standard à respecter pour ce projet.
-Voir HEADER_TEMPLATE_PYTHON.md pour les détails.
+Voir .github/HEADER_TEMPLATE_PYTHON.md pour les détails.
 
 Module        : utils.py
 Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-02-26
-Version       : 0.3.15
+Modifié le    : 2026-03-19
+Version       : 0.3.16
 Copyright     : Pierre Théberge
 
 Description
@@ -69,6 +69,7 @@ Modifications
 0.3.5  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
 0.3.6  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
 0.3.15 - 2026-02-26   [ES-6]  : Synchronisation de version (harmonisation XPath independants de la langue).
+0.3.16 - 2026-03-19   [ES-15] : Synchronisation de version (documentation retention logs par defaut a 30 jours).
 
 Paramètres
 ----------

@@ -1,6 +1,7 @@
 <!--
 META:
-    1.0.0 - 2026-01-29 - - : Version initiale.
+    1.0.0 - 2026-01-29 - -     : Version initiale.
+    1.0.1 - 2026-03-19 - ES-15 : Références mises à jour vers .github/ dans les exemples et le snippet.
 -->
 
 # 🐍 Template d'en-tête Python - IPT inc
@@ -18,7 +19,7 @@ Innovations, Performances, Technologies inc.
 
 """
 Format d'en-tête standard à respecter pour ce projet.
-Voir HEADER_TEMPLATE_PYTHON.md pour les détails.
+Voir .github/HEADER_TEMPLATE_PYTHON.md pour les détails.
 
 Module        : mon_script.py
 Type          : Python module
@@ -106,7 +107,7 @@ Docstring complet avec sections **structurées** et **séparées** :
 ```python
 """
 Format d'en-tête standard à respecter pour ce projet.
-Voir HEADER_TEMPLATE_PYTHON.md pour les détails.
+Voir .github/HEADER_TEMPLATE_PYTHON.md pour les détails.
 
 Module        : backup_script.py
 Type          : Python module
@@ -501,7 +502,7 @@ Dans VS Code, tapez `headerpy` puis `Tab` :
     "body": [
       "\"\"\"",
       "Format d'en-tête standard à respecter pour ce projet.",
-      "Voir HEADER_TEMPLATE_PYTHON.md pour les détails.",
+      "Voir .github/HEADER_TEMPLATE_PYTHON.md pour les détails.",
       "",
       "Module        : ${TM_FILENAME}",
       "Type          : Python module",
@@ -545,6 +546,6 @@ Dans VS Code, tapez `headerpy` puis `Tab` :
 ---
 
 **Document créé le** : 2025-11-06  
-**Version** : 1.0.0  
+**Version** : 1.0.1  
 **Mainteneur** : Pierre Théberge  
 **Compagnie** : Innovations, Performances, Technologies inc.
