@@ -1,6 +1,9 @@
 <!--
 META:
-        1.0.1 - 2026-01-29 - ES-19 : Ajout des variables standard.
+    1.0.0 - 2026-01-29 - -     : Version initiale.
+    1.0.1 - 2026-01-29 - ES-19 : Ajout des variables standard.
+    1.0.2 - 2026-03-19 - ES-15 : Références .github/ et ajout de la référence dans l'exemple .DESCRIPTION.
+    1.0.3 - 2026-03-20 - ES-15 : Suppression des lignes de consigne dans l'exemple .DESCRIPTION.
 -->
 
 # 📘 Template d'en-tête PowerShell - IPT inc
@@ -14,7 +17,7 @@ Innovations, Performances, Technologies inc.
 
 ```powershell
 # Format d'en-tête standard à respecter pour ce projet.
-# Voir HEADER_TEMPLATE_POWERSHELL.md pour les détails.
+# Voir .github/HEADER_TEMPLATE_POWERSHELL.md pour les détails.
 
 <#
 .SYNOPSIS
@@ -359,7 +362,7 @@ Dans VS Code, tapez `headerps` puis `Tab` :
     "prefix": "headerps",
     "body": [
       "# Format d'en-tête standard à respecter pour ce projet.",
-      "# Voir HEADER_TEMPLATE_POWERSHELL.md pour les détails.",
+      "# Voir .github/HEADER_TEMPLATE_POWERSHELL.md pour les détails.",
       "",
       "<#",
       ".SYNOPSIS",
@@ -400,6 +403,6 @@ Dans VS Code, tapez `headerps` puis `Tab` :
 ---
 
 **Document créé le** : 2025-11-06  
-**Version** : 1.0.1  
+**Version** : 1.0.3  
 **Mainteneur** : Pierre Théberge  
 **Compagnie** : Innovations, Performances, Technologies inc.
