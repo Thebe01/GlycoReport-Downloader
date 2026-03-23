@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-03-19
-Version       : 0.3.16
+Modifié le    : 2026-03-23
+Version       : 0.3.17
 Copyright     : Pierre Théberge
 
 Description
@@ -83,6 +83,9 @@ Modifications
 0.3.14 - 2026-02-13   [ES-11] : Ajout suffixe de periode dans les noms de fichiers.
 0.3.15 - 2026-02-26   [ES-6]  : Harmonisation des XPath pour reduire la dependance a la langue du navigateur.
 0.3.16 - 2026-03-19   [ES-15] : Synchronisation de version et robustesse fallback URL pour Statistiques.
+0.3.17 - 2026-03-23   [ES-14] : Detection de perte reseau pendant le traitement des rapports,
+                               tentative de reconnexion et arret du traitement en cas d'echec.
+                               Dispatch explicite des rapports conserve avec retry reseau par rapport.
 
 Paramètres
 ----------
@@ -110,6 +113,45 @@ from utils import (
     check_internet,
     capture_screenshot,
 )
+
+
+class NetworkRecoveryRetry(Exception):
+    """Signale qu'une reconnexion réseau a réussi et qu'un retry du rapport est requis."""
+
+
+class NetworkRecoveryFailedError(RuntimeError):
+    """Signale qu'une perte réseau persistante impose l'arrêt du traitement."""
+
+
+def _recover_network_or_fail(logger, contexte: str, attempts: int = 3, delay_seconds: int = 10) -> None:
+    """Tente de rétablir la connexion internet, sinon lève une erreur fatale."""
+    if check_internet():
+        return
+
+    logger.warning(
+        "Perte de connexion internet détectée (%s). Tentative de reconnexion (%d essais).",
+        contexte,
+        attempts,
+    )
+    for attempt in range(1, attempts + 1):
+        logger.warning("Vérification réseau %d/%d dans %ds...", attempt, attempts, delay_seconds)
+        time.sleep(delay_seconds)
+        if check_internet():
+            logger.info("Connexion internet rétablie (%s).", contexte)
+            return
+
+    raise NetworkRecoveryFailedError(
+        f"Perte de connexion internet persistante ({contexte}) après {attempts} essais de reconnexion."
+    )
+
+
+def _handle_network_loss(logger, contexte: str, original_exception: Exception) -> None:
+    """Détecte une perte réseau, tente la reconnexion et force un retry du rapport courant."""
+    if not check_internet():
+        _recover_network_or_fail(logger, contexte)
+        raise NetworkRecoveryRetry(
+            f"Connexion internet rétablie après incident durant {contexte}. Retry du rapport en cours."
+        ) from original_exception
 
 
 def _get_log_dir_from_logger(logger) -> str:
@@ -328,6 +370,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
     """
     logger.info(f"Telechargement du rapport {nom_rapport}")
     debug_enabled = bool(getattr(args, "debug", False) or logger.isEnabledFor(logging.DEBUG))
+    _recover_network_or_fail(logger, f"telechargement du rapport {nom_rapport}")
     try:
         attendre_disparition_overlay(driver, 60, logger=logger, debug=args.debug)
         try:
@@ -357,6 +400,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
         time.sleep(5)
         logger.debug("Le bouton Télécharger a été cliqué avec succès!")
     except Exception as e:
+        _handle_network_loss(logger, f"clic du bouton Télécharger ({nom_rapport})", e)
         logger.error(f"Une erreur s'est produite lors du clic sur le bouton Télécharger : {e}", exc_info=args.debug)
         return
     try:
@@ -372,6 +416,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
         time.sleep(5)
         logger.debug("Le mode couleur a été sélectionné avec succès!")
     except Exception as e:
+        _handle_network_loss(logger, f"sélection du mode couleur ({nom_rapport})", e)
         logger.error(f"Une erreur s'est produite lors de la sélection du mode couleur : {e}")
         return
     try:
@@ -425,6 +470,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
             # On tente quand même de continuer, le fichier est peut-être déjà là
 
     except Exception as e:
+        _handle_network_loss(logger, f"enregistrement du rapport ({nom_rapport})", e)
         logger.error(f"Une erreur s'est produite lors de l'enregistrement du rapport : {e}")
         return
     deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args, driver)
@@ -443,6 +489,7 @@ def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         args (Namespace): Arguments de la ligne de commande.
     """
     logger.info(f"Traitement du rapport {nom_rapport}")
+    _recover_network_or_fail(logger, f"traitement du rapport {nom_rapport}")
     try:
         xpath_candidates = _get_report_xpath_candidates(nom_rapport)
         selection_rapport_button = _find_clickable_with_xpath_candidates(driver, xpath_candidates, timeout=30)
@@ -477,6 +524,7 @@ def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
 
         telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
     except Exception as e:
+        _handle_network_loss(logger, f"traitement du rapport {nom_rapport}", e)
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}", exc_info=args.debug)
         return
 
@@ -518,6 +566,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         args (Namespace): Arguments de la ligne de commande.
     """
     logger.info(f"Traitement des rapports {nom_rapport}")
+    _recover_network_or_fail(logger, f"traitement du rapport {nom_rapport}")
     try:
         def get_base_url():
             return driver.current_url.split("#")[0]
@@ -634,6 +683,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         # telechargement_rapport(rapport_comparer, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
 
     except Exception as e:
+        _handle_network_loss(logger, f"traitement du rapport {nom_rapport}", e)
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
         if args.debug:
             logger.error("Stack trace complète : ", exc_info=True)
@@ -653,6 +703,7 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
         args (Namespace): Arguments de la ligne de commande.
     """
     logger.info(f"Traitement des rapports {nom_rapport}")
+    _recover_network_or_fail(logger, f"traitement du rapport {nom_rapport}")
     try:
         xpath_candidates = _get_report_xpath_candidates(nom_rapport)
         selection_rapport_button = _find_clickable_with_xpath_candidates(driver, xpath_candidates, timeout=30)
@@ -689,6 +740,10 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
                     base_url = driver.current_url.split("#")[0] or base_url_stats
                 except Exception:
                     base_url = base_url_stats
+                if not base_url:
+                    raise RuntimeError(
+                        "Impossible de déterminer l'URL de base pour le fallback Statistiques."
+                    )
                 target_url = f"{base_url}#/statistics/{route}"
                 logger.debug("Navigation directe fallback vers %s (%s)", target_url, label)
                 driver.get(target_url)
@@ -751,6 +806,7 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
         telechargement_rapport(rapport_statistiques, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
 
     except Exception as e:
+        _handle_network_loss(logger, f"traitement du rapport {nom_rapport}", e)
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
         return
 
@@ -774,6 +830,7 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
         args (Namespace): Arguments de la ligne de commande.
     """
     logger.info(f"Traitement de l'export csv ")
+    _recover_network_or_fail(logger, "traitement de l'export CSV")
     try:
         attendre_disparition_overlay(driver, 60, logger=logger, debug=args.debug)
         xpath_export = "//button[.//img[@src='/i/assets/cui_export.svg']]"
@@ -789,6 +846,7 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
         time.sleep(5)
         logger.debug("Le bouton Exporter a été cliqué avec succès!")
     except Exception as e:
+        _handle_network_loss(logger, "clic du bouton Exporter", e)
         logger.error(f"Une erreur s'est produite lors du clic sur le bouton Exporter : {e}", exc_info=args.debug)
         return
     try:
@@ -838,21 +896,31 @@ def selection_rapport(RAPPORTS, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DA
         args (Namespace): Arguments de la ligne de commande.
     """
     for rapport in RAPPORTS:
-        if rapport == "Aperçu":
-            traitement_rapport_apercu(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-        elif rapport == "Modèles":
-            traitement_rapports_modeles(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-        elif rapport == "Superposition":
-            traitement_rapport_superposition(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-        elif rapport == "Quotidien":
-            traitement_rapport_quotidien(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-        elif rapport == "Comparer":
-            traitement_rapport_comparer(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-        elif rapport == "Statistiques":
-            traitement_rapport_statistiques(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-        elif rapport == "AGP":
-            traitement_rapport_agp(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-        elif rapport == "Export":
-            traitement_export_csv(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-        else:
-            logger.error(f"Rapport inconnu : {rapport}. Veuillez vérifier la liste des rapports.")
+        _recover_network_or_fail(logger, f"avant le traitement du rapport {rapport}")
+
+        def _execute_rapport_once() -> None:
+            if rapport == "Aperçu":
+                traitement_rapport_apercu(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+            elif rapport == "Modèles":
+                traitement_rapports_modeles(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+            elif rapport == "Superposition":
+                traitement_rapport_superposition(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+            elif rapport == "Quotidien":
+                traitement_rapport_quotidien(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+            elif rapport == "Comparer":
+                traitement_rapport_comparer(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+            elif rapport == "Statistiques":
+                traitement_rapport_statistiques(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+            elif rapport == "AGP":
+                traitement_rapport_agp(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+            elif rapport == "Export":
+                traitement_export_csv(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+            else:
+                logger.error(f"Rapport inconnu : {rapport}. Veuillez vérifier la liste des rapports.")
+
+        try:
+            _execute_rapport_once()
+        except NetworkRecoveryRetry:
+            logger.warning("Reconnexion détectée. Nouvel essai du rapport '%s'.", rapport)
+            _recover_network_or_fail(logger, f"retry du rapport {rapport}")
+            _execute_rapport_once()

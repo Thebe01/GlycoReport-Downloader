@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-03-19
-Version       : 0.3.16
+Modifié le    : 2026-03-23
+Version       : 0.3.17
 Copyright     : Pierre Théberge
 
 Description
@@ -41,6 +41,10 @@ Modifications
 0.3.14 - 2026-02-13   [ES-11] : Ajout suffixe de periode dans les noms de fichiers.
 0.3.15 - 2026-02-26   [ES-6]  : Bump de version patch et harmonisation XPath independants de la langue.
 0.3.16 - 2026-03-19   [ES-15] : Bump de version patch, retention des logs par defaut a 30 jours et synchronisation documentation.
+0.3.17 - 2026-03-23   [ES-14] : Bump de version patch et robustesse reseau pendant le traitement des rapports
+							   (reconnexion automatique ou arret propre en cas d'echec).
+							   Fermeture de l'onglet en fin de traitement et fermeture complete du navigateur
+							   si un seul onglet est ouvert.
 
 Paramètres
 ----------
@@ -52,4 +56,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.3.16"
+__version__ = "0.3.17"
