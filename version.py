@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-03-23
-Version       : 0.3.17
+Modifié le    : 2026-03-25
+Version       : 0.3.19
 Copyright     : Pierre Théberge
 
 Description
@@ -45,6 +45,10 @@ Modifications
 							   (reconnexion automatique ou arret propre en cas d'echec).
 							   Fermeture de l'onglet en fin de traitement et fermeture complete du navigateur
 							   si un seul onglet est ouvert.
+0.3.18 - 2026-03-25   [ES-14] : Bump de version patch et durcissement de la gestion des pertes reseau
+							   dans le flux Export CSV (modale + fermeture).
+0.3.19 - 2026-03-25   [ES-14] : Bump de version patch et cohérence du mode debug effectif
+							   lors de la fermeture de session navigateur.
 
 Paramètres
 ----------
@@ -56,4 +60,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.3.17"
+__version__ = "0.3.19"

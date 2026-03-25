@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
-Modifié le    : 2026-03-23
-Version       : 0.3.17
+Modifié le    : 2026-03-25
+Version       : 0.3.19
 Copyright     : Pierre Théberge
 
 Description
@@ -129,6 +129,10 @@ Modifications
                                tentative de reconnexion et arret propre de l'application en cas d'echec.
                                Fermeture de l'onglet Dexcom en fin de traitement,
                                et fermeture complete du navigateur si un seul onglet est ouvert.
+0.3.18  - 2026-03-25   [ES-14] : Synchronisation de version apres durcissement du flux Export CSV
+                               pour les erreurs reseau en modale.
+0.3.19  - 2026-03-25   [ES-14] : Fermeture navigateur: utilisation du mode debug effectif
+                               (args.debug ou config.DEBUG) pour les traces d'exception.
 
 Paramètres
 ----------
@@ -1014,7 +1018,7 @@ def main(args, logger, config):
         traceback.print_exc()
         pause_on_error()
     finally:
-        close_browser_session(driver, logger, debug=args.debug)
+        close_browser_session(driver, logger, debug=bool(args.debug or config.get("DEBUG", False)))
 
         if download_dir:
             files = glob.glob(os.path.join(download_dir, '*'))
