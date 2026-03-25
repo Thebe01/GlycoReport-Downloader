@@ -57,6 +57,26 @@ Etapes:
 - Les logs et screenshots sont dans $testRoot\log.
 - Confirmer l'absence de .crdownload residuel avant verification.
 
+## Tests unitaires cibles
+
+Pour valider rapidement les scenarios critiques sans test E2E complet :
+
+```powershell
+# Reconnexion reseau (succes puis echec)
+python -m pytest -q tests/test_rapports_network.py
+
+# Fermeture de session navigateur (1 onglet vs plusieurs onglets)
+python -m pytest -q tests/test_glycodownload_shutdown.py
+
+# Suite combinee des tests cibles ES-14
+python -m pytest -q tests/test_rapports_network.py tests/test_glycodownload_shutdown.py
+```
+
+Resultat attendu :
+
+- Tous les tests passent (statut `passed`).
+- Aucun traceback Python dans la sortie.
+
 ## Nettoyage
 
 ```powershell

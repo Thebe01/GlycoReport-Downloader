@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-03-23
-Version       : 0.3.17
+Modifié le    : 2026-03-25
+Version       : 0.3.19
 Copyright     : Pierre Théberge
 
 Description
@@ -86,6 +86,9 @@ Modifications
 0.3.17 - 2026-03-23   [ES-14] : Detection de perte reseau pendant le traitement des rapports,
                                tentative de reconnexion et arret du traitement en cas d'echec.
                                Dispatch explicite des rapports conserve avec retry reseau par rapport.
+0.3.18 - 2026-03-25   [ES-14] : Gestion reseau harmonisee dans traitement_export_csv
+                               (clic Export modal + fermeture modale).
+0.3.19 - 2026-03-25   [ES-14] : Synchronisation de version (aucun changement fonctionnel dans ce module).
 
 Paramètres
 ----------
@@ -523,6 +526,10 @@ def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
             )
 
         telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+    except NetworkRecoveryRetry:
+        raise
+    except NetworkRecoveryFailedError:
+        raise
     except Exception as e:
         _handle_network_loss(logger, f"traitement du rapport {nom_rapport}", e)
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}", exc_info=args.debug)
@@ -682,6 +689,10 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         # ouvrir_page_comparer("daily", "Quotidien")
         # telechargement_rapport(rapport_comparer, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, args)
 
+    except NetworkRecoveryRetry:
+        raise
+    except NetworkRecoveryFailedError:
+        raise
     except Exception as e:
         _handle_network_loss(logger, f"traitement du rapport {nom_rapport}", e)
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
@@ -805,6 +816,10 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
         ouvrir_stats_route("hourly", "Par heure")
         telechargement_rapport(rapport_statistiques, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
 
+    except NetworkRecoveryRetry:
+        raise
+    except NetworkRecoveryFailedError:
+        raise
     except Exception as e:
         _handle_network_loss(logger, f"traitement du rapport {nom_rapport}", e)
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
@@ -860,6 +875,7 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
         bouton_export_modal.click()
         logger.debug("Le bouton Exporter de la fenêtre modale a été cliqué avec succès!")
     except Exception as e:
+        _handle_network_loss(logger, "clic du bouton Exporter de la modale", e)
         logger.error(f"Impossible de cliquer sur le bouton Exporter de la fenêtre modale : {e}")
         return
 
@@ -874,6 +890,7 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
         bouton_fermer.click()
         logger.debug("Le bouton Fermer de la fenêtre modale a été cliqué avec succès!")
     except Exception as e:
+        _handle_network_loss(logger, "fermeture de la fenêtre modale d'export", e)
         logger.warning(f"Bouton Fermer non trouvé ou non cliquable dans la fenêtre modale : {e}")
 
     if wait_for_csv_download(DOWNLOAD_DIR):
@@ -918,9 +935,29 @@ def selection_rapport(RAPPORTS, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DA
             else:
                 logger.error(f"Rapport inconnu : {rapport}. Veuillez vérifier la liste des rapports.")
 
-        try:
-            _execute_rapport_once()
-        except NetworkRecoveryRetry:
-            logger.warning("Reconnexion détectée. Nouvel essai du rapport '%s'.", rapport)
-            _recover_network_or_fail(logger, f"retry du rapport {rapport}")
-            _execute_rapport_once()
+        max_network_retries = 2
+        retry_count = 0
+
+        while True:
+            try:
+                _execute_rapport_once()
+                break
+            except NetworkRecoveryRetry as retry_error:
+                if retry_count >= max_network_retries:
+                    logger.error(
+                        "Abandon du rapport '%s' après %d retries réseau.",
+                        rapport,
+                        max_network_retries,
+                    )
+                    raise NetworkRecoveryFailedError(
+                        f"Retries réseau dépassés pendant le traitement du rapport {rapport}."
+                    ) from retry_error
+
+                retry_count += 1
+                logger.warning(
+                    "Reconnexion détectée. Nouvel essai du rapport '%s' (%d/%d).",
+                    rapport,
+                    retry_count,
+                    max_network_retries,
+                )
+                _recover_network_or_fail(logger, f"retry {retry_count} du rapport {rapport}")

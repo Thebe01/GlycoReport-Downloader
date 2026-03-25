@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.3.17-blue)
+![Version](https://img.shields.io/badge/version-0.3.19-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0317--23-mars-2026)
+- [Nouveautés](#version--0319--25-mars-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,30 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.3.19 — 25 mars 2026
+
+### Nouveautés (0.3.19)
+
+**Correctifs :**
+
+- Fermeture de session navigateur : le niveau de debug effectif est maintenant
+  aligné sur `args.debug` ou `config.DEBUG` pour les traces d'exception.
+- Synchronisation de version et des entêtes de modules.
+
+---
+
+## Version : 0.3.18 — 25 mars 2026
+
+### Nouveautés (0.3.18)
+
+**Correctifs :**
+
+- Gestion des erreurs réseau harmonisée dans le flux Export CSV (clic du bouton
+  Exporter de la modale et fermeture de la modale).
+- Synchronisation de version et des entêtes de modules.
 
 ---
 
@@ -960,6 +984,22 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.3.19 — March 25, 2026
+
+**Fixes:**
+
+- Browser session shutdown now uses the effective debug level (`args.debug` or
+  `config.DEBUG`) for exception traces.
+- Version and module header synchronization.
+
+### Version: 0.3.18 — March 25, 2026
+
+**Fixes:**
+
+- Harmonized network error handling in the CSV export flow (modal Export button
+  click and modal close).
+- Version and module header synchronization.
+
 ### Version: 0.3.17 — March 23, 2026
 
 **Fixes:**
@@ -1173,6 +1213,18 @@ translation of the French version.
 ---
 
 ## Version History (English)
+
+### 0.3.19 — March 25, 2026
+
+- Browser session shutdown now uses the effective debug level (`args.debug` or
+  `config.DEBUG`) for exception traces.
+- Version and module header synchronization.
+
+### 0.3.18 — March 25, 2026
+
+- Harmonized network error handling in the CSV export flow (modal Export button
+  click and modal close).
+- Version and module header synchronization.
 
 ### 0.3.17 — March 23, 2026
 

@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-03-23
-Modifié le    : 2026-03-23
-Version       : 0.3.17
+Modifié le    : 2026-03-25
+Version       : 0.3.19
 Copyright     : Pierre Théberge
 
 Description
@@ -21,6 +21,8 @@ Tests unitaires ciblés pour la robustesse réseau pendant le traitement des rap
 Modifications
 -------------
 0.3.17 - 2026-03-23   [ES-14] : Ajout des tests de reconnexion (succès puis échec persistant).
+0.3.19 - 2026-03-25   [ES-14] : Ajout des tests d'intégration de selection_rapport
+                               (retry après NetworkRecoveryRetry et propagation de NetworkRecoveryFailedError).
 
 Paramètres
 ----------
@@ -90,3 +92,125 @@ def test_recover_network_or_fail_raises_when_network_stays_down(monkeypatch):
     # 1 check initial + 3 checks après chaque attente de retry.
     assert len(checks) == 4
     assert "Perte de connexion internet persistante" in str(exc_info.value)
+
+
+def test_selection_rapport_retries_report_once_after_network_recovery(monkeypatch):
+    """selection_rapport relance le même rapport après NetworkRecoveryRetry."""
+    calls = {"recover": 0, "handler": 0}
+
+    def fake_recover(_logger, _contexte):
+        calls["recover"] += 1
+
+    def fake_apercu_handler(*_args, **_kwargs):
+        calls["handler"] += 1
+        if calls["handler"] == 1:
+            raise rapports.NetworkRecoveryRetry("retry demandé")
+
+    monkeypatch.setattr(rapports, "_recover_network_or_fail", fake_recover)
+    monkeypatch.setattr(rapports, "traitement_rapport_apercu", fake_apercu_handler)
+
+    logger = logging.getLogger("tests.rapports.network.selection.retry")
+    rapports.selection_rapport(
+        ["Aperçu"],
+        driver=object(),
+        logger=logger,
+        DOWNLOAD_DIR=".",
+        DIR_FINAL_BASE=".",
+        DATE_FIN="2026-03-25",
+        DATE_DEBUT="2026-03-01",
+        args=object(),
+    )
+
+    assert calls["handler"] == 2
+    assert calls["recover"] == 2
+
+
+def test_selection_rapport_retries_report_multiple_times_then_succeeds(monkeypatch):
+    """selection_rapport supporte plusieurs retries réseau avant succès."""
+    calls = {"recover": 0, "handler": 0}
+
+    def fake_recover(_logger, _contexte):
+        calls["recover"] += 1
+
+    def fake_apercu_handler(*_args, **_kwargs):
+        calls["handler"] += 1
+        if calls["handler"] <= 2:
+            raise rapports.NetworkRecoveryRetry("retry demandé")
+
+    monkeypatch.setattr(rapports, "_recover_network_or_fail", fake_recover)
+    monkeypatch.setattr(rapports, "traitement_rapport_apercu", fake_apercu_handler)
+
+    logger = logging.getLogger("tests.rapports.network.selection.multi-retry")
+    rapports.selection_rapport(
+        ["Aperçu"],
+        driver=object(),
+        logger=logger,
+        DOWNLOAD_DIR=".",
+        DIR_FINAL_BASE=".",
+        DATE_FIN="2026-03-25",
+        DATE_DEBUT="2026-03-01",
+        args=object(),
+    )
+
+    assert calls["handler"] == 3
+    assert calls["recover"] == 3
+
+
+def test_selection_rapport_raises_after_max_network_retries(monkeypatch):
+    """selection_rapport abandonne proprement après dépassement du max de retries."""
+    calls = {"recover": 0, "handler": 0}
+
+    def fake_recover(_logger, _contexte):
+        calls["recover"] += 1
+
+    def fake_apercu_handler(*_args, **_kwargs):
+        calls["handler"] += 1
+        raise rapports.NetworkRecoveryRetry("retry demandé")
+
+    monkeypatch.setattr(rapports, "_recover_network_or_fail", fake_recover)
+    monkeypatch.setattr(rapports, "traitement_rapport_apercu", fake_apercu_handler)
+
+    logger = logging.getLogger("tests.rapports.network.selection.max-retries")
+    with pytest.raises(rapports.NetworkRecoveryFailedError):
+        rapports.selection_rapport(
+            ["Aperçu"],
+            driver=object(),
+            logger=logger,
+            DOWNLOAD_DIR=".",
+            DIR_FINAL_BASE=".",
+            DATE_FIN="2026-03-25",
+            DATE_DEBUT="2026-03-01",
+            args=object(),
+        )
+
+    assert calls["handler"] == 3
+    assert calls["recover"] == 3
+
+
+def test_selection_rapport_propagates_network_recovery_failed(monkeypatch):
+    """selection_rapport remonte l'exception fatale si la reconnexion échoue."""
+    calls = {"handler": 0}
+
+    def fake_recover(_logger, _contexte):
+        raise rapports.NetworkRecoveryFailedError("réseau indisponible")
+
+    def fake_apercu_handler(*_args, **_kwargs):
+        calls["handler"] += 1
+
+    monkeypatch.setattr(rapports, "_recover_network_or_fail", fake_recover)
+    monkeypatch.setattr(rapports, "traitement_rapport_apercu", fake_apercu_handler)
+
+    logger = logging.getLogger("tests.rapports.network.selection.failed")
+    with pytest.raises(rapports.NetworkRecoveryFailedError):
+        rapports.selection_rapport(
+            ["Aperçu"],
+            driver=object(),
+            logger=logger,
+            DOWNLOAD_DIR=".",
+            DIR_FINAL_BASE=".",
+            DATE_FIN="2026-03-25",
+            DATE_DEBUT="2026-03-01",
+            args=object(),
+        )
+
+    assert calls["handler"] == 0

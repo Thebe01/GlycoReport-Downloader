@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-03-19
-Version       : 0.3.17
+Modifié le    : 2026-03-25
+Version       : 0.3.19
 Copyright     : Pierre Théberge
 
 Description
@@ -80,6 +80,8 @@ Modifications
                                Alignement de la retention par defaut lors de la saisie interactive et du chargement de la configuration.
                                Synchronisation de version et mise a jour de la documentation release.
 0.3.17 - 2026-03-23   [ES-14] : Synchronisation de version (aucun changement fonctionnel dans ce module).
+0.3.18 - 2026-03-25   [ES-14] : Synchronisation de version (aucun changement fonctionnel dans ce module).
+0.3.19 - 2026-03-25   [ES-14] : Synchronisation de version (aucun changement fonctionnel dans ce module).
 
 Paramètres
 ----------
