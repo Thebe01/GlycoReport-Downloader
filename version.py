@@ -49,6 +49,8 @@ Modifications
 							   dans le flux Export CSV (modale + fermeture).
 0.3.19 - 2026-03-25   [ES-14] : Bump de version patch et cohérence du mode debug effectif
 							   lors de la fermeture de session navigateur.
+							   Durcissement du retry reseau dans selection_rapport
+							   (max 2 retries puis NetworkRecoveryFailedError explicite).
 
 Paramètres
 ----------

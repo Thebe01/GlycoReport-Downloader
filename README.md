@@ -34,6 +34,8 @@ traduction stricte de la version francaise.
 
 - Fermeture de session navigateur : le niveau de debug effectif est maintenant
   aligné sur `args.debug` ou `config.DEBUG` pour les traces d'exception.
+- Durcissement du retry réseau dans `selection_rapport` : jusqu'à 2 retries
+  après reconnexion, puis échec explicite si la connexion retombe encore.
 - Synchronisation de version et des entêtes de modules.
 
 ---
@@ -255,6 +257,14 @@ traduction stricte de la version francaise.
 ---
 
 ## Historique des versions
+
+### 0.3.19 — 25 mars 2026
+
+- Fermeture de session navigateur : le niveau de debug effectif est maintenant
+  aligné sur `args.debug` ou `config.DEBUG` pour les traces d'exception.
+- Durcissement du retry réseau dans `selection_rapport` : jusqu'à 2 retries
+  après reconnexion, puis échec explicite si la connexion retombe encore.
+- Synchronisation de version et des entêtes de modules.
 
 ### 0.3.14 — 13 février 2026
 
@@ -990,6 +1000,8 @@ translation of the French version.
 
 - Browser session shutdown now uses the effective debug level (`args.debug` or
   `config.DEBUG`) for exception traces.
+- Hardened network retry in `selection_rapport`: up to 2 retries after
+  reconnection, then an explicit failure if connectivity drops again.
 - Version and module header synchronization.
 
 ### Version: 0.3.18 — March 25, 2026
@@ -1218,6 +1230,8 @@ translation of the French version.
 
 - Browser session shutdown now uses the effective debug level (`args.debug` or
   `config.DEBUG`) for exception traces.
+- Hardened network retry in `selection_rapport`: up to 2 retries after
+  reconnection, then an explicit failure if connectivity drops again.
 - Version and module header synchronization.
 
 ### 0.3.18 — March 25, 2026
