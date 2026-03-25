@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
-Modifié le    : 2026-03-19
-Version       : 0.3.16
+Modifié le    : 2026-03-23
+Version       : 0.3.17
 Copyright     : Pierre Théberge
 
 Description
@@ -125,6 +125,10 @@ Modifications
 0.3.6   - 2026-02-12   [ES-3]  : Stabilisation renforcée des sous-rapports Comparer.
 0.3.15  - 2026-02-26   [ES-6]  : Harmonisation des XPath pour reduire la dependance a la langue du navigateur.
 0.3.16  - 2026-03-19   [ES-15] : Synchronisation de version et documentation (retention logs par defaut a 30 jours).
+0.3.17  - 2026-03-23   [ES-14] : Detection des pertes reseau pendant le traitement des rapports,
+                               tentative de reconnexion et arret propre de l'application en cas d'echec.
+                               Fermeture de l'onglet Dexcom en fin de traitement,
+                               et fermeture complete du navigateur si un seul onglet est ouvert.
 
 Paramètres
 ----------
@@ -171,7 +175,7 @@ from utils import (
     cleanup_logs,
     attendre_verification_humaine_cloudflare
 )
-from rapports import selection_rapport
+from rapports import selection_rapport, NetworkRecoveryFailedError
 from version import __version__
 
 # --- Gestion des arguments CLI et du help ---
@@ -681,6 +685,36 @@ def setup_logger(debug, log_dir, now_str):
     return logger
 
 
+def close_browser_session(driver, logger, debug=False):
+    """Ferme proprement la session navigateur selon le nombre d'onglets ouverts."""
+    if driver is None:
+        return
+
+    try:
+        handles = list(driver.window_handles or [])
+    except Exception:
+        handles = []
+
+    try:
+        if len(handles) <= 1:
+            logger.info("Fermeture du navigateur (dernier onglet).")
+            try:
+                # Ferme l'instance Chrome connectée via CDP (inclut le mode attach-debugger).
+                driver.execute_cdp_cmd("Browser.close", {})
+            except Exception as close_exc:
+                logger.debug("Fermeture CDP impossible, fallback driver.quit(): %s", close_exc)
+                driver.quit()
+        else:
+            logger.info("Plusieurs onglets détectés: fermeture de l'onglet courant uniquement.")
+            try:
+                driver.close()
+            except Exception as close_exc:
+                logger.debug("Fermeture de l'onglet impossible, fallback driver.quit(): %s", close_exc)
+                driver.quit()
+    except Exception as e:
+        logger.warning(f"Erreur lors de la fermeture du navigateur : {e}", exc_info=debug)
+
+
 def main(args, logger, config):
     """
     Fonction principale du script GlycoReport-Downloader (refactorisée).
@@ -929,16 +963,20 @@ def main(args, logger, config):
                 logger.error("Perte de connexion internet détectée lors de la saisie des dates.")
             logger.error(f"Une erreur s'est produite lors de la saisie des dates : {e}")
 
-        selection_rapport(
-            rapports,
-            driver,
-            logger,
-            download_dir,
-            dir_final_base,
-            date_fin_str,
-            date_debut_str,
-            args
-        )
+        try:
+            selection_rapport(
+                rapports,
+                driver,
+                logger,
+                download_dir,
+                dir_final_base,
+                date_fin_str,
+                date_debut_str,
+                args
+            )
+        except NetworkRecoveryFailedError as e:
+            logger.error("Arrêt de l'application: %s", e)
+            raise SystemExit(1)
 
         time.sleep(60)
 
@@ -976,11 +1014,7 @@ def main(args, logger, config):
         traceback.print_exc()
         pause_on_error()
     finally:
-        try:
-            if driver is not None:
-                driver.quit()
-        except Exception as e:
-            logger.warning(f"Erreur lors de la fermeture du navigateur : {e}", exc_info=args.debug)
+        close_browser_session(driver, logger, debug=args.debug)
 
         if download_dir:
             files = glob.glob(os.path.join(download_dir, '*'))
