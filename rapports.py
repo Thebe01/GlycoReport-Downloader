@@ -88,7 +88,7 @@ Modifications
                                Dispatch explicite des rapports conserve avec retry reseau par rapport.
 0.3.18 - 2026-03-25   [ES-14] : Gestion reseau harmonisee dans traitement_export_csv
                                (clic Export modal + fermeture modale).
-0.3.19 - 2026-03-25   [ES-14] : Synchronisation de version (aucun changement fonctionnel dans ce module).
+0.3.19 - 2026-03-25   [ES-14] : Harmonisation de la gestion reseau dans selection_rapport et propagation explicite des erreurs reseau.
 
 Paramètres
 ----------
