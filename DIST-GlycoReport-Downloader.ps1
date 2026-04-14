@@ -1,23 +1,33 @@
-#	FileName: DIST-GlycoReport-Downloader.ps1
-#	FileType: PowerShell Source file
-#
-#	Auteur : Pierre Théberge
-#	Créé le : 2025-09-03
-#	Dernière modification le : 2026-01-29
-#	CopyRights : Pierre Théberge
-#	Description : Script pour générer les exécutables et créer l'installateur Inno Setup.
-#
-#	Version : 2.0.4
-#	Modifications :
-#	Version   Date          Billet  Description
-#	1.0.0     2025-09-03            Version initiale (ZIP).
-#   ...
-#   2.0.0     2025-12-21    ES-18   Passage à Inno Setup pour la distribution.
-#   2.0.1     2025-12-22    ES-18   Correction du chemin d'installation par défaut ({sd}\ipt).
-#   2.0.2     2025-12-22    ES-18   Correction variable inutilisée $appName.
-#                                   Correction warning architecture Inno Setup (x64compatible).
-#   2.0.3     2025-12-22    ES-3    Synchronisation de version.
-#   2.0.4     2026-01-29    ES-19   Ajout du script Launch-Dexcom-And-Run.ps1 dans la distribution.
+# Format d'en-tête standard à respecter pour ce projet.
+# Voir .github/HEADER_TEMPLATE_POWERSHELL.md pour les détails.
+
+<#
+.SYNOPSIS
+    Génère les exécutables et crée l'installateur Inno Setup pour GlycoReport-Downloader.
+
+.DESCRIPTION
+    Nom du fichier : DIST-GlycoReport-Downloader.ps1
+    Type           : PowerShell script
+    Auteur         : Pierre Théberge
+    Compagnie      : Innovations, Performances, Technologies inc.
+    Créé le        : 2025-09-03
+    Modifié le     : 2026-03-26
+    Version        : 2.0.5
+    Copyright      : Pierre Théberge
+
+.MODIFICATIONS
+    1.0.0 - 2025-09-03 - -     : Version initiale (ZIP).
+    2.0.0 - 2025-12-21 - ES-18 : Passage à Inno Setup pour la distribution.
+    2.0.1 - 2025-12-22 - ES-18 : Correction du chemin d'installation par défaut ({sd}\ipt).
+    2.0.2 - 2025-12-22 - ES-18 : Correction variable inutilisée $appName.
+                                  Correction warning architecture Inno Setup (x64compatible).
+    2.0.3 - 2025-12-22 - ES-3  : Synchronisation de version.
+    2.0.4 - 2026-01-29 - ES-19 : Ajout du script Launch-Dexcom-And-Run.ps1 dans la distribution.
+    2.0.5 - 2026-03-26 - ES-20 : Mise en conformité de l'en-tête au format standard.
+
+.EXAMPLE
+    PS> .\DIST-GlycoReport-Downloader.ps1
+#>
 
 $ErrorActionPreference = "Stop"
 
