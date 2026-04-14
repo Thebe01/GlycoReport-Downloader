@@ -266,6 +266,37 @@ traduction stricte de la version francaise.
   après reconnexion, puis échec explicite si la connexion retombe encore.
 - Synchronisation de version et des entêtes de modules.
 
+### 0.3.18 — 25 mars 2026
+
+- Gestion des erreurs réseau harmonisée dans le flux Export CSV (clic du bouton
+  Exporter de la modale et fermeture de la modale).
+- Synchronisation de version et des entêtes de modules.
+
+### 0.3.17 — 23 mars 2026
+
+- Détection de perte réseau pendant le traitement des rapports.
+- Tentative de reconnexion automatique avant et pendant chaque traitement de
+  rapport.
+- Arrêt propre de l'application si la reconnexion échoue.
+- Fermeture de l'onglet Dexcom en fin de traitement, et fermeture complète du
+  navigateur si un seul onglet est ouvert.
+- Conservation du dispatch explicite des traitements par type de rapport.
+
+### 0.3.16 — 19 mars 2026
+
+- Valeur par défaut de `log_retention_days` fixée à 30 jours dans la
+  configuration.
+- Déplacement du fichier `chromedriver_log` par défaut dans le sous-répertoire
+  `log/` du dossier de téléchargement.
+- Fallback de navigation des sous-pages Statistiques rendu indépendant de la
+  région Dexcom configurée.
+- Synchronisation des entêtes de modules Python et de la documentation de
+  version.
+
+### 0.3.15 — 26 février 2026
+
+- Harmonisation des XPath pour réduire la dépendance à la langue du navigateur.
+
 ### 0.3.14 — 13 février 2026
 
 - Ajout d'un suffixe de periode aux noms de rapports (ex: "-14j" ou "-14d").
