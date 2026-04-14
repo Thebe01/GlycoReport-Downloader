@@ -1,5 +1,6 @@
 # Format d'en-tête standard à respecter pour ce projet.
-# Voir HEADER_TEMPLATE_POWERSHELL.md pour les détails.
+# Voir .github/HEADER_TEMPLATE_POWERSHELL.md pour les détails.
+
 <#
 .SYNOPSIS
     Ouvre Chrome sur Dexcom Clarity puis lance GlycoReport-Downloader.
@@ -10,8 +11,8 @@
     Auteur         : Pierre Théberge
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2026-01-29
-    Modifié le     : 2026-02-02
-    Version        : 0.0.4
+    Modifié le     : 2026-03-26
+    Version        : 0.1.1
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
@@ -20,6 +21,14 @@
     0.0.2 - 2026-02-02 - ES-19 : Recherche de l'exécutable dans dist si absent.
     0.0.3 - 2026-02-02 - ES-19 : Fermeture de Chrome avant Selenium (profil partagé).
     0.0.4 - 2026-02-02 - ES-19 : Attache Selenium à Chrome (remote debugging).
+    0.0.5 - 2026-03-26 - ES-20 : Mise en conformité de l'en-tête au format standard.
+    0.1.0 - 2026-03-26 - ES-20 : Exposition de tous les paramètres GlycoDownload (debug, dry-run,
+                                  days, date_debut, date_fin, rapports, list-rapports, attach-debugger,
+                                  start-at-date-selection).
+    0.1.1 - 2026-03-26 - ES-20 : Remplacement de -Debug par -GlycoDebug (conflit avec paramètre commun
+                                  PowerShell -Debug), tout en conservant la transmission vers --debug.
+    0.1.2 - 2026-03-27 - ES-21 : Ajout des options Chrome pour forcer le téléchargement des PDF
+                                  (--disable-pdf-viewer) et réduire les interférences d'extensions.
 
 .PARAMETER ChromePath
     Chemin vers l'exécutable Chrome (par défaut: chrome.exe).
@@ -27,8 +36,44 @@
 .PARAMETER ConfigPath
     Chemin du fichier config.yaml (par défaut: .\config.yaml).
 
+.PARAMETER DebuggerPort
+    Port de débogage distant Chrome (par défaut: 9222). Transmis à --debugger-port.
+
+.PARAMETER GlycoDebug
+    Active le mode debug de GlycoDownload (logs détaillés, captures d'écran). Transmis à --debug.
+
+.PARAMETER DryRun
+    Simule l'exécution sans télécharger. Transmis à --dry-run.
+
+.PARAMETER StartAtDateSelection
+    Démarre directement à la sélection des dates (connexion déjà effectuée). Transmis à --start-at-date-selection.
+
+.PARAMETER AttachDebugger
+    Attache Selenium à un Chrome déjà lancé. Transmis à --attach-debugger.
+
+.PARAMETER Days
+    Nombre de jours à inclure (7, 14, 30 ou 90). Transmis à --days.
+
+.PARAMETER DateDebut
+    Date de début au format AAAA-MM-JJ. Transmis à --date_debut.
+
+.PARAMETER DateFin
+    Date de fin au format AAAA-MM-JJ. Transmis à --date_fin.
+
+.PARAMETER Rapports
+    Liste des rapports à télécharger (ex: "Aperçu", "AGP"). Transmis à --rapports.
+
+.PARAMETER ListRapports
+    Affiche la liste des rapports disponibles et quitte. Transmis à --list-rapports.
+
 .EXAMPLE
     PS> .\Launch-Dexcom-And-Run.ps1
+
+.EXAMPLE
+    PS> .\Launch-Dexcom-And-Run.ps1 -Days 30 -GlycoDebug
+
+.EXAMPLE
+    PS> .\Launch-Dexcom-And-Run.ps1 -DateDebut 2026-01-01 -DateFin 2026-01-31 -Rapports "Aperçu","AGP"
 #>
 
 [CmdletBinding()]
@@ -43,7 +88,37 @@ param(
 
     [Parameter()]
     [ValidateRange(1024, 65535)]
-    [int]$DebuggerPort = 9222
+    [int]$DebuggerPort = 9222,
+
+    [Parameter()]
+    [switch]$GlycoDebug,
+
+    [Parameter()]
+    [switch]$DryRun,
+
+    [Parameter()]
+    [switch]$StartAtDateSelection,
+
+    [Parameter()]
+    [switch]$AttachDebugger,
+
+    [Parameter()]
+    [ValidateSet(7, 14, 30, 90)]
+    [int]$Days,
+
+    [Parameter()]
+    [ValidatePattern('^\d{4}-\d{2}-\d{2}$')]
+    [string]$DateDebut,
+
+    [Parameter()]
+    [ValidatePattern('^\d{4}-\d{2}-\d{2}$')]
+    [string]$DateFin,
+
+    [Parameter()]
+    [string[]]$Rapports,
+
+    [Parameter()]
+    [switch]$ListRapports
 )
 
 #Requires -Version 5.1
@@ -155,12 +230,31 @@ try {
     }
 
     Write-Host "Lancement de GlycoReport-Downloader..." -ForegroundColor Cyan
-    Start-Process -FilePath $exePath -WorkingDirectory (Get-Location) -ArgumentList @(
-        "--start-at-date-selection",
-        "--attach-debugger",
-        "--debugger-port",
-        $DebuggerPort
-    )
+
+    # Construction dynamique des arguments transmis à GlycoDownload
+    $glycoArgs = [System.Collections.Generic.List[string]]::new()
+
+    # Toujours transmis pour que le script lance directement sans login interactif
+    $glycoArgs.Add("--start-at-date-selection")
+    $glycoArgs.Add("--attach-debugger")
+    $glycoArgs.Add("--debugger-port")
+    $glycoArgs.Add($DebuggerPort.ToString())
+
+    if ($StartAtDateSelection) {
+        # Déjà ajouté ci-dessus; ignoré si passé explicitement pour éviter le doublon
+    }
+    if ($AttachDebugger) {
+        # Idem
+    }
+    if ($GlycoDebug) { $glycoArgs.Add("--debug") }
+    if ($DryRun) { $glycoArgs.Add("--dry-run") }
+    if ($ListRapports) { $glycoArgs.Add("--list-rapports") }
+    if ($Days -gt 0) { $glycoArgs.Add("--days"); $glycoArgs.Add($Days.ToString()) }
+    if ($DateDebut) { $glycoArgs.Add("--date_debut"); $glycoArgs.Add($DateDebut) }
+    if ($DateFin) { $glycoArgs.Add("--date_fin"); $glycoArgs.Add($DateFin) }
+    if ($Rapports) { $glycoArgs.Add("--rapports"); $Rapports | ForEach-Object { $glycoArgs.Add($_) } }
+
+    Start-Process -FilePath $exePath -WorkingDirectory (Get-Location) -ArgumentList $glycoArgs
 }
 catch {
     Write-Error $_.Exception.Message
