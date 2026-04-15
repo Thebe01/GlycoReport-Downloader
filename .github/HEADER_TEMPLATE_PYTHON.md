@@ -185,7 +185,17 @@ Modifications
 0.1.0 - 2025-11-08   [BILLET000] : Ajout paramètre --verbose.
 0.1.1 - 2025-11-09   [BILLET000] : Correction encodage UTF-8.
 1.0.0 - 2025-11-15   [BILLET000] : Version de production stable.
+                                    Description sur plusieurs lignes : le texte
+                                    des lignes supplémentaires s'aligne sur le
+                                    premier caractère de la description.
 ```
+
+**Règles de format :**
+
+- Colonne version : largeur fixe, complétée d'espaces pour aligner le séparateur
+- Colonne ticket : largeur fixe de 8 caractères, complétée d'espaces (ex: `[ES-14]` + 1 espace, `[N/A]` + 3 espaces)
+- Continuation : indentation égale à la longueur du préfixe entier (version + date + ticket + deux-points)
+- Utiliser uniquement des espaces (pas de tabulations)
 
 **Règles versioning :**
 

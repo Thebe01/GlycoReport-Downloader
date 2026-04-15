@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-03-25
-Version       : 0.3.19
+Modifié le    : 2026-04-15
+Version       : 0.5.3
 Copyright     : Pierre Théberge
 
 Description
@@ -20,37 +20,37 @@ Centralisation et validation de la configuration (config.yaml) et des secrets (.
 
 Modifications
 -------------
-0.0.0  - 2025-08-05   [N/A]  : Version initiale.
-0.1.0  - 2025-08-06   [N/A]  : Ajout de la gestion des paramètres de configuration via un fichier YAML.
-0.1.1  - 2025-08-13   [N/A]  : Normalisation systématique des chemins, gestion d'erreur sur les paramètres,
+0.0.0  - 2025-08-05   [N/A]   : Version initiale.
+0.1.0  - 2025-08-06   [N/A]   : Ajout de la gestion des paramètres de configuration via un fichier YAML.
+0.1.1  - 2025-08-13   [N/A]   : Normalisation systématique des chemins, gestion d'erreur sur les paramètres,
                                conservation de tous les paramètres importants (chemins, URL, rapports, etc.).
-0.1.2  - 2025-08-13   [N/A]  : Ajout de la fonction normalize_path, harmonisation de l’utilisation des chemins.
-0.1.3  - 2025-08-18   [N/A]  : Suppression de la duplication de normalize_path, import depuis utils.py,
+0.1.2  - 2025-08-13   [N/A]   : Ajout de la fonction normalize_path, harmonisation de l’utilisation des chemins.
+0.1.3  - 2025-08-18   [N/A]   : Suppression de la duplication de normalize_path, import depuis utils.py,
                                harmonisation de l’utilisation des chemins dans tout le projet.
-0.1.4  - 2025-08-18   [N/A]  : Sécurisation du chargement de la configuration : utilisation stricte de yaml.safe_load,
+0.1.4  - 2025-08-18   [N/A]   : Sécurisation du chargement de la configuration : utilisation stricte de yaml.safe_load,
                                validation des types et de la présence des paramètres, vérification des droits d'accès,
                                protection contre l'exposition de secrets et contre l'injection de code.
-0.1.5  - 2025-08-22   [N/A]  : Ajout du paramètre chromedriver_path configurable via config.yaml,
+0.1.5  - 2025-08-22   [N/A]   : Ajout du paramètre chromedriver_path configurable via config.yaml,
                                valeur par défaut : "./chromedriver.exe" (même dossier que l'exécutable).
-0.1.6  - 2025-08-22   [N/A]  : Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
-0.1.7  - 2025-08-25   [N/A]  : Création automatique de config.yaml à partir de config_example.yaml si absent.
+0.1.6  - 2025-08-22   [N/A]   : Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
+0.1.7  - 2025-08-25   [N/A]   : Création automatique de config.yaml à partir de config_example.yaml si absent.
                                Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
-0.1.8  - 2025-08-27   [N/A]  : Configuration interactive avancée pour config.yaml et .env.
+0.1.8  - 2025-08-27   [N/A]   : Configuration interactive avancée pour config.yaml et .env.
                                Copie minimale du profil Chrome lors de la configuration.
                                Ajout du paramètre log_retention_days (0 = conservation illimitée).
                                Nettoyage automatique des logs selon la rétention.
                                Messages utilisateurs colorés et validation renforcée.
-0.1.9  - 2025-08-28   [N/A]  : Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
+0.1.9  - 2025-08-28   [N/A]   : Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
                                Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
                                Correction de la robustesse de la configuration initiale.
-0.1.10 - 2025-08-28   [N/A]  : Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
+0.1.10 - 2025-08-28   [N/A]   : Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
                                Chaque suppression de log est loggée.
-0.2.0  - 2025-08-28   [N/A]  : Le fichier .env est désormais chiffré à l'écriture et déchiffré à la volée lors de la lecture.
+0.2.0  - 2025-08-28   [N/A]   : Le fichier .env est désormais chiffré à l'écriture et déchiffré à la volée lors de la lecture.
                                La fonction get_dexcom_credentials ne propose plus de saisie interactive si les identifiants sont absents.
                                Correction de la suppression du fichier temporaire .env.tmp même en cas d'erreur.
                                Sécurisation de l'affichage des identifiants (plus d'affichage du mot de passe en clair).
-0.2.1  - 2025-08-29   [N/A]  : Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
-0.2.2  - 2025-08-29   [N/A]  : Séparation stricte de la gestion des arguments CLI (retirée de ce module).
+0.2.1  - 2025-08-29   [N/A]   : Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
+0.2.2  - 2025-08-29   [N/A]   : Séparation stricte de la gestion des arguments CLI (retirée de ce module).
                                Désactivation de tout accès à la config lors de l'affichage du help.
                                Nettoyage des doublons de fonctions utilitaires CLI.
 0.2.3  - 2025-10-14   [ES-11] : Remplacement d'une version spécifique de chromedriver par ChromeDriverManager qui charge toujours la version courante.
@@ -82,6 +82,11 @@ Modifications
 0.3.17 - 2026-03-23   [ES-14] : Synchronisation de version (aucun changement fonctionnel dans ce module).
 0.3.18 - 2026-03-25   [ES-14] : Synchronisation de version (aucun changement fonctionnel dans ce module).
 0.3.19 - 2026-03-25   [ES-14] : Synchronisation de version (aucun changement fonctionnel dans ce module).
+0.4.0  - 2026-04-14   [ES-20] : Synchronisation de version (aucun changement fonctionnel dans ce module).
+0.5.0  - 2026-04-14   [ES-21] : Ajout de l'export DAYS (parametre days depuis config.yaml).
+0.5.1  - 2026-04-15   [ES-22] : Synchronisation de version (aucun changement fonctionnel).
+0.5.2  - 2026-04-15   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.3  - 2026-04-15   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -517,6 +522,8 @@ if not is_help_requested():
     RAPPORTS = cast(list, get_param("rapports"))
     LOG_RETENTION_DAYS = int(config.get("log_retention_days", 30))
     DEBUG = _coerce_bool(config.get("debug"), default=False)
+    _days_raw = config.get("days")
+    DAYS = int(_days_raw) if _days_raw is not None else None
 
     DATE_FIN = config.get("date_fin")
     if not DATE_FIN:

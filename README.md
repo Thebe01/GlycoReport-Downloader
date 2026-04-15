@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.3.19-blue)
+![Version](https://img.shields.io/badge/version-0.5.3-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0319--25-mars-2026)
+- [Nouveautés](#version--053--15-avril-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,75 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.5.3 — 15 avril 2026
+
+### Nouveautés (0.5.3)
+
+**Correctifs :**
+
+- Robustesse de la saisie des dates : utilisation de `element_to_be_clickable`
+  au lieu de `presence_of_element_located` ; clic, effacement et saisie
+  effectués séquentiellement par champ (évite une
+  `StaleElementReferenceException` si l'UI Dexcom effectue un re-render entre
+  les deux champs).
+
+---
+
+## Version : 0.5.2 — 15 avril 2026
+
+### Nouveautés (0.5.2)
+
+**Correctifs :**
+
+- Saisie des dates : l'échec de Selenium provoque maintenant une erreur fatale
+  au lieu de continuer silencieusement avec les dates par défaut de Dexcom.
+
+---
+
+## Version : 0.5.1 — 15 avril 2026
+
+### Nouveautés (0.5.1)
+
+**Correctifs :**
+
+- Documentation de `get_period_suffix` (`rapports.py`) : docstring complet
+  (Args, Returns, Description).
+- Synchronisation de version dans tous les modules Python (aucun changement
+  fonctionnel).
+
+---
+
+## Version : 0.5.0 — 14 avril 2026
+
+### Nouveautés (0.5.0)
+
+**Nouvelles fonctionnalités :**
+
+- Ajout du paramètre `days` dans `config.yaml` pour définir la période par
+  défaut sans passer par la ligne de commande.
+- Chaîne de priorité des dates : arguments CLI `--date_debut`/`--date_fin` >
+  argument CLI `--days` > `days` dans `config.yaml` > `date_debut`/`date_fin`
+  dans `config.yaml`.
+- Extraction de `resolve_effective_date_range` en fonction pure testable.
+- Ajout de tests unitaires pour la résolution de la plage de dates
+  (`tests/test_glycodownload_dates.py`).
+
+---
+
+## Version : 0.4.0 — 14 avril 2026
+
+### Nouveautés (0.4.0)
+
+**Nouvelles fonctionnalités :**
+
+- Exposition de tous les paramètres CLI de `GlycoDownload.py` dans
+  `Launch-Dexcom-And-Run.ps1`.
+- Correction de `-StartAtDateSelection` et `-AttachDebugger` : désactivés par
+  défaut, activables explicitement (comportement inversé par rapport à
+  l'ancienne version).
 
 ---
 
@@ -257,6 +326,36 @@ traduction stricte de la version francaise.
 ---
 
 ## Historique des versions
+
+### 0.5.3 — 15 avril 2026
+
+- Robustesse de la saisie des dates : `element_to_be_clickable` au lieu de
+  `presence_of_element_located` ; clic + effacement + saisie séquentiels par
+  champ.
+
+### 0.5.2 — 15 avril 2026
+
+- Saisie des dates : erreur fatale si Selenium échoue (plus de continuation
+  silencieuse avec les dates par défaut de Dexcom).
+
+### 0.5.1 — 15 avril 2026
+
+- Documentation de `get_period_suffix` (`rapports.py`) : docstring complet.
+- Synchronisation de version dans tous les modules (aucun changement
+  fonctionnel).
+
+### 0.5.0 — 14 avril 2026
+
+- Ajout du paramètre `days` dans `config.yaml`.
+- Chaîne de priorité : CLI dates > CLI `--days` > config `days` > config dates.
+- Extraction de `resolve_effective_date_range` (fonction pure testable).
+- Ajout de tests unitaires pour la résolution de la plage de dates.
+
+### 0.4.0 — 14 avril 2026
+
+- Exposition de tous les paramètres CLI dans `Launch-Dexcom-And-Run.ps1`.
+- Correction de `-StartAtDateSelection` et `-AttachDebugger` (désactivés par
+  défaut, activables explicitement).
 
 ### 0.3.19 — 25 mars 2026
 
@@ -717,13 +816,12 @@ Ouvre un terminal PowerShell à la racine du projet et exécute :
 - **Par défaut**, si aucune date n'est fournie en argument ou dans le fichier
   `config.yaml`, la période utilisée sera les **14 derniers jours jusqu'à
   hier**.
-- Vous pouvez surcharger ce comportement :
-  - en passant `--days 7`, `--days 14`, `--days 30` ou `--days 90` en argument,
-  - ou en définissant explicitement `date_debut` et `date_fin` dans
-    `config.yaml`,
-  - ou encore en passant `--date_debut` et `--date_fin` en argument.
-
-Note : `--days` est uniquement disponible en ligne de commande.
+- Vous pouvez surcharger ce comportement selon la chaîne de priorité suivante
+  (du plus prioritaire au moins prioritaire) :
+  1. arguments CLI `--date_debut` et `--date_fin`,
+  2. argument CLI `--days`,
+  3. paramètre `days` dans `config.yaml`,
+  4. paramètres `date_debut` et `date_fin` dans `config.yaml`.
 
 Exemple :
 
@@ -749,6 +847,7 @@ dexcom_url: "https://clarity.dexcom.eu"
 download_dir: C:/Users/Utilisateur/Downloads/GlycoReport-Downloader
 log_retention_days: 30
 debug: false
+days: null
 date_debut: 2025-01-01
 date_fin: 2025-01-31
 output_dir: C:/Users/Utilisateur/Downloads/GlycoReport-Downloader
@@ -776,10 +875,9 @@ Parametres disponibles dans `config.yaml` :
 - `rapports` : liste des rapports a generer.
 - `log_retention_days` : retention des logs en jours (0 = illimite).
 - `debug` : active le mode debug (logs detailles, captures d'ecran).
+- `days` : nombre de jours a inclure (7, 14, 30 ou 90); moins prioritaire que les arguments CLI.
 - `date_debut` : date de debut par defaut (AAAA-MM-JJ).
 - `date_fin` : date de fin par defaut (AAAA-MM-JJ).
-
-Note : `--days` est un parametre CLI uniquement (pas un champ `config.yaml`).
 
 La clé d'encryption pour le fichier `.env` est stockée dans la variable
 d'environnement système `ENV_DEXCOM_KEY`.
@@ -917,26 +1015,24 @@ Pour questions ou signalement de bug : [https://github.com/thebe01/GlycoReport-D
 
 ## Tests unitaires
 
-Pour exécuter tous les tests unitaires sur les fonctions utilitaires du projet,
-utilisez la commande suivante :
-
-**Bash/CMD :**
-
-```sh
-pytest -v --log-cli-level=INFO tests/test_utils.py
-```
-
-**PowerShell :**
+Pour exécuter tous les tests unitaires, utilisez le script PowerShell fourni :
 
 ```powershell
-pytest -v --log-cli-level=INFO tests/test_utils.py
+.\tests\Run-Tests.ps1
 ```
 
-- `-v` affiche le détail de chaque test exécuté (mode verbose).
-- `--log-cli-level=INFO` affiche les messages de log générés par les fonctions
-  testées.
-- Cette commande permet de vérifier la robustesse et la portabilité de toutes
-  les fonctions utilitaires du projet.
+Options disponibles :
+
+- `.\tests\Run-Tests.ps1` : exécution complète en mode verbose (défaut).
+- `.\tests\Run-Tests.ps1 -Bref` : mode compact (résumé final seulement).
+- `.\tests\Run-Tests.ps1 -Filtre "dates"` : exécute uniquement les tests dont
+  le nom contient "dates".
+
+Modules de tests couverts :
+
+- `tests/test_utils.py` : fonctions utilitaires (`utils.py`).
+- `tests/test_glycodownload_dates.py` : résolution de plage de dates
+  (`GlycoDownload.py`).
 
 **Note tests fonctionnels :** l'application n'exécute pas le téléchargement tant
 que l'usager n'est pas connecté. Pour les tests end-to-end, lancez d'abord
@@ -1024,6 +1120,51 @@ translation of the French version.
 ---
 
 ## What's New (English)
+
+### Version: 0.5.3 — April 15, 2026
+
+**Fixes:**
+
+- Date entry robustness: use `element_to_be_clickable` instead of
+  `presence_of_element_located`; click, clear, and send_keys performed
+  sequentially per field (avoids `StaleElementReferenceException` if the
+  Dexcom UI re-renders between the two fields).
+
+### Version: 0.5.2 — April 15, 2026
+
+**Fixes:**
+
+- Date entry: Selenium failure now raises a fatal error instead of silently
+  continuing with Dexcom's default dates.
+
+### Version: 0.5.1 — April 15, 2026
+
+**Fixes:**
+
+- Documented `get_period_suffix` (`rapports.py`): full docstring
+  (Args, Returns, Description).
+- Version synchronization across all Python modules (no functional change).
+
+### Version: 0.5.0 — April 14, 2026
+
+**New features:**
+
+- Added `days` parameter in `config.yaml` to set the default period without
+  using the command line.
+- Date priority chain: CLI `--date_debut`/`--date_fin` > CLI `--days` >
+  `days` in `config.yaml` > `date_debut`/`date_fin` in `config.yaml`.
+- Extracted `resolve_effective_date_range` as a pure, testable function.
+- Added unit tests for date range resolution
+  (`tests/test_glycodownload_dates.py`).
+
+### Version: 0.4.0 — April 14, 2026
+
+**New features:**
+
+- Exposed all CLI parameters from `GlycoDownload.py` in
+  `Launch-Dexcom-And-Run.ps1`.
+- Fixed `-StartAtDateSelection` and `-AttachDebugger`: disabled by default,
+  enable them explicitly (inverted behaviour vs. previous version).
 
 ### Version: 0.3.19 — March 25, 2026
 
@@ -1256,6 +1397,35 @@ translation of the French version.
 ---
 
 ## Version History (English)
+
+### 0.5.3 — April 15, 2026
+
+- Date entry robustness: `element_to_be_clickable` instead of
+  `presence_of_element_located`; click + clear + send_keys sequentially per
+  field.
+
+### 0.5.2 — April 15, 2026
+
+- Date entry: fatal error if Selenium fails (no more silent continuation with
+  Dexcom's default dates).
+
+### 0.5.1 — April 15, 2026
+
+- Documented `get_period_suffix` (`rapports.py`): full docstring.
+- Version synchronization across all modules (no functional change).
+
+### 0.5.0 — April 14, 2026
+
+- Added `days` parameter in `config.yaml`.
+- Priority chain: CLI dates > CLI `--days` > config `days` > config dates.
+- Extracted `resolve_effective_date_range` as a pure, testable function.
+- Added unit tests for date range resolution.
+
+### 0.4.0 — April 14, 2026
+
+- Exposed all CLI parameters in `Launch-Dexcom-And-Run.ps1`.
+- Fixed `-StartAtDateSelection` and `-AttachDebugger` (disabled by default,
+  enable them explicitly).
 
 ### 0.3.19 — March 25, 2026
 
@@ -1696,13 +1866,12 @@ Open a PowerShell terminal at the project root and run:
 
 - **By default**, if no date is provided as an argument or in the `config.yaml`
   file, the period used will be the **last 14 days up to yesterday**.
-- You can override this behavior:
-  - by passing `--days 7`, `--days 14`, `--days 30`, or `--days 90` as an
-    argument,
-  - or by explicitly setting `date_debut` and `date_fin` in `config.yaml`,
-  - or by passing `--date_debut` and `--date_fin` as arguments.
-
-Note: `--days` is only available on the command line.
+- You can override this behavior using the following priority chain (highest to
+  lowest priority):
+  1. CLI arguments `--date_debut` and `--date_fin`,
+  2. CLI argument `--days`,
+  3. `days` parameter in `config.yaml`,
+  4. `date_debut` and `date_fin` parameters in `config.yaml`.
 
 Example:
 
@@ -1728,6 +1897,7 @@ dexcom_url: "https://clarity.dexcom.eu"
 download_dir: C:/Users/YourUser/Downloads/GlycoReport-Downloader
 log_retention_days: 30
 debug: false
+days: null
 date_debut: 2025-01-01
 date_fin: 2025-01-31
 output_dir: C:/Users/YourUser/Downloads/GlycoReport-Downloader
@@ -1755,10 +1925,9 @@ Available parameters in `config.yaml`:
 - `rapports`: list of reports to generate.
 - `log_retention_days`: log retention in days (0 = unlimited).
 - `debug`: enables debug mode (detailed logs, screenshots).
+- `days`: number of days to include (7, 14, 30, or 90); lower priority than CLI arguments.
 - `date_debut`: default start date (YYYY-MM-DD).
 - `date_fin`: default end date (YYYY-MM-DD).
-
-Note: `--days` is a CLI-only option (not a `config.yaml` field).
 
 The encryption key for the `.env` file is stored in the system environment
 variable `ENV_DEXCOM_KEY`.
@@ -1892,25 +2061,24 @@ For questions or bug reports: https://github.com/thebe01/GlycoReport-Downloader/
 
 ## Unit Tests (English)
 
-To run all unit tests for the project's utility functions, use the following
-command:
-
-**Bash/CMD:**
-
-```sh
-pytest -v --log-cli-level=INFO tests/test_utils.py
-```
-
-**PowerShell:**
+To run all unit tests, use the provided PowerShell script:
 
 ```powershell
-pytest -v --log-cli-level=INFO tests/test_utils.py
+.\tests\Run-Tests.ps1
 ```
 
-- `-v` shows detailed output for each test (verbose mode).
-- `--log-cli-level=INFO` shows log messages produced by the tested functions.
-- This command helps verify the robustness and portability of all the project's
-  utility functions.
+Available options:
+
+- `.\tests\Run-Tests.ps1`: full run in verbose mode (default).
+- `.\tests\Run-Tests.ps1 -Bref`: compact mode (final summary only).
+- `.\tests\Run-Tests.ps1 -Filtre "dates"`: run only tests whose name contains
+  "dates".
+
+Test modules covered:
+
+- `tests/test_utils.py`: utility functions (`utils.py`).
+- `tests/test_glycodownload_dates.py`: date range resolution
+  (`GlycoDownload.py`).
 
 **Functional test note:** the app does not proceed until the user is logged in.
 For end-to-end tests, run `Launch-Dexcom-And-Run.ps1` first, complete the login,
