@@ -62,20 +62,38 @@ Etapes:
 Pour valider rapidement les scenarios critiques sans test E2E complet :
 
 ```powershell
+# Tous les tests unitaires (script dedie, depuis tests/)
+.\tests\Run-Tests.ps1
+
+# Ou manuellement avec pytest
+python -m pytest -v tests/
+
 # Reconnexion reseau (succes puis echec)
 python -m pytest -q tests/test_rapports_network.py
 
 # Fermeture de session navigateur (1 onglet vs plusieurs onglets)
 python -m pytest -q tests/test_glycodownload_shutdown.py
 
-# Suite combinee des tests cibles ES-14
-python -m pytest -q tests/test_rapports_network.py tests/test_glycodownload_shutdown.py
+# Priorite des dates / parametre days (ES-21)
+python -m pytest -q tests/test_glycodownload_dates.py
+
+# Suite combinee
+python -m pytest -q tests/test_rapports_network.py tests/test_glycodownload_shutdown.py tests/test_glycodownload_dates.py
 ```
 
 Resultat attendu :
 
 - Tous les tests passent (statut `passed`).
 - Aucun traceback Python dans la sortie.
+
+### Modules de test et couverture
+
+| Fichier                              | Ce qui est teste                                             | Ticket |
+|--------------------------------------|--------------------------------------------------------------|--------|
+| `test_utils.py`                      | Utilitaires (chemins, internet, logs, screenshots, backoff)  | —      |
+| `test_glycodownload_shutdown.py`     | `close_browser_session` (1 onglet / plusieurs onglets)       | ES-14  |
+| `test_rapports_network.py`           | Retry reseau et `selection_rapport`                          | ES-14  |
+| `test_glycodownload_dates.py`        | `resolve_effective_date_range` (chaine de priorite dates)    | ES-21  |
 
 ## Nettoyage
 

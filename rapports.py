@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-03-25
-Version       : 0.3.19
+Modifié le    : 2026-04-15
+Version       : 0.5.3
 Copyright     : Pierre Théberge
 
 Description
@@ -89,6 +89,9 @@ Modifications
 0.3.18 - 2026-03-25   [ES-14] : Gestion reseau harmonisee dans traitement_export_csv
                                (clic Export modal + fermeture modale).
 0.3.19 - 2026-03-25   [ES-14] : Harmonisation de la gestion reseau dans selection_rapport et propagation explicite des erreurs reseau.
+0.5.1  - 2026-04-15   [ES-22] : Documentation de get_period_suffix (docstring complet : Args, Returns, Description).
+0.5.2  - 2026-04-15   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.3  - 2026-04-15   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -267,7 +270,31 @@ def wait_for_csv_download(DOWNLOAD_DIR, timeout=120):
     return False
 
 def get_period_suffix(date_debut, date_fin, args, logger=None):
-    """Retourne un suffixe de periode (ex: 14j/14d) ou None."""
+    """
+    Calcule un suffixe de période à ajouter au nom de fichier (par exemple "14j" ou "14d").
+
+    Args:
+        date_debut (str): Date de début au format ``YYYY-MM-DD``.
+        date_fin (str): Date de fin au format ``YYYY-MM-DD``.
+        args (argparse.Namespace, optional): Arguments de la ligne de commande. Si
+            ``args.days`` est défini et strictement positif, cette valeur est utilisée en
+            priorité pour le nombre de jours de la période.
+        logger (logging.Logger, optional): Logger utilisé pour émettre des messages de
+            debug en cas d'erreur de calcul (par exemple, format de date invalide).
+
+    Returns:
+        str or None: Le suffixe de période, composé du nombre de jours suivi de l'unité
+        (``"j"`` pour les locales françaises, ``"d"`` sinon), par exemple ``"14j"`` ou
+        ``"14d"``. Retourne ``None`` si la période ne peut pas être déterminée (dates
+        manquantes ou invalides, nombre de jours nul ou négatif, ou erreur de parsing).
+
+    Description:
+        Si ``args.days`` est défini et valide, il est utilisé pour déterminer le nombre
+        de jours. Sinon, la fonction calcule la période à partir de ``date_debut`` et
+        ``date_fin`` (différence en jours + 1 pour inclure les deux bornes). L'unité
+        renvoyée dépend de la locale système : ``"j"`` pour une locale commençant par
+        ``"fr"`` (français), ou ``"d"`` pour les autres locales.
+    """
     if not date_debut or not date_fin:
         return None
 

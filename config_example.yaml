@@ -12,6 +12,7 @@
 #   - 2025-10-16 : (v0.2.4) Suppression du paramètre obsolète chromedriver_path (non utilisé depuis v0.2.3).
 #                  ChromeDriverManager télécharge automatiquement la version appropriée.
 #   - 2026-02-17 : Ajout des paramètres debug/date_debut/date_fin et note de lancement via Launch-Dexcom-And-Run.ps1.
+#   - 2026-04-13 : (ES-21) Ajout du paramètre days (période glissante, mutuellement exclusif avec date_debut+date_fin).
 #/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # config_example.yaml
@@ -24,6 +25,10 @@ chrome_user_data_dir: "~/Chrome_Clarity_Profile"
 debug: false
 date_debut: "2025-01-01"
 date_fin: "2025-01-31"
+# Nombre de jours de la période glissante (valeurs : 7, 14, 30, 90).
+# Mutuellement exclusif avec date_debut + date_fin simultanément.
+# null = utiliser date_debut/date_fin.
+days: null
 rapports:
   [
     "Aperçu",

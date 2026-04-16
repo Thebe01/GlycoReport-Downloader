@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
-Modifié le    : 2026-03-25
-Version       : 0.3.19
+Modifié le    : 2026-04-15
+Version       : 0.5.3
 Copyright     : Pierre Théberge
 
 Description
@@ -20,95 +20,95 @@ Script principal (CLI + orchestration) pour automatiser le téléchargement des 
 
 Modifications
 -------------
-0.0.0   - 2025-03-03   [N/A]  : Version initiale.
-0.0.1   - 2025-03-07   [N/A]  : Connectoin à Clarity et authentification
-0.0.2   - 2025-03-20   [N/A]  : Cliquer sur le sélecteur de dates et choisir la période
-0.0.3   - 2025-03-28   [N/A]  : Ajout du traitement des rapports
-0.0.4   - 2025-04-07   [N/A]  : Conversion à Python 3.13 et une erreur de syntaxe dans le code de la fonction traitement_rapport_apercu
-0.0.5   - 2025-04-11   [N/A]  : Ajout de la sélection du rapport Apercu
-0.0.6   - 2025-04-16   [N/A]  : Ajout du code pour télécharger un rapport.
-0.0.7   - 2025-04-24   [N/A]  : Retour à Python 3.12. Besoin Tensorflow et il n'est pas supporté par Python 3.13
-0.0.8   - 2025-05-23   [N/A]  : Terminé la fonction téléchargement_rapport
-0.0.9   - 2025-07-01   [N/A]  : Ajout de l'option debug et ajout d'un fichier de log
-0.0.10  - 2025-07-02   [N/A]  : Modification pour tenir compte d'une connexion internet lente et instable (4mb/s)
-                               Ajout de la fonction traitement_rapport
-                               Ajout de la fonction check_internet pour vérifier la connexion internet
-                               Ajout du traitement pour les rapports Modèles
-                               Dans la fonction deplace_et_renomme_rapport, ne pas tenir compte des fichiers *.log
-0.0.11  - 2025-07-03   [N/A]  : La vérification de la connexion internet ne fonctionne pas avec NordVPN
-                               Ajout du traitement pour le rapport Superposition
-                               Rendre plus robuste le traitement du rapport Aperçu
-                               Ajout du traitement pour le rapport Quotidien
-                               Ajout du traitement pour le rapport AGP
-0.0.12  - 2025-07-08   [N/A]  : Ajout du traitement pour le rapport Statistiques
-0.0.13  - 2025-07-13   [N/A]  : Ajout du traitement pour le rapport Comparer
-0.0.14  - 2025-07-18   [N/A]  : Ajout de l'exportation des données en format csv
-0.0.15  - 2025-07-21   [N/A]  : Terminer la fonction traitement_export_csv
-                               Ajout des sous-rapport pour le rapport Comparer
-                               Les sous-rapports Superposition et Quotidien de comparer ne fonctioone pas.
-                               Ils produisent le même PDF que Tendances.
-                               Ajouter la déconnexion du compte avant de fermer le navigateur
-0.0.16  - 2025-07-25   [N/A]  : Correction pour la déconnexion du compte
-                               Correction pour le bouton Fermer de la fenêtre modale Exporter
-0.0.17  - 2025-07-25   [N/A]  : Correction pour le déconnexion du compte. Éliminer la référence au nom d'utilisateur.
-                               Ajout de TODO pour la correction du code.
-0.0.18  - 2025-07-30   [N/A]  : Gestion des exceptions plus précise. Évite les except: nus. Précise toujours le type d'exception
-                               Factorisation des attentes sur les overlays/loaders. Crée une fonction utilitaire
-                               pour attendre la disparition des overlays, et utilise-la partout où c'est pertinent.
-                               Centralisation des paramètres et chemins. Définis tous les chemins, URLs, et paramètres en haut du script ou dans un fichier de config.
-                               Ajout d'une fonction main()
-                               Fermeture du navigateur dans un finally
-0.0.19  - 2025-08-04   [N/A]  : Ajout de docstrings pour toutes les fonctions
-                               Logging cohérent. Utilise le logger pour tous les messages (pas de print).
-0.0.20  - 2025-08-05   [N/A]  : Ajout d'une validation pour la présende des variables d'environnement nécessaires
-                               Crée un fichier config.py pour centraliser tous les paramètres, chemins, URLs, etc.
-                               Crée un fichier utils.py pour toutes les fonctions utilitaires (connexion internet, overlay, renommage, etc.).
-                               Crée un fichier rapports.py pour le traitement des rapports
-0.0.21  - 2025-08-06   [N/A]  : Ajout d'un exemple de fichier de configuration "config_example.yaml"
-0.0.22  - 2025-08-13   [N/A]  : Centralisation et normalisation des chemins, gestion CLI améliorée,
-                               logs JS navigateur, robustesse accrue sur la gestion des erreurs,
-                               factorisation des utilitaires, gestion propre des exceptions et de la déconnexion.
-0.0.23  - 2025-08-13   [N/A]  : Capture d'écran centralisée via utils.py, délai avant capture,
-                               suppression des duplications de code, ajout de logs pour le diagnostic.
-0.1.0   - 2025-08-18   [N/A]  : Robustesse saisie identifiant : sélection usernameLogin, vérification visibilité/interactivité,
-                               captures d'écran uniquement en mode debug, gestion du bouton 'Pas maintenant' après connexion,
-                               adaptation aux changements d'interface Dexcom, logs détaillés pour le diagnostic.
-0.1.1   - 2025-09-03   [N/A]  : Ajout des logs.
-0.1.2   - 2025-09-04   [N/A]  : Vérification des répertoires.
-0.1.3   - 2025-09-05   [N/A]  : Correction de la récupération de la date de rapport.
-0.1.4   - 2025-09-05   [N/A]  : Renommage du répertoire de sortie.
-0.1.5   - 2025-09-06   [N/A]  : Répertoire de sortie dans config.yaml.
-0.1.6   - 2025-09-23   [N/A]  : Gestion améliorée de la sélection des jours (days).
-0.1.7   - 2025-10-06   [N/A]  : Détermination automatique de la version de chromedriver.
-0.2.0   - 2025-10-07   [N/A]  : Réorganisation complète de la structure en modules.
-0.2.1   - 2025-10-09   [ES-5] : Ajout de la langue dans les arguments en CLI et au rapport.
-0.2.2   - 2025-10-11   [ES-6] : Les rapports sont indépendants de la langue de l'utilisateur.
+0.0.0   - 2025-03-03   [N/A]   : Version initiale.
+0.0.1   - 2025-03-07   [N/A]   : Connectoin à Clarity et authentification
+0.0.2   - 2025-03-20   [N/A]   : Cliquer sur le sélecteur de dates et choisir la période
+0.0.3   - 2025-03-28   [N/A]   : Ajout du traitement des rapports
+0.0.4   - 2025-04-07   [N/A]   : Conversion à Python 3.13 et une erreur de syntaxe dans le code de la fonction traitement_rapport_apercu
+0.0.5   - 2025-04-11   [N/A]   : Ajout de la sélection du rapport Apercu
+0.0.6   - 2025-04-16   [N/A]   : Ajout du code pour télécharger un rapport.
+0.0.7   - 2025-04-24   [N/A]   : Retour à Python 3.12. Besoin Tensorflow et il n'est pas supporté par Python 3.13
+0.0.8   - 2025-05-23   [N/A]   : Terminé la fonction téléchargement_rapport
+0.0.9   - 2025-07-01   [N/A]   : Ajout de l'option debug et ajout d'un fichier de log
+0.0.10  - 2025-07-02   [N/A]   : Modification pour tenir compte d'une connexion internet lente et instable (4mb/s)
+                                 Ajout de la fonction traitement_rapport
+                                 Ajout de la fonction check_internet pour vérifier la connexion internet
+                                 Ajout du traitement pour les rapports Modèles
+                                 Dans la fonction deplace_et_renomme_rapport, ne pas tenir compte des fichiers *.log
+0.0.11  - 2025-07-03   [N/A]   : La vérification de la connexion internet ne fonctionne pas avec NordVPN
+                                 Ajout du traitement pour le rapport Superposition
+                                 Rendre plus robuste le traitement du rapport Aperçu
+                                 Ajout du traitement pour le rapport Quotidien
+                                 Ajout du traitement pour le rapport AGP
+0.0.12  - 2025-07-08   [N/A]   : Ajout du traitement pour le rapport Statistiques
+0.0.13  - 2025-07-13   [N/A]   : Ajout du traitement pour le rapport Comparer
+0.0.14  - 2025-07-18   [N/A]   : Ajout de l'exportation des données en format csv
+0.0.15  - 2025-07-21   [N/A]   : Terminer la fonction traitement_export_csv
+                                 Ajout des sous-rapport pour le rapport Comparer
+                                 Les sous-rapports Superposition et Quotidien de comparer ne fonctioone pas.
+                                 Ils produisent le même PDF que Tendances.
+                                 Ajouter la déconnexion du compte avant de fermer le navigateur
+0.0.16  - 2025-07-25   [N/A]   : Correction pour la déconnexion du compte
+                                 Correction pour le bouton Fermer de la fenêtre modale Exporter
+0.0.17  - 2025-07-25   [N/A]   : Correction pour le déconnexion du compte. Éliminer la référence au nom d'utilisateur.
+                                 Ajout de TODO pour la correction du code.
+0.0.18  - 2025-07-30   [N/A]   : Gestion des exceptions plus précise. Évite les except: nus. Précise toujours le type d'exception
+                                 Factorisation des attentes sur les overlays/loaders. Crée une fonction utilitaire
+                                 pour attendre la disparition des overlays, et utilise-la partout où c'est pertinent.
+                                 Centralisation des paramètres et chemins. Définis tous les chemins, URLs, et paramètres en haut du script ou dans un fichier de config.
+                                 Ajout d'une fonction main()
+                                 Fermeture du navigateur dans un finally
+0.0.19  - 2025-08-04   [N/A]   : Ajout de docstrings pour toutes les fonctions
+                                 Logging cohérent. Utilise le logger pour tous les messages (pas de print).
+0.0.20  - 2025-08-05   [N/A]   : Ajout d'une validation pour la présende des variables d'environnement nécessaires
+                                 Crée un fichier config.py pour centraliser tous les paramètres, chemins, URLs, etc.
+                                 Crée un fichier utils.py pour toutes les fonctions utilitaires (connexion internet, overlay, renommage, etc.).
+                                 Crée un fichier rapports.py pour le traitement des rapports
+0.0.21  - 2025-08-06   [N/A]   : Ajout d'un exemple de fichier de configuration "config_example.yaml"
+0.0.22  - 2025-08-13   [N/A]   : Centralisation et normalisation des chemins, gestion CLI améliorée,
+                                 logs JS navigateur, robustesse accrue sur la gestion des erreurs,
+                                 factorisation des utilitaires, gestion propre des exceptions et de la déconnexion.
+0.0.23  - 2025-08-13   [N/A]   : Capture d'écran centralisée via utils.py, délai avant capture,
+                                 suppression des duplications de code, ajout de logs pour le diagnostic.
+0.1.0   - 2025-08-18   [N/A]   : Robustesse saisie identifiant : sélection usernameLogin, vérification visibilité/interactivité,
+                                 captures d'écran uniquement en mode debug, gestion du bouton 'Pas maintenant' après connexion,
+                                 adaptation aux changements d'interface Dexcom, logs détaillés pour le diagnostic.
+0.1.1   - 2025-09-03   [N/A]   : Ajout des logs.
+0.1.2   - 2025-09-04   [N/A]   : Vérification des répertoires.
+0.1.3   - 2025-09-05   [N/A]   : Correction de la récupération de la date de rapport.
+0.1.4   - 2025-09-05   [N/A]   : Renommage du répertoire de sortie.
+0.1.5   - 2025-09-06   [N/A]   : Répertoire de sortie dans config.yaml.
+0.1.6   - 2025-09-23   [N/A]   : Gestion améliorée de la sélection des jours (days).
+0.1.7   - 2025-10-06   [N/A]   : Détermination automatique de la version de chromedriver.
+0.2.0   - 2025-10-07   [N/A]   : Réorganisation complète de la structure en modules.
+0.2.1   - 2025-10-09   [ES-5]  : Ajout de la langue dans les arguments en CLI et au rapport.
+0.2.2   - 2025-10-11   [ES-6]  : Les rapports sont indépendants de la langue de l'utilisateur.
 0.2.3   - 2025-10-14   [ES-11] : Ajout du rapport Statistiques horaires et amélioration de la robustesse d'accès aux rapports.
-                               Utilisation de ChromeDriverManager pour télécharger automatiquement la bonne version de ChromeDriver.
+                                 Utilisation de ChromeDriverManager pour télécharger automatiquement la bonne version de ChromeDriver.
 0.2.4   - 2025-10-16   [ES-12] : Synchronisation de version (aucun changement fonctionnel).
 0.2.5   - 2025-10-16   [ES-10] : Synchronisation de version (aucun changement fonctionnel).
-0.2.6   - 2025-10-21   [ES-7] : Amélioration du système d'aide (--help) avec description détaillée, exemples et groupes d'arguments.
-                               Ajout de l'option --list-rapports pour afficher la liste des rapports disponibles.
-                               Ajout de l'option --dry-run pour tester la configuration sans télécharger.
-                               Ajout de la validation des dates avec messages d'erreur clairs.
+0.2.6   - 2025-10-21   [ES-7]  : Amélioration du système d'aide (--help) avec description détaillée, exemples et groupes d'arguments.
+                                 Ajout de l'option --list-rapports pour afficher la liste des rapports disponibles.
+                                 Ajout de l'option --dry-run pour tester la configuration sans télécharger.
+                                 Ajout de la validation des dates avec messages d'erreur clairs.
 0.2.7   - 2025-10-27   [ES-16] : Ajout de la gestion des erreurs 502 (Bad Gateway) avec retry automatique.
-                               Attente et réessai automatique (3 tentatives max) en cas d'erreur serveur temporaire.
-                               Suivi et rapport des échecs de téléchargement avec raisons détaillées.
-                               Amélioration de la robustesse face aux problèmes temporaires du serveur Dexcom.
+                                 Attente et réessai automatique (3 tentatives max) en cas d'erreur serveur temporaire.
+                                 Suivi et rapport des échecs de téléchargement avec raisons détaillées.
+                                 Amélioration de la robustesse face aux problèmes temporaires du serveur Dexcom.
 0.2.8   - 2025-11-28   [ES-16] : Correction du sélecteur du bouton de connexion pour être indépendant de la langue.
-                               Utilisation de l'ID 'default-login-text' au lieu du texte du bouton.
-                               Ajout d'un fallback sur le type 'submit' pour plus de robustesse.
-                               Augmentation du timeout et amélioration des logs pour le bouton de connexion.
-                               Correction de la déconnexion bloquée par un overlay (clic JS forcé).
+                                 Utilisation de l'ID 'default-login-text' au lieu du texte du bouton.
+                                 Ajout d'un fallback sur le type 'submit' pour plus de robustesse.
+                                 Augmentation du timeout et amélioration des logs pour le bouton de connexion.
+                                 Correction de la déconnexion bloquée par un overlay (clic JS forcé).
 0.2.9   - 2025-11-28   [ES-16] : Ajout d'un fallback ultime pour la connexion : simulation de la touche ENTRÉE.
-                               Gestion du cas où le bouton de connexion est introuvable ou non cliquable.
-                               Correction des erreurs de portée de variables (debug_mode, download_dir).
-                               Correction du mode --dry-run (join, credentials).
-                               Amélioration de la connexion : détection automatique du champ login pour sauter l'étape de sélection du mode.
+                                 Gestion du cas où le bouton de connexion est introuvable ou non cliquable.
+                                 Correction des erreurs de portée de variables (debug_mode, download_dir).
+                                 Correction du mode --dry-run (join, credentials).
+                                 Amélioration de la connexion : détection automatique du champ login pour sauter l'étape de sélection du mode.
 0.2.10  - 2025-12-17   [ES-17] : Sécurité : Masquage des informations sensibles (téléphone) dans la sortie --dry-run.
-                               Synchronisation de version.
+                                 Synchronisation de version.
 0.2.11  - 2025-12-22   [ES-18] : Correction du délai d'attente pour la fermeture de la fenêtre de téléchargement (60s).
-                               Retour à Python 3.13 (après rollback v0.0.7)
+                                 Retour à Python 3.13 (après rollback v0.0.7)
 0.2.12  - 2025-12-22   [ES-3]  : Réparer le problème avec les rapports Comparer.
 0.2.13  - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.2.14  - 2026-01-19   [ES-19] : Attente "vérification humaine" Cloudflare (pause + reprise automatique).
@@ -126,13 +126,25 @@ Modifications
 0.3.15  - 2026-02-26   [ES-6]  : Harmonisation des XPath pour reduire la dependance a la langue du navigateur.
 0.3.16  - 2026-03-19   [ES-15] : Synchronisation de version et documentation (retention logs par defaut a 30 jours).
 0.3.17  - 2026-03-23   [ES-14] : Detection des pertes reseau pendant le traitement des rapports,
-                               tentative de reconnexion et arret propre de l'application en cas d'echec.
-                               Fermeture de l'onglet Dexcom en fin de traitement,
-                               et fermeture complete du navigateur si un seul onglet est ouvert.
+                                 tentative de reconnexion et arret propre de l'application en cas d'echec.
+                                 Fermeture de l'onglet Dexcom en fin de traitement,
+                                 et fermeture complete du navigateur si un seul onglet est ouvert.
 0.3.18  - 2026-03-25   [ES-14] : Synchronisation de version apres durcissement du flux Export CSV
-                               pour les erreurs reseau en modale.
+                                 pour les erreurs reseau en modale.
 0.3.19  - 2026-03-25   [ES-14] : Fermeture navigateur: utilisation du mode debug effectif
-                               (args.debug ou config.DEBUG) pour les traces d'exception.
+                                 (args.debug ou config.DEBUG) pour les traces d'exception.
+0.4.0   - 2026-04-14   [ES-20] : Synchronisation de version (tous les parametres CLI acceptes par
+                                 GlycoDownload correspondent aux parametres exposes par Launch-Dexcom-And-Run.ps1).
+0.5.0   - 2026-04-14   [ES-21] : Extraction de resolve_effective_date_range (fonction pure testable).
+0.5.1   - 2026-04-15   [ES-22] : Synchronisation de version (aucun changement fonctionnel).
+                                 Chaine de priorite : CLI dates > CLI --days > config days > config dates.
+                                 Remplacement des deux blocs inline (main et dry-run) par des appels a cette fonction.
+0.5.2   - 2026-04-15   [ES-25] : Saisie des dates : erreur fatale si Selenium echoue a entrer les
+                                 dates dans l'UI Dexcom (au lieu de continuer silencieusement avec
+                                 les dates par defaut de Dexcom).
+0.5.3   - 2026-04-15   [ES-25] : Robustesse saisie des dates : element_to_be_clickable au lieu de
+                                 presence_of_element_located; clic + clear + send_keys par champ
+                                 sequentiellement (evite StaleElementReferenceException si re-render).
 
 Paramètres
 ----------
@@ -345,6 +357,45 @@ def list_available_reports():
     print(f"  • Le rapport 'Statistiques' génère 2 fichiers PDF (quotidien + horaire)")
     print(f"  • Le rapport 'Export' génère un fichier CSV avec toutes les données brutes")
     print(f"\n{Fore.CYAN}{'=' * 80}{Style.RESET_ALL}\n")
+
+
+def resolve_effective_date_range(
+    args_days, args_date_debut, args_date_fin,
+    config_days, config_date_debut, config_date_fin,
+    today=None,
+):
+    """
+    Résout la période effective selon la chaîne de priorité :
+      1. CLI date_debut + date_fin (les deux fournis)
+      2. CLI --days
+      3. config.yaml days
+      4. config.yaml date_debut / date_fin
+
+    Args:
+        args_days (int | None): Valeur de --days passée en CLI.
+        args_date_debut (str | None): --date_debut passée en CLI.
+        args_date_fin (str | None): --date_fin passée en CLI.
+        config_days (int | None): Valeur de days dans config.yaml.
+        config_date_debut (str | None): date_debut dans config.yaml.
+        config_date_fin (str | None): date_fin dans config.yaml.
+        today (datetime | None): Date de référence (None = aujourd'hui).
+
+    Returns:
+        tuple[str, str]: (date_debut_str, date_fin_str) au format AAAA-MM-JJ.
+    """
+    if today is None:
+        today = datetime.today()
+
+    if args_date_debut and args_date_fin:
+        return args_date_debut, args_date_fin
+
+    effective_days = args_days or config_days
+    if effective_days:
+        date_fin = today - timedelta(days=1)
+        date_debut = date_fin - timedelta(days=effective_days - 1)
+        return date_debut.strftime("%Y-%m-%d"), date_fin.strftime("%Y-%m-%d")
+
+    return config_date_debut, config_date_fin
 
 
 def validate_dates(args):
@@ -737,15 +788,11 @@ def main(args, logger, config):
         now_str = config['NOW_STR']
         log_dir = os.path.dirname(chromedriver_log) or "."
 
-        # Gestion intelligente des dates
-        if args.days:
-            date_fin = datetime.today() - timedelta(days=1)
-            date_debut = date_fin - timedelta(days=args.days - 1)
-            date_debut_str = date_debut.strftime("%Y-%m-%d")
-            date_fin_str = date_fin.strftime("%Y-%m-%d")
-        else:
-            date_debut_str = args.date_debut or config['DATE_DEBUT']
-            date_fin_str = args.date_fin or config['DATE_FIN']
+        # Gestion intelligente des dates — priorité : CLI > config.yaml > défaut
+        date_debut_str, date_fin_str = resolve_effective_date_range(
+            args.days, args.date_debut, args.date_fin,
+            config.get('DAYS'), config['DATE_DEBUT'], config['DATE_FIN'],
+        )
 
         # Ménage des logs (après activation du logging)
         from utils import cleanup_logs
@@ -941,14 +988,17 @@ def main(args, logger, config):
                 raise ValueError("Les variables DATE_DEBUT et DATE_FIN ne peuvent pas être None. Elles doivent être définies.")
 
             date_debut_input = WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located((By.NAME, "start_date"))
+                EC.element_to_be_clickable((By.NAME, "start_date"))
             )
-            date_fin_input = WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located((By.NAME, "end_date"))
-            )
+            date_debut_input.click()
             date_debut_input.clear()
-            date_fin_input.clear()
             date_debut_input.send_keys(date_debut_str)
+
+            date_fin_input = WebDriverWait(driver, 60).until(
+                EC.element_to_be_clickable((By.NAME, "end_date"))
+            )
+            date_fin_input.click()
+            date_fin_input.clear()
             date_fin_input.send_keys(date_fin_str)
 
             ok_button = WebDriverWait(driver, 60).until(
@@ -966,6 +1016,10 @@ def main(args, logger, config):
             if not check_internet():
                 logger.error("Perte de connexion internet détectée lors de la saisie des dates.")
             logger.error(f"Une erreur s'est produite lors de la saisie des dates : {e}")
+            raise RuntimeError(
+                f"La saisie des dates a échoué ({date_debut_str} → {date_fin_str}). "
+                "Le rapport ne sera pas téléchargé avec des dates incorrectes."
+            ) from e
 
         try:
             selection_rapport(
@@ -1090,7 +1144,7 @@ if __name__ == "__main__":
         from config import (
             DOWNLOAD_DIR, DIR_FINAL_BASE, CHROME_USER_DATA_DIR, DEXCOM_URL,
             CHROMEDRIVER_LOG, RAPPORTS, NOW_STR, DATE_DEBUT, DATE_FIN,
-            LOG_RETENTION_DAYS, get_dexcom_credentials
+            LOG_RETENTION_DAYS, DAYS, get_dexcom_credentials
         )
         import config
     except Exception as e:
@@ -1117,18 +1171,11 @@ if __name__ == "__main__":
         from datetime import datetime, timedelta
         init(autoreset=True)
         
-        # Déterminer la période selon les arguments
-        if args.date_debut and args.date_fin:
-            date_debut_str = args.date_debut
-            date_fin_str = args.date_fin
-        elif args.days:
-            fin = datetime.now() - timedelta(days=1)
-            debut = fin - timedelta(days=args.days - 1)
-            date_debut_str = debut.strftime("%Y-%m-%d")
-            date_fin_str = fin.strftime("%Y-%m-%d")
-        else:
-            date_debut_str = config.DATE_DEBUT
-            date_fin_str = config.DATE_FIN
+        # Déterminer la période selon les arguments — priorité : CLI > config.yaml > défaut
+        date_debut_str, date_fin_str = resolve_effective_date_range(
+            args.days, args.date_debut, args.date_fin,
+            config.DAYS, config.DATE_DEBUT, config.DATE_FIN,
+        )
         
         # Déterminer les rapports à télécharger
         rapports = args.rapports if args.rapports else config.RAPPORTS

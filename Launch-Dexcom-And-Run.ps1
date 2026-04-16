@@ -11,8 +11,8 @@
     Auteur         : Pierre Théberge
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2026-01-29
-    Modifié le     : 2026-03-26
-    Version        : 0.1.1
+    Modifié le     : 2026-04-13
+    Version        : 0.1.2
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
@@ -27,8 +27,9 @@
                                   start-at-date-selection).
     0.1.1 - 2026-03-26 - ES-20 : Remplacement de -Debug par -GlycoDebug (conflit avec paramètre commun
                                   PowerShell -Debug), tout en conservant la transmission vers --debug.
-    0.1.2 - 2026-03-27 - ES-21 : Ajout des options Chrome pour forcer le téléchargement des PDF
-                                  (--disable-pdf-viewer) et réduire les interférences d'extensions.
+    0.1.2 - 2026-04-13 - ES-20 : -StartAtDateSelection et -AttachDebugger rendus conditionnels via
+                                  $PSBoundParameters; actifs par défaut, désactivables explicitement
+                                  via -StartAtDateSelection:$false / -AttachDebugger:$false.
 
 .PARAMETER ChromePath
     Chemin vers l'exécutable Chrome (par défaut: chrome.exe).
@@ -47,9 +48,11 @@
 
 .PARAMETER StartAtDateSelection
     Démarre directement à la sélection des dates (connexion déjà effectuée). Transmis à --start-at-date-selection.
+    Actif par défaut; désactivable via -StartAtDateSelection:$false.
 
 .PARAMETER AttachDebugger
     Attache Selenium à un Chrome déjà lancé. Transmis à --attach-debugger.
+    Actif par défaut; désactivable via -AttachDebugger:$false.
 
 .PARAMETER Days
     Nombre de jours à inclure (7, 14, 30 ou 90). Transmis à --days.
@@ -234,18 +237,24 @@ try {
     # Construction dynamique des arguments transmis à GlycoDownload
     $glycoArgs = [System.Collections.Generic.List[string]]::new()
 
-    # Toujours transmis pour que le script lance directement sans login interactif
-    $glycoArgs.Add("--start-at-date-selection")
-    $glycoArgs.Add("--attach-debugger")
+    # Comportement par défaut : actifs si non passés explicitement.
+    # Désactivables via -StartAtDateSelection:$false / -AttachDebugger:$false.
+    $shouldStartAtDateSelection = if ($PSBoundParameters.ContainsKey('StartAtDateSelection')) {
+        [bool]$StartAtDateSelection
+    }
+    else {
+        $true
+    }
+    $shouldAttachDebugger = if ($PSBoundParameters.ContainsKey('AttachDebugger')) {
+        [bool]$AttachDebugger
+    }
+    else {
+        $true
+    }
+    if ($shouldStartAtDateSelection) { $glycoArgs.Add("--start-at-date-selection") }
+    if ($shouldAttachDebugger) { $glycoArgs.Add("--attach-debugger") }
     $glycoArgs.Add("--debugger-port")
     $glycoArgs.Add($DebuggerPort.ToString())
-
-    if ($StartAtDateSelection) {
-        # Déjà ajouté ci-dessus; ignoré si passé explicitement pour éviter le doublon
-    }
-    if ($AttachDebugger) {
-        # Idem
-    }
     if ($GlycoDebug) { $glycoArgs.Add("--debug") }
     if ($DryRun) { $glycoArgs.Add("--dry-run") }
     if ($ListRapports) { $glycoArgs.Add("--list-rapports") }

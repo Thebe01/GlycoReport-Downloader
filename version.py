@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-03-25
-Version       : 0.3.19
+Modifié le    : 2026-04-15
+Version       : 0.5.3
 Copyright     : Pierre Théberge
 
 Description
@@ -42,15 +42,26 @@ Modifications
 0.3.15 - 2026-02-26   [ES-6]  : Bump de version patch et harmonisation XPath independants de la langue.
 0.3.16 - 2026-03-19   [ES-15] : Bump de version patch, retention des logs par defaut a 30 jours et synchronisation documentation.
 0.3.17 - 2026-03-23   [ES-14] : Bump de version patch et robustesse reseau pendant le traitement des rapports
-							   (reconnexion automatique ou arret propre en cas d'echec).
-							   Fermeture de l'onglet en fin de traitement et fermeture complete du navigateur
-							   si un seul onglet est ouvert.
+                                (reconnexion automatique ou arret propre en cas d'echec).
+                                Fermeture de l'onglet en fin de traitement et fermeture complete du navigateur
+                                si un seul onglet est ouvert.
 0.3.18 - 2026-03-25   [ES-14] : Bump de version patch et durcissement de la gestion des pertes reseau
-							   dans le flux Export CSV (modale + fermeture).
+                                dans le flux Export CSV (modale + fermeture).
 0.3.19 - 2026-03-25   [ES-14] : Bump de version patch et cohérence du mode debug effectif
-							   lors de la fermeture de session navigateur.
-							   Durcissement du retry réseau dans selection_rapport
-							   (max 2 retries puis NetworkRecoveryFailedError explicite).
+                                lors de la fermeture de session navigateur.
+                                Durcissement du retry réseau dans selection_rapport
+                                (max 2 retries puis NetworkRecoveryFailedError explicite).
+0.4.0  - 2026-04-14   [ES-20] : Bump de version minor. Exposition de tous les paramètres CLI
+                                dans Launch-Dexcom-And-Run.ps1; correction de -StartAtDateSelection
+                                et -AttachDebugger (actifs par défaut, désactivables explicitement).
+0.5.0  - 2026-04-14   [ES-21] : Bump de version minor. Ajout du paramètre days dans config.yaml.
+                                Chaîne de priorité : CLI dates > CLI --days > config days > config dates.
+                                Extraction de resolve_effective_date_range (fonction pure testable).
+0.5.1  - 2026-04-15   [ES-22] : Synchronisation de version (aucun changement fonctionnel).
+0.5.2  - 2026-04-15   [ES-25] : Saisie des dates : erreur fatale si Selenium echoue (plus de
+                                continuite silencieuse avec les dates par defaut de Dexcom).
+0.5.3  - 2026-04-15   [ES-25] : Robustesse saisie des dates : element_to_be_clickable, clic + clear
+                                + send_keys par champ sequentiellement.
 
 Paramètres
 ----------
@@ -62,4 +73,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.3.19"
+__version__ = "0.5.3"
