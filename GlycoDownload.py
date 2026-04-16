@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
 Modifié le    : 2026-04-15
-Version       : 0.5.3
+Version       : 0.5.5
 Copyright     : Pierre Théberge
 
 Description
@@ -145,6 +145,10 @@ Modifications
 0.5.3   - 2026-04-15   [ES-25] : Robustesse saisie des dates : element_to_be_clickable au lieu de
                                  presence_of_element_located; clic + clear + send_keys par champ
                                  sequentiellement (evite StaleElementReferenceException si re-render).
+0.5.4   - 2026-04-15   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.5   - 2026-04-15   [CR]    : Dates CLI partielles : erreur explicite dans validate_dates si une
+                                 seule date est fournie; garde defensif (ValueError) dans
+                                 resolve_effective_date_range. Tests mis a jour en consequence.
 
 Paramètres
 ----------
@@ -386,6 +390,13 @@ def resolve_effective_date_range(
     if today is None:
         today = datetime.today()
 
+    # Garde défensif : validate_dates doit avoir rejeté les dates partielles en amont.
+    if bool(args_date_debut) != bool(args_date_fin):
+        raise ValueError(
+            f"Les dates CLI doivent être fournies ensemble ou aucune "
+            f"(date_debut={args_date_debut!r}, date_fin={args_date_fin!r})."
+        )
+
     if args_date_debut and args_date_fin:
         return args_date_debut, args_date_fin
 
@@ -427,8 +438,16 @@ def validate_dates(args):
             print(f"\n{Fore.RED}❌ Erreur : La date de début ne peut pas être postérieure à la date de fin.{Style.RESET_ALL}\n")
             sys.exit(1)
     
+    # Dates partielles : les deux doivent être fournies ensemble ou aucune.
+    if bool(args.date_debut) != bool(args.date_fin):
+        manquante = "--date_fin" if args.date_debut else "--date_debut"
+        fournie   = "--date_debut" if args.date_debut else "--date_fin"
+        print(f"\n{Fore.RED}❌ Erreur : {fournie} est fournie sans {manquante}.{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}Les deux dates doivent être spécifiées ensemble ou aucune.{Style.RESET_ALL}\n")
+        sys.exit(1)
+
     if args.days and (args.date_debut or args.date_fin):
-        print(f"\n{Fore.YELLOW}⚠ Avertissement : --days est ignoré car --date_debut ou --date_fin est spécifié.{Style.RESET_ALL}")
+        print(f"\n{Fore.YELLOW}⚠ Avertissement : --days est ignoré car --date_debut et --date_fin sont spécifiées.{Style.RESET_ALL}")
 
 
 # --- Fonctions utilitaires refactorisées ---

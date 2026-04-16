@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-04-14
-Modifié le    : 2026-04-14
-Version       : 0.0.0
+Modifié le    : 2026-04-15
+Version       : 0.1.0
 Copyright     : Pierre Théberge
 
 Description
@@ -27,6 +27,9 @@ Couvre la chaîne de priorité :
 Modifications
 -------------
 0.0.0 - 2026-04-14   [ES-21] : Version initiale.
+0.1.0 - 2026-04-15   [CR]    : Dates CLI partielles : ValueError attendue (garde defensif).
+                               Mise a jour de test_partial_cli_dates_do_not_activate_priority1;
+                               ajout de test_only_date_fin_raises_value_error.
 
 Paramètres
 ----------
@@ -39,6 +42,7 @@ Exemple
 
 import sys
 import os
+import pytest
 from datetime import datetime, timedelta
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -87,22 +91,31 @@ class TestResolveDateRange:
         assert debut == "2025-03-01"
         assert fin == "2025-03-31"
 
-    def test_partial_cli_dates_do_not_activate_priority1(self):
-        """Seulement date_debut fournie (sans date_fin) → priorité 1 ignorée."""
-        debut, fin = resolve_effective_date_range(
-            args_days=7,
-            args_date_debut="2025-03-01",
-            args_date_fin=None,
-            config_days=None,
-            config_date_debut=CONFIG_DATE_DEBUT,
-            config_date_fin=CONFIG_DATE_FIN,
-            today=TODAY,
-        )
-        # --days 7 prend le relais (priorité 2) : fenêtre de 7 jours incluant hier
-        expected_fin = (TODAY - timedelta(days=1)).strftime("%Y-%m-%d")
-        expected_debut = (TODAY - timedelta(days=7)).strftime("%Y-%m-%d")
-        assert debut == expected_debut
-        assert fin == expected_fin
+    def test_only_date_debut_raises_value_error(self):
+        """Seulement date_debut fournie (sans date_fin) → ValueError (dates partielles refusées)."""
+        with pytest.raises(ValueError, match="date_debut"):
+            resolve_effective_date_range(
+                args_days=7,
+                args_date_debut="2025-03-01",
+                args_date_fin=None,
+                config_days=None,
+                config_date_debut=CONFIG_DATE_DEBUT,
+                config_date_fin=CONFIG_DATE_FIN,
+                today=TODAY,
+            )
+
+    def test_only_date_fin_raises_value_error(self):
+        """Seulement date_fin fournie (sans date_debut) → ValueError (dates partielles refusées)."""
+        with pytest.raises(ValueError, match="date_fin"):
+            resolve_effective_date_range(
+                args_days=None,
+                args_date_debut=None,
+                args_date_fin="2025-03-31",
+                config_days=None,
+                config_date_debut=CONFIG_DATE_DEBUT,
+                config_date_fin=CONFIG_DATE_FIN,
+                today=TODAY,
+            )
 
     # ------------------------------------------------------------------
     # Priorité 2 — CLI --days

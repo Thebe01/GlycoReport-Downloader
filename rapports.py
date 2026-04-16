@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-04-15
-Version       : 0.5.3
+Version       : 0.5.5
 Copyright     : Pierre Théberge
 
 Description
@@ -92,6 +92,8 @@ Modifications
 0.5.1  - 2026-04-15   [ES-22] : Documentation de get_period_suffix (docstring complet : Args, Returns, Description).
 0.5.2  - 2026-04-15   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
 0.5.3  - 2026-04-15   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.4  - 2026-04-15   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.5  - 2026-04-15   [CR]    : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------

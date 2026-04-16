@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-04-15
-Version       : 0.5.3
+Version       : 0.5.5
 Copyright     : Pierre Théberge
 
 Description
@@ -87,6 +87,11 @@ Modifications
 0.5.1  - 2026-04-15   [ES-22] : Synchronisation de version (aucun changement fonctionnel).
 0.5.2  - 2026-04-15   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
 0.5.3  - 2026-04-15   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.4  - 2026-04-15   [CR]    : Validation explicite de 'days' dans validate_config : type (int ou
+                               chaine entiere), valeurs autorisees (7/14/30/90), message d'erreur
+                               utilisateur. Avertissement si 'days' et 'date_debut'/'date_fin' sont
+                               tous deux definis. Conversion DAYS securisee avec try/except.
+0.5.5  - 2026-04-15   [CR]    : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -185,6 +190,49 @@ def validate_config(config):
         )
         pause_on_error()
         sys.exit(1)
+
+    # Validation de 'days' (optionnel : entier parmi 7/14/30/90, ou null/absent)
+    _DAYS_ALLOWED = {7, 14, 30, 90}
+    _days_raw = config.get("days")
+    if _days_raw is not None:
+        if isinstance(_days_raw, str):
+            _days_stripped = _days_raw.strip()
+            if not _days_stripped.lstrip("-").isdigit():
+                print_error(
+                    f"Le paramètre 'days' doit être un entier parmi "
+                    f"{sorted(_DAYS_ALLOWED)} (ou null/absent). "
+                    f"Valeur reçue : {_days_raw!r}."
+                )
+                pause_on_error()
+                sys.exit(1)
+            _days_val = int(_days_stripped)
+        elif isinstance(_days_raw, int):
+            _days_val = _days_raw
+        else:
+            print_error(
+                f"Le paramètre 'days' doit être un entier parmi "
+                f"{sorted(_DAYS_ALLOWED)} (ou null/absent). "
+                f"Valeur reçue : {_days_raw!r} (type {type(_days_raw).__name__})."
+            )
+            pause_on_error()
+            sys.exit(1)
+
+        if _days_val not in _DAYS_ALLOWED:
+            print_error(
+                f"Valeur invalide pour 'days' : {_days_val}. "
+                f"Valeurs autorisées : {sorted(_DAYS_ALLOWED)}."
+            )
+            pause_on_error()
+            sys.exit(1)
+
+        # Avertissement si date_debut ou date_fin sont aussi définis dans config.yaml.
+        # Ce n'est pas une erreur (la chaîne de priorité gère le conflit), mais c'est ambigu.
+        if config.get("date_debut") or config.get("date_fin"):
+            logger.warning(
+                "config.yaml : 'days' et 'date_debut'/'date_fin' sont tous deux définis. "
+                "'days' sera prioritaire sur 'date_debut'/'date_fin' dans config.yaml "
+                "(chaîne : CLI dates > CLI --days > config days > config dates)."
+            )
 
 # --- Fonction de copie minimale du profil Chrome ---
 def copy_minimal_chrome_profile(src_base, dst_base):
@@ -523,7 +571,10 @@ if not is_help_requested():
     LOG_RETENTION_DAYS = int(config.get("log_retention_days", 30))
     DEBUG = _coerce_bool(config.get("debug"), default=False)
     _days_raw = config.get("days")
-    DAYS = int(_days_raw) if _days_raw is not None else None
+    try:
+        DAYS = int(_days_raw) if _days_raw is not None else None
+    except (ValueError, TypeError):
+        DAYS = None  # validate_config a déjà rejeté les valeurs invalides
 
     DATE_FIN = config.get("date_fin")
     if not DATE_FIN:
