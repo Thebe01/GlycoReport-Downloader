@@ -28,8 +28,8 @@ Modifications
 -------------
 0.0.0 - 2026-04-14   [ES-21] : Version initiale.
 0.1.0 - 2026-04-15   [CR]    : Dates CLI partielles : ValueError attendue (garde defensif).
-                               Mise a jour de test_partial_cli_dates_do_not_activate_priority1;
-                               ajout de test_only_date_fin_raises_value_error.
+                               Ajout de test_only_date_debut_raises_value_error
+                               et de test_only_date_fin_raises_value_error.
 
 Paramètres
 ----------
