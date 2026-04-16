@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
 Modifié le    : 2026-04-15
-Version       : 0.5.3
+Version       : 0.5.5
 Copyright     : Pierre Théberge
 
 Description
@@ -62,6 +62,10 @@ Modifications
                                 continuite silencieuse avec les dates par defaut de Dexcom).
 0.5.3  - 2026-04-15   [ES-25] : Robustesse saisie des dates : element_to_be_clickable, clic + clear
                                 + send_keys par champ sequentiellement.
+0.5.4  - 2026-04-15   [CR]    : Validation de 'days' dans config.yaml (type, valeurs autorisees,
+                                avertissement si conflit avec date_debut/date_fin).
+0.5.5  - 2026-04-15   [CR]    : Dates CLI partielles refusees explicitement (validate_dates +
+                                garde defensif dans resolve_effective_date_range).
 
 Paramètres
 ----------
@@ -73,4 +77,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.3"
+__version__ = "0.5.5"
