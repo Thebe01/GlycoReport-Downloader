@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
 Modifié le    : 2026-04-17
-Version       : 0.5.7
+Version       : 0.5.9
 Copyright     : Pierre Théberge
 
 Description
@@ -153,6 +153,10 @@ Modifications
                                  utilisateur; JS fallback sur logout_link.click() pour contourner
                                  ElementClickInterceptedException.
 0.5.7   - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.8   - 2026-04-17   [ES-25] : Deconnexion : except Exception -> except
+                                 ElementClickInterceptedException sur les clics menu
+                                 utilisateur et logout_link; import ajoute.
+0.5.9   - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -181,6 +185,7 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import ElementClickInterceptedException
 import glob
 import re
 from getpass import getpass
@@ -1073,23 +1078,23 @@ def main(args, logger, config):
             
             user_menu_button = get_user_menu_button(driver, logger, args)
             
-            # Tentative de clic standard, puis JS si échec (pour contourner l'interception)
+            # Tentative de clic standard, puis JS uniquement si le clic est intercepté
             try:
                 user_menu_button.click()
-            except Exception as e:
-                logger.debug(f"Clic standard intercepté: {e}, tentative via JS pour le menu utilisateur.")
+            except ElementClickInterceptedException as e:
+                logger.debug(f"Clic standard intercepté sur le menu utilisateur : {e}, tentative via JS.")
                 driver.execute_script("arguments[0].click();", user_menu_button)
-                
+
             time.sleep(2)
             # Seconde attente overlay : le menu peut provoquer un nouvel overlay
             attendre_disparition_overlay(driver, 10, logger=logger, debug=debug_mode)
             logout_link = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'cui-link__logout')]"))
             )
-            # Tentative de clic standard, puis JS si un overlay intercepte le clic
+            # Tentative de clic standard, puis JS uniquement si un overlay intercepte le clic
             try:
                 logout_link.click()
-            except Exception as e:
+            except ElementClickInterceptedException as e:
                 logger.debug(f"Clic standard intercepté sur le lien logout : {e}, tentative via JS.")
                 driver.execute_script("arguments[0].click();", logout_link)
             logger.info("Déconnexion effectuée avec succès.")

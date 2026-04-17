@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.7-blue)
+![Version](https://img.shields.io/badge/version-0.5.9-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--057--17-avril-2026)
+- [Nouveautés](#version--059--17-avril-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,32 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.5.9 — 17 avril 2026
+
+### Nouveautés (0.5.9)
+
+**Correctifs :**
+
+- Fermeture de la modale Export : `EC.invisibility_of_element_located` remplacé
+  par `until_not(EC.presence_of_element_located)` — garantit que le composant
+  `<export-dialog>` est réellement retiré du DOM (et non seulement rendu
+  invisible).
+
+---
+
+## Version : 0.5.8 — 17 avril 2026
+
+### Nouveautés (0.5.8)
+
+**Correctifs :**
+
+- Déconnexion : `except Exception` remplacé par `except ElementClickInterceptedException`
+  sur les clics du menu utilisateur et du lien logout — les autres exceptions
+  (élément périmé, non interactable, etc.) se propagent désormais correctement
+  au lieu d'être masquées par le fallback JS.
 
 ---
 
@@ -378,6 +404,16 @@ traduction stricte de la version francaise.
 ---
 
 ## Historique des versions
+
+### 0.5.9 — 17 avril 2026
+
+- Fermeture modale Export : `until_not(presence_of_element_located)` au lieu
+  d'`invisibility_of_element_located` — retrait effectif du DOM garanti.
+
+### 0.5.8 — 17 avril 2026
+
+- Déconnexion : `except ElementClickInterceptedException` au lieu d'`except Exception`
+  sur les clics menu et logout.
 
 ### 0.5.7 — 17 avril 2026
 
@@ -1193,6 +1229,23 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.5.9 — April 17, 2026
+
+**Fixes:**
+
+- Export modal close: replaced `EC.invisibility_of_element_located` with
+  `until_not(EC.presence_of_element_located)` — guarantees the `<export-dialog>`
+  component is actually removed from the DOM (not merely hidden).
+
+### Version: 0.5.8 — April 17, 2026
+
+**Fixes:**
+
+- Logout: replaced `except Exception` with `except ElementClickInterceptedException`
+  on both the user menu and logout link clicks — other exceptions (stale element,
+  not interactable, etc.) now propagate correctly instead of being silently
+  swallowed by the JS fallback.
+
 ### Version: 0.5.7 — April 17, 2026
 
 **Fixes:**
@@ -1502,6 +1555,16 @@ translation of the French version.
 ---
 
 ## Version History (English)
+
+### 0.5.9 — April 17, 2026
+
+- Export modal close: `until_not(presence_of_element_located)` instead of
+  `invisibility_of_element_located` — actual DOM removal guaranteed.
+
+### 0.5.8 — April 17, 2026
+
+- Logout: `except ElementClickInterceptedException` instead of `except Exception`
+  on menu and logout clicks.
 
 ### 0.5.7 — April 17, 2026
 

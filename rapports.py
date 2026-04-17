@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-04-17
-Version       : 0.5.7
+Version       : 0.5.9
 Copyright     : Pierre Théberge
 
 Description
@@ -99,6 +99,8 @@ Modifications
                                le composant <export-dialog> (suppression des conditions data-test
                                obsoletes). Attente explicite de disparition du composant
                                <export-dialog> apres le clic Fermer.
+0.5.8  - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.9  - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -924,14 +926,17 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
         time.sleep(1)
         bouton_fermer.click()
         logger.debug("Le bouton Fermer de la fenêtre modale a été cliqué avec succès!")
-        # Attendre que le composant export-dialog disparaisse du DOM avant de poursuivre.
+        # Attendre que le composant export-dialog soit retiré du DOM avant de poursuivre.
         try:
-            WebDriverWait(driver, 10).until(
-                EC.invisibility_of_element_located((By.TAG_NAME, "export-dialog"))
+            WebDriverWait(driver, 10).until_not(
+                EC.presence_of_element_located((By.TAG_NAME, "export-dialog"))
             )
-            logger.debug("Composant export-dialog disparu du DOM.")
-        except Exception:
-            logger.debug("Attente de disparition export-dialog expirée (poursuite).")
+            logger.debug("Composant export-dialog retiré du DOM.")
+        except TimeoutException:
+            logger.warning(
+                "Le composant export-dialog est toujours présent 10 s après le clic Fermer "
+                "(poursuite — la déconnexion peut être interceptée)."
+            )
     except Exception as e:
         _handle_network_loss(logger, "fermeture de la fenêtre modale d'export", e)
         logger.warning(f"Bouton Fermer non trouvé ou non cliquable dans la fenêtre modale : {e}")
