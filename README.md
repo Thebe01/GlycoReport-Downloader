@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.3-blue)
+![Version](https://img.shields.io/badge/version-0.5.7-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--053--15-avril-2026)
+- [Nouveautés](#version--057--17-avril-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,58 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.5.7 — 17 avril 2026
+
+### Nouveautés (0.5.7)
+
+**Correctifs :**
+
+- Fermeture de la modale Export : le sélecteur XPath du bouton Fermer est
+  désormais ancré dans le composant `<export-dialog>` (les conditions
+  `data-test` obsolètes ont été supprimées). Attente explicite de la
+  disparition du composant après le clic, ce qui garantit que la modale est
+  réellement fermée avant la déconnexion.
+
+---
+
+## Version : 0.5.6 — 16 avril 2026
+
+### Nouveautés (0.5.6)
+
+**Correctifs :**
+
+- Déconnexion : seconde attente de disparition de l'overlay après ouverture du
+  menu utilisateur (l'ouverture du menu peut déclencher un nouvel overlay) ;
+  fallback JS sur le lien de déconnexion en cas d'interception du clic
+  (`ElementClickInterceptedException`).
+
+---
+
+## Version : 0.5.5 — 15 avril 2026
+
+### Nouveautés (0.5.5)
+
+**Correctifs :**
+
+- Dates CLI partielles refusées explicitement : `validate_dates` échoue avec un
+  message d'erreur clair si une seule date (`--date_debut` ou `--date_fin`) est
+  fournie sans l'autre ; garde défensive dans `resolve_effective_date_range`
+  (lève `ValueError`).
+
+---
+
+## Version : 0.5.4 — 15 avril 2026
+
+### Nouveautés (0.5.4)
+
+**Correctifs :**
+
+- Validation de `days` dans `config.yaml` : type vérifié (entier ou chaîne
+  numérique), valeurs autorisées {7, 14, 30, 90}, avertissement si `days` est
+  défini en même temps que `date_debut`/`date_fin`.
 
 ---
 
@@ -326,6 +378,26 @@ traduction stricte de la version francaise.
 ---
 
 ## Historique des versions
+
+### 0.5.7 — 17 avril 2026
+
+- Fermeture modale Export : XPath ancré dans `<export-dialog>` ; attente
+  explicite de disparition du composant après le clic Fermer.
+
+### 0.5.6 — 16 avril 2026
+
+- Déconnexion : seconde attente overlay après ouverture du menu utilisateur ;
+  fallback JS sur le lien de déconnexion.
+
+### 0.5.5 — 15 avril 2026
+
+- Dates CLI partielles refusées explicitement (`validate_dates` + garde
+  défensive dans `resolve_effective_date_range`).
+
+### 0.5.4 — 15 avril 2026
+
+- Validation de `days` dans `config.yaml` : type, valeurs autorisées
+  {7, 14, 30, 90}, avertissement si conflit avec `date_debut`/`date_fin`.
 
 ### 0.5.3 — 15 avril 2026
 
@@ -1121,6 +1193,39 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.5.7 — April 17, 2026
+
+**Fixes:**
+
+- Export modal close: the XPath selector for the Fermer/Close button is now
+  anchored inside the `<export-dialog>` component (obsolete `data-test`
+  conditions removed). Explicit wait for the component to disappear from the
+  DOM after the click, ensuring the modal is fully closed before logout.
+
+### Version: 0.5.6 — April 16, 2026
+
+**Fixes:**
+
+- Logout: a second overlay wait is added after opening the user menu (opening
+  the menu may trigger a new overlay); JS fallback on the logout link in case
+  of `ElementClickInterceptedException`.
+
+### Version: 0.5.5 — April 15, 2026
+
+**Fixes:**
+
+- Partial CLI dates explicitly rejected: `validate_dates` fails with a clear
+  error message if only one of `--date_debut` or `--date_fin` is provided;
+  defensive guard in `resolve_effective_date_range` (raises `ValueError`).
+
+### Version: 0.5.4 — April 15, 2026
+
+**Fixes:**
+
+- Validation of `days` in `config.yaml`: type checked (integer or numeric
+  string), allowed values {7, 14, 30, 90}, warning if `days` is set together
+  with `date_debut`/`date_fin`.
+
 ### Version: 0.5.3 — April 15, 2026
 
 **Fixes:**
@@ -1397,6 +1502,26 @@ translation of the French version.
 ---
 
 ## Version History (English)
+
+### 0.5.7 — April 17, 2026
+
+- Export modal close: XPath anchored in `<export-dialog>`; explicit wait for
+  component disappearance after clicking Close.
+
+### 0.5.6 — April 16, 2026
+
+- Logout: second overlay wait after opening the user menu; JS fallback on the
+  logout link.
+
+### 0.5.5 — April 15, 2026
+
+- Partial CLI dates explicitly rejected (`validate_dates` + defensive guard in
+  `resolve_effective_date_range`).
+
+### 0.5.4 — April 15, 2026
+
+- Validation of `days` in `config.yaml`: type, allowed values {7, 14, 30, 90},
+  warning if conflict with `date_debut`/`date_fin`.
 
 ### 0.5.3 — April 15, 2026
 

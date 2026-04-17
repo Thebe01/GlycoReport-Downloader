@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-04-15
-Version       : 0.5.5
+Modifié le    : 2026-04-17
+Version       : 0.5.7
 Copyright     : Pierre Théberge
 
 Description
@@ -94,6 +94,11 @@ Modifications
 0.5.3  - 2026-04-15   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
 0.5.4  - 2026-04-15   [CR]    : Synchronisation de version (aucun changement fonctionnel).
 0.5.5  - 2026-04-15   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.6  - 2026-04-16   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.7  - 2026-04-17   [ES-25] : Correctif xpath_fermer dans traitement_export_csv : ancrage dans
+                               le composant <export-dialog> (suppression des conditions data-test
+                               obsoletes). Attente explicite de disparition du composant
+                               <export-dialog> apres le clic Fermer.
 
 Paramètres
 ----------
@@ -909,8 +914,9 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
         return
 
     try:
-        # Correction du sélecteur pour le bouton Fermer (suppression de btn-3d qui n'est plus présent)
-        xpath_fermer = "//button[@data-test-export-dialog-close-button or @data-testid='export-dialog-close-button' or (contains(@class, 'btn-primary') and (normalize-space()='Fermer' or normalize-space()='Close'))]"
+        # Ancrage dans le composant <export-dialog> pour éviter toute ambiguïté avec
+        # d'autres boutons primaires sur la page.
+        xpath_fermer = "//export-dialog//button[normalize-space()='Fermer' or normalize-space()='Close']"
         bouton_fermer = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, xpath_fermer))
         )
@@ -918,6 +924,14 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
         time.sleep(1)
         bouton_fermer.click()
         logger.debug("Le bouton Fermer de la fenêtre modale a été cliqué avec succès!")
+        # Attendre que le composant export-dialog disparaisse du DOM avant de poursuivre.
+        try:
+            WebDriverWait(driver, 10).until(
+                EC.invisibility_of_element_located((By.TAG_NAME, "export-dialog"))
+            )
+            logger.debug("Composant export-dialog disparu du DOM.")
+        except Exception:
+            logger.debug("Attente de disparition export-dialog expirée (poursuite).")
     except Exception as e:
         _handle_network_loss(logger, "fermeture de la fenêtre modale d'export", e)
         logger.warning(f"Bouton Fermer non trouvé ou non cliquable dans la fenêtre modale : {e}")

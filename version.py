@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-04-15
-Version       : 0.5.5
+Modifié le    : 2026-04-17
+Version       : 0.5.7
 Copyright     : Pierre Théberge
 
 Description
@@ -66,6 +66,11 @@ Modifications
                                 avertissement si conflit avec date_debut/date_fin).
 0.5.5  - 2026-04-15   [CR]    : Dates CLI partielles refusees explicitement (validate_dates +
                                 garde defensif dans resolve_effective_date_range).
+0.5.6  - 2026-04-16   [ES-25] : Deconnexion : JS fallback sur logout_link +
+                                seconde attente overlay apres menu utilisateur.
+0.5.7  - 2026-04-17   [ES-25] : Fermeture modale Export : xpath_fermer ancre dans
+                                <export-dialog> (conditions data-test obsoletes supprimees) ;
+                                attente explicite de disparition du composant apres clic Fermer.
 
 Paramètres
 ----------
@@ -77,4 +82,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.5"
+__version__ = "0.5.7"

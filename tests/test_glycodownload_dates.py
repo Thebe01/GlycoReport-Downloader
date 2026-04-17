@@ -27,7 +27,7 @@ Couvre la chaîne de priorité :
 Modifications
 -------------
 0.0.0 - 2026-04-14   [ES-21] : Version initiale.
-0.1.0 - 2026-04-15   [CR]    : Dates CLI partielles : ValueError attendue (garde defensif).
+0.1.0 - 2026-04-15   [ES-25] : Dates CLI partielles : ValueError attendue (garde defensif).
                                Ajout de test_only_date_debut_raises_value_error
                                et de test_only_date_fin_raises_value_error.
 
