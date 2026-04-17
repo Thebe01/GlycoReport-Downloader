@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-04-15
-Version       : 0.5.5
+Modifié le    : 2026-04-17
+Version       : 0.5.7
 Copyright     : Pierre Théberge
 
 Description
@@ -92,6 +92,8 @@ Modifications
                                utilisateur. Avertissement si 'days' et 'date_debut'/'date_fin' sont
                                tous deux definis. Conversion DAYS securisee avec try/except.
 0.5.5  - 2026-04-15   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.6  - 2026-04-16   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.7  - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------

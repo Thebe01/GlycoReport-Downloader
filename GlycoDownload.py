@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
-Modifié le    : 2026-04-15
-Version       : 0.5.5
+Modifié le    : 2026-04-17
+Version       : 0.5.7
 Copyright     : Pierre Théberge
 
 Description
@@ -149,6 +149,10 @@ Modifications
 0.5.5   - 2026-04-15   [CR]    : Dates CLI partielles : erreur explicite dans validate_dates si une
                                  seule date est fournie; garde defensif (ValueError) dans
                                  resolve_effective_date_range. Tests mis a jour en consequence.
+0.5.6   - 2026-04-16   [ES-25] : Deconnexion : seconde attente overlay apres ouverture du menu
+                                 utilisateur; JS fallback sur logout_link.click() pour contourner
+                                 ElementClickInterceptedException.
+0.5.7   - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -1077,10 +1081,17 @@ def main(args, logger, config):
                 driver.execute_script("arguments[0].click();", user_menu_button)
                 
             time.sleep(2)
+            # Seconde attente overlay : le menu peut provoquer un nouvel overlay
+            attendre_disparition_overlay(driver, 10, logger=logger, debug=debug_mode)
             logout_link = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'cui-link__logout')]"))
             )
-            logout_link.click()
+            # Tentative de clic standard, puis JS si un overlay intercepte le clic
+            try:
+                logout_link.click()
+            except Exception as e:
+                logger.debug(f"Clic standard intercepté sur le lien logout : {e}, tentative via JS.")
+                driver.execute_script("arguments[0].click();", logout_link)
             logger.info("Déconnexion effectuée avec succès.")
             time.sleep(3)
         except Exception as e:
