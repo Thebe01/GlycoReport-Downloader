@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
 Modifié le    : 2026-04-17
-Version       : 0.5.7
+Version       : 0.5.9
 Copyright     : Pierre Théberge
 
 Description
@@ -71,6 +71,11 @@ Modifications
 0.5.7  - 2026-04-17   [ES-25] : Fermeture modale Export : xpath_fermer ancre dans
                                 <export-dialog> (conditions data-test obsoletes supprimees) ;
                                 attente explicite de disparition du composant apres clic Fermer.
+0.5.8  - 2026-04-17   [ES-25] : Deconnexion : narrowing except Exception ->
+                                ElementClickInterceptedException sur clics menu et logout.
+0.5.9  - 2026-04-17   [ES-25] : Fermeture modale Export : EC.invisibility_of_element_located
+                                remplace par until_not(presence_of_element_located) pour
+                                garantir le retrait du DOM (et non seulement l'invisibilite).
 
 Paramètres
 ----------
@@ -82,4 +87,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.7"
+__version__ = "0.5.9"

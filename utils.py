@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-04-17
-Version       : 0.5.7
+Version       : 0.5.9
 Copyright     : Pierre Théberge
 
 Description
@@ -80,6 +80,8 @@ Modifications
 0.5.5  - 2026-04-15   [CR]    : Synchronisation de version (aucun changement fonctionnel).
 0.5.6  - 2026-04-16   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
 0.5.7  - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.8  - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.9  - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
