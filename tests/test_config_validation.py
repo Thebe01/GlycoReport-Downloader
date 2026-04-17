@@ -96,36 +96,43 @@ class TestValidateConfigDays:
     # ------------------------------------------------------------------
 
     def test_days_int_5_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_config(_config(days=5))
+        assert exc.value.code == 1
 
     def test_days_int_0_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_config(_config(days=0))
+        assert exc.value.code == 1
 
     def test_days_int_365_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_config(_config(days=365))
+        assert exc.value.code == 1
 
     def test_days_string_invalid_number_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_config(_config(days="5"))
+        assert exc.value.code == 1
 
     # ------------------------------------------------------------------
     # Type invalide → sys.exit(1)
     # ------------------------------------------------------------------
 
     def test_days_float_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_config(_config(days=14.0))
+        assert exc.value.code == 1
 
     def test_days_non_numeric_string_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_config(_config(days="quatorze"))
+        assert exc.value.code == 1
 
     def test_days_list_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_config(_config(days=[14]))
+        assert exc.value.code == 1
 
     # ------------------------------------------------------------------
     # Avertissement si conflit avec date_debut / date_fin

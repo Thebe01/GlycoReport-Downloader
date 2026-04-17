@@ -252,29 +252,34 @@ class TestValidateDates:
     # ------------------------------------------------------------------
 
     def test_invalid_date_debut_format_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_dates(_args(date_debut="01-01-2025", date_fin="2025-01-31", days=None))
+        assert exc.value.code == 1
 
     def test_invalid_date_fin_format_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_dates(_args(date_debut="2025-01-01", date_fin="31/01/2025", days=None))
+        assert exc.value.code == 1
 
     # ------------------------------------------------------------------
     # Cohérence début > fin → sys.exit(1)
     # ------------------------------------------------------------------
 
     def test_debut_after_fin_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_dates(_args(date_debut="2025-01-31", date_fin="2025-01-01", days=None))
+        assert exc.value.code == 1
 
     # ------------------------------------------------------------------
     # Dates partielles → sys.exit(1)
     # ------------------------------------------------------------------
 
     def test_only_date_debut_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_dates(_args(date_debut="2025-01-01", date_fin=None, days=None))
+        assert exc.value.code == 1
 
     def test_only_date_fin_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_dates(_args(date_debut=None, date_fin="2025-01-31", days=None))
+        assert exc.value.code == 1
