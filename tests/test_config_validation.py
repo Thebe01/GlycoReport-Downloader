@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-04-17
 Modifié le    : 2026-04-17
-Version       : 0.1.0
+Version       : 0.1.1
 Copyright     : Pierre Théberge
 
 Description
@@ -24,6 +24,8 @@ avertissement si conflit avec date_debut/date_fin.
 Modifications
 -------------
 0.1.0 - 2026-04-17   [ES-26] : Version initiale.
+0.1.1 - 2026-04-17   [CR]    : Verrouillage du code de sortie CLI :
+                               assert exc.value.code == 1 sur tous les pytest.raises(SystemExit).
 
 Paramètres
 ----------
@@ -96,36 +98,43 @@ class TestValidateConfigDays:
     # ------------------------------------------------------------------
 
     def test_days_int_5_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_config(_config(days=5))
+        assert exc.value.code == 1
 
     def test_days_int_0_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_config(_config(days=0))
+        assert exc.value.code == 1
 
     def test_days_int_365_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_config(_config(days=365))
+        assert exc.value.code == 1
 
     def test_days_string_invalid_number_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_config(_config(days="5"))
+        assert exc.value.code == 1
 
     # ------------------------------------------------------------------
     # Type invalide → sys.exit(1)
     # ------------------------------------------------------------------
 
     def test_days_float_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_config(_config(days=14.0))
+        assert exc.value.code == 1
 
     def test_days_non_numeric_string_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_config(_config(days="quatorze"))
+        assert exc.value.code == 1
 
     def test_days_list_exits(self):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exc:
             validate_config(_config(days=[14]))
+        assert exc.value.code == 1
 
     # ------------------------------------------------------------------
     # Avertissement si conflit avec date_debut / date_fin

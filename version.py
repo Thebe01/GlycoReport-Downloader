@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
 Modifié le    : 2026-04-17
-Version       : 0.5.9
+Version       : 0.5.10
 Copyright     : Pierre Théberge
 
 Description
@@ -76,6 +76,11 @@ Modifications
 0.5.9  - 2026-04-17   [ES-25] : Fermeture modale Export : EC.invisibility_of_element_located
                                 remplace par until_not(presence_of_element_located) pour
                                 garantir le retrait du DOM (et non seulement l'invisibilite).
+0.5.10 - 2026-04-17   [ES-26] : Structure dépôt : ajout CLAUDE.md, CHANGELOG.md,
+                                requirements-dev.txt (pytest/pyinstaller séparés de
+                                requirements.txt). Couverture de tests : ajout de
+                                test_config_validation.py, test_rapports_period.py et
+                                TestValidateDates dans test_glycodownload_dates.py (81 tests).
 
 Paramètres
 ----------
@@ -87,4 +92,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.9"
+__version__ = "0.5.10"
