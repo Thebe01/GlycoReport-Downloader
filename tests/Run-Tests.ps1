@@ -11,13 +11,15 @@
     Auteur         : Pierre Théberge
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2026-04-14
-    Modifié le     : 2026-04-14
-    Version        : 0.0.0
+    Modifié le     : 2026-04-17
+    Version        : 0.0.2
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
     0.0.0 - 2026-04-14 - ES-21 : Version initiale.
     0.0.1 - 2026-04-14 - ES-21 : Sortie detaillee (-v) par defaut; ajout de -Bref pour le mode compact.
+    0.0.2 - 2026-04-17 - ES-26 : Référence requirements-dev.txt (pytest séparé de requirements.txt);
+                                  nouveaux modules de test découverts automatiquement.
 
 .PARAMETER Filtre
     Filtre pytest (-k) pour n'executer qu'un sous-ensemble de tests.
@@ -46,7 +48,7 @@ $projectRoot = Split-Path $PSScriptRoot -Parent
 $venvPython  = Join-Path $projectRoot ".venv\Scripts\python.exe"
 
 if (-not (Test-Path $venvPython)) {
-    Write-Error "Environnement virtuel introuvable : $venvPython`nCreez-le avec : python -m venv .venv && .venv\Scripts\pip install -r requirements.txt"
+    Write-Error "Environnement virtuel introuvable : $venvPython`nCreez-le avec : python -m venv .venv && .venv\Scripts\pip install -r requirements-dev.txt"
     exit 1
 }
 

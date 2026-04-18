@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-04-17
 Modifié le    : 2026-04-17
-Version       : 0.1.0
+Version       : 0.1.1
 Copyright     : Pierre Théberge
 
 Description
@@ -24,6 +24,8 @@ avertissement si conflit avec date_debut/date_fin.
 Modifications
 -------------
 0.1.0 - 2026-04-17   [ES-26] : Version initiale.
+0.1.1 - 2026-04-17   [CR]    : Verrouillage du code de sortie CLI :
+                               assert exc.value.code == 1 sur tous les pytest.raises(SystemExit).
 
 Paramètres
 ----------

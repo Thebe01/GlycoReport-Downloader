@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-04-14
-Modifié le    : 2026-04-15
-Version       : 0.1.0
+Modifié le    : 2026-04-17
+Version       : 0.1.2
 Copyright     : Pierre Théberge
 
 Description
@@ -30,6 +30,10 @@ Modifications
 0.1.0 - 2026-04-15   [CR]    : Dates CLI partielles : ValueError attendue (garde defensif).
                                Ajout de test_only_date_debut_raises_value_error
                                et de test_only_date_fin_raises_value_error.
+0.1.1 - 2026-04-17   [ES-26] : Ajout de TestValidateDates (validate_dates CLI) : format invalide,
+                               cohérence début > fin, dates partielles.
+0.1.2 - 2026-04-17   [CR]    : Verrouillage du code de sortie CLI :
+                               assert exc.value.code == 1 sur tous les pytest.raises(SystemExit).
 
 Paramètres
 ----------
