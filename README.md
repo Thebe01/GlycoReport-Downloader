@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.9-blue)
+![Version](https://img.shields.io/badge/version-0.5.10-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--059--17-avril-2026)
+- [Nouveautés](#version--0510--17-avril-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,20 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.5.10 — 17 avril 2026
+
+### Nouveautés (0.5.10)
+
+**Structure et qualité :**
+
+- `CHANGELOG.md` ajouté au dépôt pour le suivi des versions.
+- `requirements-dev.txt` créé : `pytest` et `pyinstaller` séparés de `requirements.txt`.
+- `CLAUDE.md` retiré du dépôt (instructions IA locales uniquement).
+- Couverture de tests élargie : `test_config_validation.py`, `test_rapports_period.py`,
+  `TestValidateDates` dans `test_glycodownload_dates.py` — 81 tests au total.
 
 ---
 
@@ -404,6 +418,11 @@ traduction stricte de la version francaise.
 ---
 
 ## Historique des versions
+
+### 0.5.10 — 17 avril 2026
+
+- Structure dépôt : `CHANGELOG.md`, `requirements-dev.txt` ajoutés; `CLAUDE.md` local uniquement.
+- Tests : `test_config_validation.py`, `test_rapports_period.py`, `TestValidateDates` (81 tests).
 
 ### 0.5.9 — 17 avril 2026
 
@@ -1229,6 +1248,16 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.5.10 — April 17, 2026
+
+**Structure and quality:**
+
+- `CHANGELOG.md` added to the repository for version tracking.
+- `requirements-dev.txt` created: `pytest` and `pyinstaller` separated from `requirements.txt`.
+- `CLAUDE.md` removed from the repository (local AI instructions only).
+- Expanded test coverage: `test_config_validation.py`, `test_rapports_period.py`,
+  `TestValidateDates` in `test_glycodownload_dates.py` — 81 tests total.
+
 ### Version: 0.5.9 — April 17, 2026
 
 **Fixes:**
@@ -1555,6 +1584,11 @@ translation of the French version.
 ---
 
 ## Version History (English)
+
+### 0.5.10 — April 17, 2026
+
+- Repository structure: `CHANGELOG.md`, `requirements-dev.txt` added; `CLAUDE.md` local only.
+- Tests: `test_config_validation.py`, `test_rapports_period.py`, `TestValidateDates` (81 tests).
 
 ### 0.5.9 — April 17, 2026
 
