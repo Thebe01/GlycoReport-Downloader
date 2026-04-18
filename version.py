@@ -76,11 +76,12 @@ Modifications
 0.5.9  - 2026-04-17   [ES-25] : Fermeture modale Export : EC.invisibility_of_element_located
                                 remplace par until_not(presence_of_element_located) pour
                                 garantir le retrait du DOM (et non seulement l'invisibilite).
-0.5.10 - 2026-04-17   [ES-26] : Structure dépôt : ajout CLAUDE.md, CHANGELOG.md,
+0.5.10 - 2026-04-17   [ES-26] : Structure dépôt : ajout CHANGELOG.md,
                                 requirements-dev.txt (pytest/pyinstaller séparés de
-                                requirements.txt). Couverture de tests : ajout de
-                                test_config_validation.py, test_rapports_period.py et
-                                TestValidateDates dans test_glycodownload_dates.py (81 tests).
+                                requirements.txt); CLAUDE.md local uniquement (.gitignore).
+                                Couverture de tests : ajout de test_config_validation.py,
+                                test_rapports_period.py et TestValidateDates dans
+                                test_glycodownload_dates.py (81 tests).
 
 Paramètres
 ----------

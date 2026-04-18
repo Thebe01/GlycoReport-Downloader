@@ -5,6 +5,17 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.5.10] - 2026-04-17 — ES-26
+
+### Modifié
+- `CHANGELOG.md` et `requirements-dev.txt` ajoutés au dépôt.
+- `pytest` et `pyinstaller` déplacés de `requirements.txt` vers `requirements-dev.txt`.
+- `CLAUDE.md` retiré du dépôt (instructions IA locales uniquement, ajouté à `.gitignore`).
+- Couverture de tests : `test_config_validation.py`, `test_rapports_period.py`,
+  `TestValidateDates` dans `test_glycodownload_dates.py` — 81 tests au total.
+
+---
+
 ## [0.5.9] - 2026-04-17 — ES-25
 
 ### Corrigé
@@ -162,6 +173,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.5.10]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.10
 [0.5.9]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.9
 [0.5.8]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.8
 [0.5.7]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.7
