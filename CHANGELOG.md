@@ -173,6 +173,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.5.10]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.10
 [0.5.9]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.9
 [0.5.8]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.8
 [0.5.7]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.7
