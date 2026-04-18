@@ -42,12 +42,13 @@ Exemple
 
 import sys
 import os
+import types
 import pytest
 from datetime import datetime, timedelta
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from GlycoDownload import resolve_effective_date_range
+from GlycoDownload import resolve_effective_date_range, validate_dates
 
 # Date fixe pour rendre les tests déterministes (un mardi quelconque)
 TODAY = datetime(2026, 4, 14)
@@ -224,3 +225,56 @@ class TestResolveDateRange:
         )
         assert fin == "2025-12-24"
         assert debut == "2025-12-18"
+
+
+def _args(**kwargs):
+    return types.SimpleNamespace(**kwargs)
+
+
+class TestValidateDates:
+    """Tests pour validate_dates (GlycoDownload.py) — validation des arguments CLI."""
+
+    # ------------------------------------------------------------------
+    # Cas valides (pas de sys.exit)
+    # ------------------------------------------------------------------
+
+    def test_no_dates_passes(self):
+        validate_dates(_args(date_debut=None, date_fin=None, days=None))
+
+    def test_both_valid_dates_pass(self):
+        validate_dates(_args(date_debut="2025-01-01", date_fin="2025-01-31", days=None))
+
+    def test_same_day_dates_pass(self):
+        validate_dates(_args(date_debut="2025-06-15", date_fin="2025-06-15", days=None))
+
+    # ------------------------------------------------------------------
+    # Format invalide → sys.exit(1)
+    # ------------------------------------------------------------------
+
+    def test_invalid_date_debut_format_exits(self):
+        with pytest.raises(SystemExit):
+            validate_dates(_args(date_debut="01-01-2025", date_fin="2025-01-31", days=None))
+
+    def test_invalid_date_fin_format_exits(self):
+        with pytest.raises(SystemExit):
+            validate_dates(_args(date_debut="2025-01-01", date_fin="31/01/2025", days=None))
+
+    # ------------------------------------------------------------------
+    # Cohérence début > fin → sys.exit(1)
+    # ------------------------------------------------------------------
+
+    def test_debut_after_fin_exits(self):
+        with pytest.raises(SystemExit):
+            validate_dates(_args(date_debut="2025-01-31", date_fin="2025-01-01", days=None))
+
+    # ------------------------------------------------------------------
+    # Dates partielles → sys.exit(1)
+    # ------------------------------------------------------------------
+
+    def test_only_date_debut_exits(self):
+        with pytest.raises(SystemExit):
+            validate_dates(_args(date_debut="2025-01-01", date_fin=None, days=None))
+
+    def test_only_date_fin_exits(self):
+        with pytest.raises(SystemExit):
+            validate_dates(_args(date_debut=None, date_fin="2025-01-31", days=None))
