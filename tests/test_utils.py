@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-13
-Modifié le    : 2026-02-13
-Version       : 0.3.14
+Modifié le    : 2026-04-21
+Version       : 0.5.12
 Copyright     : Pierre Théberge
 
 Description
@@ -41,6 +41,8 @@ Modifications
 0.3.4  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
 0.3.5  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
 0.3.6  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
+0.5.12 - 2026-04-21   [ES-28] : DummyDriver.find_element ajouté (lève NoSuchElementException) —
+                               alignement avec le narrowing except dans attendre_disparition_overlay.
 
 Paramètres
 ----------
@@ -57,6 +59,7 @@ import tempfile
 import pytest
 import time
 from typing import cast
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.remote.webdriver import WebDriver
 
@@ -85,6 +88,8 @@ class DummyDriver:
             f.write(b"fake image")
         self.screenshot_taken = True
         return True
+    def find_element(self, by, value):
+        raise NoSuchElementException("aucun élément (dummy)")
 
 class DummyLogger:
     def __init__(self):

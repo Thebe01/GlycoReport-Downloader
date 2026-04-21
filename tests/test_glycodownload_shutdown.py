@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-03-23
-Modifié le    : 2026-03-23
-Version       : 0.3.17
+Modifié le    : 2026-04-21
+Version       : 0.5.12
 Copyright     : Pierre Théberge
 
 Description
@@ -21,6 +21,8 @@ Tests unitaires pour la fermeture de session navigateur en fin de traitement.
 Modifications
 -------------
 0.3.17 - 2026-03-23   [ES-14] : Ajout des tests unitaires de fermeture onglet/navigateur (single-tab vs multi-tab).
+0.5.12 - 2026-04-21   [ES-28] : Mocks cdp_raises/close_raises : RuntimeError → WebDriverException
+                                (alignement avec le narrowing except dans close_browser_session).
 
 Paramètres
 ----------
@@ -35,6 +37,8 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from selenium.common.exceptions import WebDriverException  # noqa: E402
 
 from GlycoDownload import close_browser_session  # noqa: E402
 
@@ -65,12 +69,12 @@ class DummyDriver:
     def execute_cdp_cmd(self, cmd, payload):
         self.cdp_calls.append((cmd, payload))
         if self.cdp_raises:
-            raise RuntimeError("cdp error")
+            raise WebDriverException("cdp error")
 
     def close(self):
         self.close_called += 1
         if self.close_raises:
-            raise RuntimeError("close error")
+            raise WebDriverException("close error")
 
     def quit(self):
         self.quit_called += 1
