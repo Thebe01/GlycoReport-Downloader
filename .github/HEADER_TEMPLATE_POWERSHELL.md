@@ -4,6 +4,7 @@ META:
     1.0.1 - 2026-01-29 - ES-19 : Ajout des variables standard.
     1.0.2 - 2026-03-19 - ES-15 : Références .github/ et ajout de la référence dans l'exemple .DESCRIPTION.
     1.0.3 - 2026-03-20 - ES-15 : Suppression des lignes de consigne dans l'exemple .DESCRIPTION.
+    1.0.4 - 2026-04-21 - ES-28 : Correction alignement exemple section 3; règles alignement billet et normalisation longueur version.
 -->
 
 # 📘 Template d'en-tête PowerShell - IPT inc
@@ -116,11 +117,25 @@ Changelog **complet** avec chaque version documentée.
 
 ```powershell
 .MODIFICATIONS
-    0.0.0 - 2025-11-06 - Billet-XX : Initialisation.
-    0.1.0 - 2025-11-08 - -        : Ajout paramètre -Verbose.
-    0.1.1 - 2025-11-09 - PD-100   : Correction encodage UTF-8.
-    1.0.0 - 2025-11-15 - -        : Version de production stable.
+    0.0.0 - 2025-11-06 - Billet-XX  : Initialisation.
+    0.1.0 - 2025-11-08 - -          : Ajout paramètre -Verbose.
+    0.1.1 - 2025-11-09 - PD-100     : Correction encodage UTF-8.
+    1.0.0 - 2025-11-15 - -          : Version de production stable.
 ```
+
+**Règles d'alignement :**
+
+- Le `:` doit être à la même colonne pour toutes les entrées du script.
+- Padder le champ billet selon le billet le plus long du script (re-padder
+  toutes les entrées si un billet plus long est ajouté).
+- Si la longueur du numéro de version change (ex : `0.0.9` → `0.0.10`), ajouter
+  un espace après les versions courtes pour normaliser la largeur du champ
+  (noter l'espace supplémentaire après `0.0.9`) :
+
+  ```powershell
+    0.0.9  - 2025-11-14 - PD-100     : Correction d'un bug.
+    0.0.10 - 2025-11-15 - PD-100     : Ajout d'une fonctionnalité.
+  ```
 
 **Règles versioning :**
 
@@ -403,6 +418,6 @@ Dans VS Code, tapez `headerps` puis `Tab` :
 ---
 
 **Document créé le** : 2025-11-06  
-**Version** : 1.0.3  
+**Version** : 1.0.4  
 **Mainteneur** : Pierre Théberge  
 **Compagnie** : Innovations, Performances, Technologies inc.

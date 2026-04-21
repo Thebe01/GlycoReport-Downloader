@@ -1,7 +1,11 @@
 <!--
 META:
-    1.0.0 - 2026-01-29 - -     : Version initiale.
-    1.0.1 - 2026-03-19 - ES-15 : Références mises à jour vers .github/ dans les exemples et le snippet.
+    1.0.0 - 2026-01-29 - -      : Version initiale.
+    1.0.1 - 2026-03-19 - ES-15  : Références mises à jour vers .github/ dans les exemples et le snippet.
+    1.0.2 - 2026-04-21 - PD-198 : Retrait des crochets autour des numéros de billets; correction de la cohérence exemple/règle de largeur de la colonne ticket.
+    1.0.3 - 2026-04-21 - PD-198 : Clarification des règles d'alignement du ticket et du séparateur avant le deux-points.
+    1.0.4 - 2026-04-21 - PD-198 : Harmonisation de la règle du séparateur avec le snippet VS Code (espace + padding dynamique).
+    1.0.5 - 2026-04-21 - PD-198 : Harmonisation des exemples Modifications avec la règle du séparateur avant le deux-points.
 -->
 
 # 🐍 Template d'en-tête Python - IPT inc
@@ -36,9 +40,9 @@ Description
 
 Modifications
 -------------
-0.0.0 - YYYY-MM-DD   [BILLET000] : Initialisation.
-0.1.0 - YYYY-MM-DD   [BILLET000] : Ajout notifications email.
-1.0.0 - YYYY-MM-DD   [BILLET000] : Version de production stable.
+0.0.0 - YYYY-MM-DD   BILLET000 : Initialisation.
+0.1.0 - YYYY-MM-DD   BILLET000 : Ajout notifications email.
+1.0.0 - YYYY-MM-DD   BILLET000 : Version de production stable.
 
 Paramètres
 ----------
@@ -129,9 +133,9 @@ Fonctionnalités :
 
 Modifications
 -------------
-0.0.0 - 2025-11-06   [BILLET000] : Initialisation.
-0.1.0 - 2025-11-08   [BILLET000] : Ajout notifications email.
-1.0.0 - 2025-11-15   [BILLET000] : Version de production stable.
+0.0.0 - 2025-11-06   BILLET000 : Initialisation.
+0.1.0 - 2025-11-08   BILLET000 : Ajout notifications email.
+1.0.0 - 2025-11-15   BILLET000 : Version de production stable.
 
 Paramètres
 ----------
@@ -181,20 +185,24 @@ Changelog **complet** avec chaque version documentée.
 ```python
 Modifications
 -------------
-0.0.0 - 2025-11-06   [BILLET000] : Initialisation.
-0.1.0 - 2025-11-08   [BILLET000] : Ajout paramètre --verbose.
-0.1.1 - 2025-11-09   [BILLET000] : Correction encodage UTF-8.
-1.0.0 - 2025-11-15   [BILLET000] : Version de production stable.
-                                    Description sur plusieurs lignes : le texte
-                                    des lignes supplémentaires s'aligne sur le
-                                    premier caractère de la description.
+0.0.0 - 2025-11-06   ES-000 : Initialisation.
+0.1.0 - 2025-11-08   ES-000 : Ajout paramètre --verbose.
+0.1.1 - 2025-11-09   ES-000 : Correction encodage UTF-8.
+1.0.0 - 2025-11-15   ES-000 : Version de production stable.
+                              Description sur plusieurs lignes : le texte
+                              des lignes supplémentaires s'aligne sur le
+                              premier caractère de la description.
 ```
 
 **Règles de format :**
 
 - Colonne version : largeur fixe, complétée d'espaces pour aligner le séparateur
-- Colonne ticket : largeur fixe de 8 caractères, complétée d'espaces (ex: `[ES-14]` + 1 espace, `[N/A]` + 3 espaces)
-- Continuation : indentation égale à la longueur du préfixe entier (version + date + ticket + deux-points)
+- Colonne ticket : largeur fixe selon le billet le plus long du script;
+  re-padder toutes les entrées si un billet plus long est ajouté
+- Séparateur ticket/description : un espace avant `:`; les espaces
+  supplémentaires éventuels proviennent uniquement du padding du ticket
+- Continuation : indentation égale à la longueur du préfixe entier (version +
+  date + ticket + deux-points)
 - Utiliser uniquement des espaces (pas de tabulations)
 
 **Règles versioning :**
@@ -529,7 +537,7 @@ Dans VS Code, tapez `headerpy` puis `Tab` :
       "",
       "Modifications",
       "--------------",
-      "${3:0.0.0} - ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}   [BILLET000] : Initialisation.",
+      "${3:0.0.0} - ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}   BILLET000 : Initialisation.",
       "",
       "Paramètres",
       "-----------",
@@ -556,6 +564,6 @@ Dans VS Code, tapez `headerpy` puis `Tab` :
 ---
 
 **Document créé le** : 2025-11-06  
-**Version** : 1.0.1  
+**Version** : 1.0.5  
 **Mainteneur** : Pierre Théberge  
 **Compagnie** : Innovations, Performances, Technologies inc.
