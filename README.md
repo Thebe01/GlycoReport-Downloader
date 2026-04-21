@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.11-blue)
+![Version](https://img.shields.io/badge/version-0.5.12-blue)
 
 An English version of this text follows the French text.
 
@@ -23,6 +23,19 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.5.12 — 21 avril 2026
+
+### Nouveautés (0.5.12)
+
+**Robustesse :**
+
+- Tous les blocs `except Exception` remplacés par des exceptions spécifiques
+  (`TimeoutException`, `ElementClickInterceptedException`, `WebDriverException`,
+  `StaleElementReferenceException`, `OSError`, `URLError`, `InvalidToken`, `ValueError`, etc.)
+  dans les quatre modules — ES-28.
 
 ---
 
@@ -430,6 +443,10 @@ traduction stricte de la version francaise.
 ---
 
 ## Historique des versions
+
+### 0.5.12 — 21 avril 2026
+
+- Robustesse : tous les `except Exception` remplacés par des exceptions spécifiques dans les 4 modules.
 
 ### 0.5.11 — 21 avril 2026
 
@@ -1264,6 +1281,15 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.5.12 — April 21, 2026
+
+**Robustness:**
+
+- All `except Exception` blocks replaced with specific exceptions
+  (`TimeoutException`, `ElementClickInterceptedException`, `WebDriverException`,
+  `StaleElementReferenceException`, `OSError`, `URLError`, `InvalidToken`, `ValueError`, etc.)
+  across all four modules — ES-28.
+
 ### Version: 0.5.11 — April 21, 2026
 
 **Security:**
@@ -1608,6 +1634,10 @@ translation of the French version.
 ---
 
 ## Version History (English)
+
+### 0.5.12 — April 21, 2026
+
+- Robustness: all `except Exception` replaced with specific exceptions across all 4 modules.
 
 ### 0.5.11 — April 21, 2026
 

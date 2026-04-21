@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-04-21
-Version       : 0.5.11
+Version       : 0.5.12
 Copyright     : Pierre Théberge
 
 Description
@@ -100,6 +100,9 @@ Modifications
 0.5.11 - 2026-04-21   [ES-28] : Sécurité : subprocess.Popen("start powershell", shell=True)
                                remplacé par Popen(["powershell.exe"], creationflags=
                                CREATE_NEW_CONSOLE) — élimine le risque d'injection shell.
+0.5.12 - 2026-04-21   [ES-28] : Robustesse : except Exception remplacé par des exceptions
+                               spécifiques (OSError, InvalidToken, ValueError) dans tous
+                               les blocs try/except.
 
 Paramètres
 ----------
@@ -121,7 +124,7 @@ from utils import normalize_path, pause_on_error, url_is_allowed
 import getpass
 import shutil
 import re
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 import subprocess
 import ast  # à mettre en haut du fichier si pas déjà importé
 import argparse
@@ -271,7 +274,7 @@ def copy_minimal_chrome_profile(src_base, dst_base):
                 else:
                     shutil.copy2(src_path, dst_path)
                 print(f"✅ Copié : {item}")
-            except Exception as e:
+            except OSError as e:
                 print(f"⚠️ Erreur lors de la copie de {item} : {e}")
         else:
             print(f"❌ Introuvable : {item}")
@@ -322,7 +325,7 @@ def interactive_config():
                     final_value = ast.literal_eval(user_input)
                     if not isinstance(final_value, list):
                         raise ValueError
-                except Exception:
+                except (ValueError, SyntaxError):
                     print_error("Veuillez entrer une liste Python valide, par exemple : [\"Aperçu\", \"AGP\"]")
                     logger.error("Saisie invalide pour 'rapports'.")
                     continue
@@ -362,7 +365,7 @@ def interactive_config():
                     else:
                         print_info("Le dossier cible existe déjà, aucune copie effectuée.")
                         logger.info(f"Le dossier cible {chrome_user_data_dir_value} existe déjà, copie non effectuée.")
-                except Exception as e:
+                except OSError as e:
                     print_error(f"Erreur lors de la copie du profil Chrome : {e}")
                     logger.error(f"Erreur lors de la copie du profil Chrome : {e}")
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
@@ -429,7 +432,7 @@ def interactive_env():
     try:
         fernet = Fernet(env_key.encode())
         encrypted_content = fernet.encrypt(env_content.encode())
-    except Exception as e:
+    except (InvalidToken, ValueError) as e:
         print_error(f"Erreur lors du chiffrement du fichier .env : {e}")
         logger.error(f"Erreur lors du chiffrement du fichier .env : {e}")
         pause_on_error()
@@ -456,7 +459,7 @@ def ensure_encryption_key():
             Fernet(key.encode())
             logger.info("La variable d'environnement ENV_DEXCOM_KEY existe et est valide.")
             return
-        except Exception:
+        except (InvalidToken, ValueError):
             print_error("La variable d'encryption ENV_DEXCOM_KEY existe mais n'est pas valide.")
             logger.warning("La variable d'encryption ENV_DEXCOM_KEY existe mais n'est pas valide.")
     else:
@@ -496,7 +499,7 @@ def get_dexcom_credentials():
         with open(temp_env_path, "w", encoding="utf-8") as f:
             f.write(decrypted_content)
         load_dotenv(temp_env_path)
-    except Exception as e:
+    except (InvalidToken, ValueError, OSError) as e:
         print_error(f"Erreur lors du déchiffrement du fichier .env : {e}")
         logger.error(f"Erreur lors du déchiffrement du fichier .env : {e}")
         pause_on_error()
@@ -505,7 +508,7 @@ def get_dexcom_credentials():
         if os.path.exists(temp_env_path):
             try:
                 os.remove(temp_env_path)
-            except Exception:
+            except OSError:
                 pass
 
     username = os.getenv("DEXCOM_USERNAME")

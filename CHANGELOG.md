@@ -5,6 +5,16 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.5.12] - 2026-04-21 — ES-28
+
+### Modifié
+- Robustesse : tous les blocs `except Exception` remplacés par des exceptions spécifiques
+  (`TimeoutException`, `ElementClickInterceptedException`, `WebDriverException`,
+  `StaleElementReferenceException`, `OSError`, `URLError`, `InvalidToken`, `ValueError`, etc.)
+  dans les quatre modules (`GlycoDownload.py`, `rapports.py`, `utils.py`, `config.py`).
+
+---
+
 ## [0.5.11] - 2026-04-21 — ES-28
 
 ### Corrigé
@@ -182,6 +192,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.5.12]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.12
 [0.5.11]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.11
 [0.5.10]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.10
 [0.5.9]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.9

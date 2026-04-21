@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
 Modifié le    : 2026-04-21
-Version       : 0.5.11
+Version       : 0.5.12
 Copyright     : Pierre Théberge
 
 Description
@@ -159,6 +159,8 @@ Modifications
 0.5.9   - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
 0.5.10  - 2026-04-17   [ES-26] : Synchronisation de version (aucun changement fonctionnel).
 0.5.11  - 2026-04-21   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
+0.5.12  - 2026-04-21   [ES-28] : Robustesse : except Exception remplacé par des exceptions
+                                 spécifiques Selenium et Python dans tous les blocs try/except.
 
 Paramètres
 ----------
@@ -187,7 +189,11 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import ElementClickInterceptedException
+from selenium.common.exceptions import (
+    ElementClickInterceptedException,
+    TimeoutException,
+    WebDriverException,
+)
 import glob
 import re
 from getpass import getpass
@@ -498,7 +504,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
                 deep_scan_interval=20.0,
                 debug=logger.isEnabledFor(logging.DEBUG),
             )
-        except Exception as e:
+        except TimeoutException as e:
             logger.error(f"Attente Cloudflare avant login: {e}")
             logger.error(
                 "La vérification humaine Cloudflare n'a pas été complétée dans le délai prévu "
@@ -560,7 +566,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
                 )
                 login_field_already_visible = True
                 logger.debug("Champ d'identifiant détecté directement. Étape de sélection du mode ignorée.")
-            except Exception:
+            except TimeoutException:
                 pass
 
             if not login_field_already_visible:
@@ -571,7 +577,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
                     if radio_buttons:
                         driver.execute_script("arguments[0].click();", radio_buttons[0])
                         time.sleep(1)
-                except Exception:
+                except TimeoutException:
                     logger.debug("Boutons de sélection de mode non trouvés, tentative d'accès direct au login.")
 
             # Capture avant la recherche du champ username (en mode debug uniquement)
@@ -597,14 +603,14 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
                     if username_input is not None:
                         logger.debug(f"Champ d'identifiant trouvé via {locator}")
                         break
-                except Exception:
+                except TimeoutException:
                     continue
 
             if username_input is None:
                 current_url = getattr(driver, "current_url", "")
                 try:
                     page_title = driver.title
-                except Exception:
+                except WebDriverException:
                     page_title = ""
                 logger.error(
                     "Champ usernameLogin introuvable après sélection du mode courriel/nom d'utilisateur. "
@@ -618,7 +624,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
             try:
                 WebDriverWait(driver, 10).until(EC.visibility_of(username_input))
                 WebDriverWait(driver, 10).until(EC.element_to_be_clickable(username_input))
-            except Exception as e:
+            except TimeoutException as e:
                 logger.error("Champ usernameLogin non visible ou non interactif.")
                 if logger.isEnabledFor(logging.DEBUG):
                     capture_screenshot(driver, logger, "username_non_interactif", log_dir, NOW_STR)
@@ -631,7 +637,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
             # Clic dans le champ pour déclencher les scripts JS
             try:
                 username_input.click()
-            except Exception:
+            except ElementClickInterceptedException:
                 driver.execute_script("arguments[0].click();", username_input)
             time.sleep(0.5)
 
@@ -676,7 +682,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
                 EC.element_to_be_clickable((By.ID, "default-login-text"))
             )
             login_button.click()
-        except Exception as e:
+        except (TimeoutException, ElementClickInterceptedException) as e:
             logger.warning(f"ID 'default-login-text' introuvable ou non cliquable ({e}), tentative via type='submit'")
             # Fallback : recherche par type submit (button ou input) si l'ID n'est pas trouvé
             try:
@@ -684,7 +690,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
                     EC.element_to_be_clickable((By.XPATH, "//button[@type='submit'] | //input[@type='submit']"))
                 )
                 login_button.click()
-            except Exception as e2:
+            except (TimeoutException, ElementClickInterceptedException) as e2:
                 logger.warning(f"Échec du clic sur le bouton de connexion (fallback inclus) : {e2}. Tentative avec la touche ENTRÉE.")
                 # Dernier recours : appuyer sur Entrée dans le champ mot de passe
                 password_input.send_keys(Keys.ENTER)
@@ -706,11 +712,11 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
             not_now_button.click()
             logger.debug("Bouton 'Pas maintenant' détecté et cliqué.")
             time.sleep(2)
-        except Exception:
+        except TimeoutException:
             # Si le bouton n'est pas présent, on continue simplement
             logger.debug("Aucun bouton 'Pas maintenant' à cliquer, poursuite du script.")
 
-    except Exception as e:
+    except WebDriverException as e:
         logger.exception(f"Erreur lors de la saisie des identifiants ou de la connexion : {e}")
         raise SystemExit(1)
 def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=10, required=True):
@@ -742,7 +748,7 @@ def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=10, require
         button.click()
         logger.debug("Le bouton 'Dexcom Clarity for Home Users' a été cliqué avec succès!")
         return True
-    except Exception as e:
+    except (TimeoutException, ElementClickInterceptedException) as e:
         if required:
             time.sleep(2)
             capture_screenshot(driver, logger, "home_user_button_error", log_dir, NOW_STR)
@@ -777,7 +783,7 @@ def close_browser_session(driver, logger, debug=False):
 
     try:
         handles = list(driver.window_handles or [])
-    except Exception:
+    except WebDriverException:
         handles = []
 
     try:
@@ -786,17 +792,17 @@ def close_browser_session(driver, logger, debug=False):
             try:
                 # Ferme l'instance Chrome connectée via CDP (inclut le mode attach-debugger).
                 driver.execute_cdp_cmd("Browser.close", {})
-            except Exception as close_exc:
+            except WebDriverException as close_exc:
                 logger.debug("Fermeture CDP impossible, fallback driver.quit(): %s", close_exc)
                 driver.quit()
         else:
             logger.info("Plusieurs onglets détectés: fermeture de l'onglet courant uniquement.")
             try:
                 driver.close()
-            except Exception as close_exc:
+            except WebDriverException as close_exc:
                 logger.debug("Fermeture de l'onglet impossible, fallback driver.quit(): %s", close_exc)
                 driver.quit()
-    except Exception as e:
+    except WebDriverException as e:
         logger.warning(f"Erreur lors de la fermeture du navigateur : {e}", exc_info=debug)
 
 
@@ -875,14 +881,14 @@ def main(args, logger, config):
                 "Page.setDownloadBehavior",
                 {"behavior": "allow", "downloadPath": download_dir},
             )
-        except Exception as e:
+        except WebDriverException as e:
             logger.warning(f"Impossible de forcer download_dir via CDP: {e}")
 
         if debug_mode:
             logger.debug(f"Version de Python : {sys.version}")
             try:
                 logger.debug(f"Arguments CLI: {vars(args)}")
-            except Exception:
+            except TypeError:
                 logger.debug("Arguments CLI: indisponibles")
             logger.debug(
                 "Configuration (sanitisée): "
@@ -917,13 +923,13 @@ def main(args, logger, config):
                 WebDriverWait(driver, 5).until(
                     EC.presence_of_element_located((By.XPATH, "//div[@data-test-date-range-picker-toggle]"))
                 )
-            except Exception:
+            except TimeoutException:
                 # Si la page d'accueil est encore affichée, essayer le bouton Home User.
                 try:
                     clicked = click_home_user_button(driver, logger, log_dir, now_str, required=False)
                     if clicked:
                         time.sleep(5)
-                except Exception:
+                except (TimeoutException, ElementClickInterceptedException):
                     logger.warning("Bouton Home User introuvable lors du mode reprise.")
 
             # Attendre l'ancre de la page principale (sélecteur de dates)
@@ -938,7 +944,7 @@ def main(args, logger, config):
                     poll_seconds=2.0,
                     debug=debug_mode,
                 )
-            except Exception as e:
+            except TimeoutException as e:
                 logger.error(
                     "Impossible d'atteindre la page principale en mode reprise. "
                     "Assurez-vous d'être déjà connecté dans le même profil Chrome."
@@ -967,7 +973,7 @@ def main(args, logger, config):
                 click_home_user_button(driver, logger, log_dir, now_str, required=True)
                 time.sleep(5)
                 logger.debug("Le bouton 'Dexcom Clarity for Home Users' a été cliqué avec succès!")
-            except Exception as e:
+            except (TimeoutException, ElementClickInterceptedException):
                 # La gestion d'erreur est déjà dans click_home_user_button
                 raise
 
@@ -978,7 +984,7 @@ def main(args, logger, config):
 
             try:
                 saisir_identifiants(driver, logger, log_dir, now_str)
-            except Exception as e:
+            except WebDriverException as e:
                 logger.error(f"Erreur lors de la saisie des identifiants ou de la connexion : {e}")
                 sys.exit(1)
 
@@ -1042,7 +1048,7 @@ def main(args, logger, config):
             logger.info(f"Date de fin: {date_fin_str}")
             logger.info("Les dates ont été saisies avec succès !")
 
-        except Exception as e:
+        except (TimeoutException, WebDriverException) as e:
             if not check_internet():
                 logger.error("Perte de connexion internet détectée lors de la saisie des dates.")
             logger.error(f"Une erreur s'est produite lors de la saisie des dates : {e}")
@@ -1101,7 +1107,7 @@ def main(args, logger, config):
                 driver.execute_script("arguments[0].click();", logout_link)
             logger.info("Déconnexion effectuée avec succès.")
             time.sleep(3)
-        except Exception as e:
+        except (TimeoutException, ElementClickInterceptedException, WebDriverException) as e:
             logger.warning(f"Impossible de se déconnecter proprement : {e}", exc_info=debug_mode)
 
     except Exception as e:
@@ -1137,7 +1143,7 @@ def get_user_menu_button(driver, logger, args, timeout=10):
         return WebDriverWait(driver, timeout).until(
             EC.element_to_be_clickable((By.XPATH, xpath))
         )
-    except Exception as e:
+    except TimeoutException as e:
         logger.error(f"Bouton utilisateur introuvable : {e}", exc_info=args.debug)
         raise
 
@@ -1149,7 +1155,7 @@ def pause_on_error():
         stdin = getattr(sys, "stdin", None)
         if stdin is not None and getattr(stdin, "isatty", lambda: False)():
             input("\nAppuyez sur Entrée pour fermer...")
-    except Exception:
+    except (EOFError, OSError):
         pass
 
 # --- Point d'entrée du script ---
@@ -1246,7 +1252,7 @@ if __name__ == "__main__":
             username, password, country_code, phone_number = get_dexcom_credentials()
             print(f"\n  {Fore.GREEN}✓ Credentials Dexcom détectés{Style.RESET_ALL}")
             print(f"    {Fore.YELLOW}• Type d'authentification :{Style.RESET_ALL} ", end="")
-            
+
             if country_code and phone_number:
                 # Masquage des données sensibles pour la sécurité
                 print(f"Numéro de téléphone (Masqué)")
@@ -1254,7 +1260,7 @@ if __name__ == "__main__":
                 print(f"Email/Nom d'utilisateur")
             else:
                 print(f"{Fore.RED}Inconnu (configuration incomplète){Style.RESET_ALL}")
-        except Exception as e:
+        except (ValueError, OSError) as e:
             print(f"\n  {Fore.RED}✗ Erreur lors de la lecture des credentials : {e}{Style.RESET_ALL}")
         
         print(f"\n{Fore.CYAN}{'=' * 80}{Style.RESET_ALL}")

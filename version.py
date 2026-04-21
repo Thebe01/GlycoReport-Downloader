@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
 Modifié le    : 2026-04-21
-Version       : 0.5.11
+Version       : 0.5.12
 Copyright     : Pierre Théberge
 
 Description
@@ -85,6 +85,11 @@ Modifications
 0.5.11 - 2026-04-21   [ES-28] : Sécurité : subprocess.Popen(shell=True) remplacé par
                                 Popen(["powershell.exe"], creationflags=CREATE_NEW_CONSOLE)
                                 dans config.py — élimine le risque d'injection shell.
+0.5.12 - 2026-04-21   [ES-28] : Robustesse : remplacement de tous les except Exception par
+                                des exceptions spécifiques (TimeoutException,
+                                ElementClickInterceptedException, WebDriverException,
+                                StaleElementReferenceException, OSError, URLError,
+                                InvalidToken, ValueError, etc.) dans les 4 modules.
 
 Paramètres
 ----------
@@ -96,4 +101,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.11"
+__version__ = "0.5.12"

@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-04-21
-Version       : 0.5.11
+Version       : 0.5.12
 Copyright     : Pierre Théberge
 
 Description
@@ -84,6 +84,8 @@ Modifications
 0.5.9  - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
 0.5.10 - 2026-04-17   [ES-26] : Synchronisation de version (aucun changement fonctionnel).
 0.5.11 - 2026-04-21   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
+0.5.12 - 2026-04-21   [ES-28] : Robustesse : except Exception remplacé par des exceptions
+                               spécifiques Selenium et Python dans tous les blocs try/except.
 
 Paramètres
 ----------
@@ -102,12 +104,14 @@ import time
 import urllib.request
 import urllib.parse
 from urllib.parse import urlparse
+from urllib.error import URLError
 from typing import Optional
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import StaleElementReferenceException, TimeoutException, WebDriverException
 from colorama import Fore  # type: ignore
 
 ONE_DAY_SECONDS = 86400
@@ -174,7 +178,7 @@ def url_is_allowed(
     """
     try:
         parsed = urlparse(url)
-    except Exception:
+    except ValueError:
         return False
 
     scheme = (parsed.scheme or "").lower()
@@ -193,7 +197,7 @@ def check_internet(url: str = "https://clarity.dexcom.eu", timeout: int = 5) -> 
             return False
         urllib.request.urlopen(url, timeout=timeout)
         return True
-    except Exception:
+    except (URLError, OSError):
         return False
 
 def attendre_disparition_overlay(driver: WebDriver, timeout: int = 60, logger=None, debug: bool = False) -> None:
@@ -202,7 +206,7 @@ def attendre_disparition_overlay(driver: WebDriver, timeout: int = 60, logger=No
         WebDriverWait(driver, timeout).until_not(
             EC.presence_of_element_located((By.CSS_SELECTOR, ".overlay, .loader, .spinner"))
         )
-    except Exception as e:
+    except TimeoutException as e:
         if logger:
             logger.debug(f"Aucun overlay/loader détecté ou disparition non confirmée : {e}", exc_info=debug)
 
@@ -294,7 +298,7 @@ def attendre_nouveau_bouton_telecharger(driver: WebDriver, bouton_avant: WebElem
         try:
             nouveau_bouton = drv.find_element(By.XPATH, "//button[.//img[@alt='Télécharger']]")
             return nouveau_bouton and nouveau_bouton != bouton_avant
-        except Exception:
+        except WebDriverException:
             return False
     WebDriverWait(driver, timeout).until(bouton_a_change)
 
@@ -304,7 +308,7 @@ def capture_screenshot(driver: WebDriver, logger, step: str, log_dir: str, now_s
         screenshot_path = os.path.join(log_dir, f"screenshot_{step}_{now_str}.png")
         driver.save_screenshot(screenshot_path)
         logger.info(f"Capture d'écran enregistrée : {screenshot_path}")
-    except Exception as e:
+    except WebDriverException as e:
         logger.warning(f"Impossible de prendre une capture d'écran : {e}")
 
 def normalize_path(path: str) -> str:
@@ -324,7 +328,7 @@ def pause_on_error() -> None:
     try:
         if sys.stdin.isatty():
             input("\nAppuyez sur Entrée pour fermer...")
-    except Exception:
+    except (EOFError, OSError):
         pass
 
 def cleanup_logs(log_dir, retention_days, logger=None):
@@ -359,7 +363,7 @@ def cleanup_logs(log_dir, retention_days, logger=None):
                     print(Fore.GREEN + msg)
                     if logger:
                         logger.info(msg)
-            except Exception as e:
+            except OSError as e:
                 msg = f"Erreur lors de la suppression de {filepath} : {e}"
                 print(Fore.RED + msg)
                 if logger:
@@ -379,7 +383,7 @@ def cloudflare_challenge_detecte(driver: WebDriver, *, deep_scan: bool = True) -
     """
     try:
         url = (driver.current_url or "").lower()
-    except Exception:
+    except WebDriverException:
         url = ""
 
     if "cdn-cgi" in url or "challenge" in url or "turnstile" in url:
@@ -391,20 +395,20 @@ def cloudflare_challenge_detecte(driver: WebDriver, *, deep_scan: bool = True) -
     # Certains challenges sont rendus via iframe (Turnstile) ou scripts dédiés.
     try:
         iframes = driver.find_elements(By.TAG_NAME, "iframe")
-    except Exception:
+    except WebDriverException:
         iframes = []
 
     for iframe in iframes:
         try:
             src = (iframe.get_attribute("src") or "").lower()
-        except Exception:
+        except (StaleElementReferenceException, WebDriverException):
             src = ""
 
         # Analyse l'URL pour vérifier le nom d'hôte plutôt qu'un simple sous-texte.
         try:
             parsed = urllib.parse.urlparse(src)
             host = (parsed.hostname or "").lower()
-        except Exception:
+        except ValueError:
             host = ""
 
         if (
@@ -425,7 +429,7 @@ def cloudflare_challenge_detecte(driver: WebDriver, *, deep_scan: bool = True) -
             "turnstile",
         ]
         return any(m in html for m in markers)
-    except Exception:
+    except WebDriverException:
         return False
 
 
@@ -555,12 +559,12 @@ def attendre_verification_humaine_cloudflare(
                     if notified:
                         logger.info("Vérification Cloudflare terminée. Reprise du script.")
                     return
-            except Exception:
+            except (StaleElementReferenceException, WebDriverException):
                 # Si on ne peut pas lire is_displayed, la présence suffit.
                 if notified:
                     logger.info("Vérification Cloudflare terminée. Reprise du script.")
                 return
-        except Exception:
+        except TimeoutException:
             # Les timeouts/interruptions de WebDriverWait sont attendus dans cette boucle.
             pass
 

@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-04-21
-Version       : 0.5.11
+Version       : 0.5.12
 Copyright     : Pierre Théberge
 
 Description
@@ -103,6 +103,8 @@ Modifications
 0.5.9  - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
 0.5.10 - 2026-04-17   [ES-26] : Synchronisation de version (aucun changement fonctionnel).
 0.5.11 - 2026-04-21   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
+0.5.12 - 2026-04-21   [ES-28] : Robustesse : except Exception remplacé par des exceptions
+                               spécifiques Selenium et Python dans tous les blocs try/except.
 
 Paramètres
 ----------
@@ -120,7 +122,12 @@ import locale
 import logging
 from datetime import datetime
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import StaleElementReferenceException, WebDriverException, TimeoutException
+from selenium.common.exceptions import (
+    ElementClickInterceptedException,
+    StaleElementReferenceException,
+    TimeoutException,
+    WebDriverException,
+)
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from utils import (
@@ -178,7 +185,7 @@ def _get_log_dir_from_logger(logger) -> str:
             base_filename = getattr(handler, "baseFilename", None)
             if base_filename:
                 return os.path.dirname(base_filename) or "."
-    except Exception:
+    except AttributeError:
         pass
     return "."
 
@@ -237,7 +244,7 @@ def _find_clickable_with_xpath_candidates(driver, xpath_candidates: list[str], t
             return WebDriverWait(driver, per_try_timeout).until(
                 EC.element_to_be_clickable((By.XPATH, xpath))
             )
-        except Exception as exc:
+        except TimeoutException as exc:
             last_error = exc
             continue
     if last_error:
@@ -256,7 +263,7 @@ def _is_report_active(driver, nom_rapport: str, timeout: int = 8) -> bool:
             EC.presence_of_element_located((By.XPATH, active_xpath))
         )
         return True
-    except Exception:
+    except TimeoutException:
         return False
 
 def wait_for_csv_download(DOWNLOAD_DIR, timeout=120):
@@ -316,7 +323,7 @@ def get_period_suffix(date_debut, date_fin, args, logger=None):
             debut = datetime.strptime(date_debut, "%Y-%m-%d")
             fin = datetime.strptime(date_fin, "%Y-%m-%d")
             jours = (fin - debut).days + 1
-        except Exception as exc:
+        except ValueError as exc:
             if logger:
                 logger.debug("Impossible de calculer la periode: %s", exc)
             return None
@@ -367,7 +374,7 @@ def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE
             try:
                 os.replace(chemin_fichier_telecharge, destination)
                 logger.info(f"Le fichier Export {chemin_fichier_telecharge} a été renommé en {destination}")
-            except Exception as e:
+            except OSError as e:
                 logger.error(f"Erreur lors du renommage du fichier Export : {e}")
         else:
             nouveau_prefix = renomme_prefix(prefix, DATE_FIN, logger=logger)
@@ -377,7 +384,7 @@ def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE
             try:
                 os.replace(chemin_fichier_telecharge, destination)
                 logger.info(f"Le fichier {chemin_fichier_telecharge} a été renommé en {destination}")
-            except Exception as e:
+            except OSError as e:
                 logger.error(f"Erreur lors du renommage du fichier : {e}")
     else:
         logger.error("Aucun fichier téléchargé trouvé (pdf/csv).")
@@ -393,7 +400,7 @@ def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE
                     logger.error(f"JS Browser Error: {entry}")
                 else:
                     logger.debug(f"JS Browser Log: {entry}")
-        except Exception as e:
+        except WebDriverException as e:
             logger.warning(f"Impossible de récupérer les logs du navigateur : {e}")
 
 def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
@@ -416,11 +423,11 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
         attendre_disparition_overlay(driver, 60, logger=logger, debug=args.debug)
         try:
             current_url = driver.current_url
-        except Exception:
+        except WebDriverException:
             current_url = "(url indisponible)"
         try:
             current_title = driver.title
-        except Exception:
+        except WebDriverException:
             current_title = "(titre indisponible)"
         logger.debug(
             "Contexte avant telechargement | rapport=%s | url=%s | titre=%s",
@@ -436,11 +443,11 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
         time.sleep(2)
         try:
             bouton.click()
-        except Exception:
+        except ElementClickInterceptedException:
             driver.execute_script("arguments[0].click();", bouton)
         time.sleep(5)
         logger.debug("Le bouton Télécharger a été cliqué avec succès!")
-    except Exception as e:
+    except (TimeoutException, WebDriverException) as e:
         _handle_network_loss(logger, f"clic du bouton Télécharger ({nom_rapport})", e)
         logger.error(f"Une erreur s'est produite lors du clic sur le bouton Télécharger : {e}", exc_info=args.debug)
         return
@@ -452,11 +459,11 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
         time.sleep(1)
         try:
             radio_mode_couleur.click()
-        except Exception:
+        except ElementClickInterceptedException:
             driver.execute_script("arguments[0].click();", radio_mode_couleur)
         time.sleep(5)
         logger.debug("Le mode couleur a été sélectionné avec succès!")
-    except Exception as e:
+    except (TimeoutException, WebDriverException) as e:
         _handle_network_loss(logger, f"sélection du mode couleur ({nom_rapport})", e)
         logger.error(f"Une erreur s'est produite lors de la sélection du mode couleur : {e}")
         return
@@ -490,7 +497,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
             )
             try:
                 close_button.click()
-            except Exception:
+            except ElementClickInterceptedException:
                 driver.execute_script("arguments[0].click();", close_button)
 
             # Pause pour laisser le temps au téléchargement de se finaliser complètement
@@ -500,7 +507,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
             logger.warning(
                 "Bouton de fermeture de la fenêtre de téléchargement non détecté dans le délai (poursuite)."
             )
-        except Exception as e:
+        except WebDriverException as e:
             if debug_enabled:
                 log_dir = _get_log_dir_from_logger(logger)
                 now_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -510,7 +517,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
             )
             # On tente quand même de continuer, le fichier est peut-être déjà là
 
-    except Exception as e:
+    except (TimeoutException, WebDriverException) as e:
         _handle_network_loss(logger, f"enregistrement du rapport ({nom_rapport})", e)
         logger.error(f"Une erreur s'est produite lors de l'enregistrement du rapport : {e}")
         return
@@ -538,7 +545,7 @@ def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         time.sleep(1)
         try:
             selection_rapport_button.click()
-        except Exception:
+        except ElementClickInterceptedException:
             driver.execute_script("arguments[0].click();", selection_rapport_button)
         time.sleep(2)
 
@@ -554,7 +561,7 @@ def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
             driver.execute_script("arguments[0].scrollIntoView(true);", fallback_btn)
             try:
                 fallback_btn.click()
-            except Exception:
+            except ElementClickInterceptedException:
                 driver.execute_script("arguments[0].click();", fallback_btn)
             time.sleep(2)
 
@@ -568,7 +575,7 @@ def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         raise
     except NetworkRecoveryFailedError:
         raise
-    except Exception as e:
+    except (TimeoutException, WebDriverException, RuntimeError) as e:
         _handle_network_loss(logger, f"traitement du rapport {nom_rapport}", e)
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}", exc_info=args.debug)
         return
@@ -627,7 +634,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
                     time.sleep(1)
                     try:
                         element.click()
-                    except Exception:
+                    except ElementClickInterceptedException:
                         driver.execute_script("arguments[0].click();", element)
                     return
                 except (StaleElementReferenceException, WebDriverException) as exc:
@@ -642,7 +649,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
                 base_url = get_base_url()
                 driver.get(base_url)
                 WebDriverWait(driver, 60).until(lambda d: base_url in d.current_url)
-            except Exception:
+            except TimeoutException:
                 logger.debug("Navigation vers l'URL base non confirmee; poursuite.")
             attendre_disparition_overlay(driver, 30, logger=logger, debug=args.debug)
             xpath_candidates = _get_report_xpath_candidates(nom_rapport)
@@ -651,7 +658,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
             time.sleep(1)
             try:
                 element.click()
-            except Exception:
+            except ElementClickInterceptedException:
                 driver.execute_script("arguments[0].click();", element)
             time.sleep(2)
             logger.debug("Modale Comparer ouverte.")
@@ -665,7 +672,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
                 time.sleep(2)
                 attendre_disparition_overlay(driver, 30, logger=logger, debug=args.debug)
                 logger.debug("Modale de rapport fermee (navigation vers URL base).")
-            except Exception as e:
+            except (TimeoutException, WebDriverException) as e:
                 logger.debug(f"Erreur lors de la fermeture de modale: {e}")
 
         def click_compare_link(link_xpath, url_fragment, label):
@@ -683,7 +690,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
                     )
                 )
                 logger.debug("Contenu graphique charge pour %s.", label)
-            except Exception:
+            except TimeoutException:
                 logger.debug("Contenu graphique non confirme pour %s; poursuite.", label)
             attendre_disparition_overlay(driver, 30, logger=logger, debug=args.debug)
             time.sleep(3)
@@ -731,7 +738,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         raise
     except NetworkRecoveryFailedError:
         raise
-    except Exception as e:
+    except (TimeoutException, WebDriverException, RuntimeError) as e:
         _handle_network_loss(logger, f"traitement du rapport {nom_rapport}", e)
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
         if args.debug:
@@ -761,11 +768,11 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
         # Capturer l'URL de base avant la navigation, pour le fallback URL dans ouvrir_stats_route.
         try:
             base_url_stats = driver.current_url.split("#")[0]
-        except Exception:
+        except WebDriverException:
             base_url_stats = ""
         try:
             selection_rapport_button.click()
-        except Exception:
+        except ElementClickInterceptedException:
             driver.execute_script("arguments[0].click();", selection_rapport_button)
         time.sleep(2)
 
@@ -780,14 +787,14 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
                 time.sleep(1)
                 try:
                     link.click()
-                except Exception:
+                except ElementClickInterceptedException:
                     driver.execute_script("arguments[0].click();", link)
-            except Exception:
+            except (TimeoutException, WebDriverException):
                 # Fallback: navigation directe si le lien n'est pas disponible/cliquable.
                 # Utiliser l'URL capturée avant la navigation (indépendante de la région).
                 try:
                     base_url = driver.current_url.split("#")[0] or base_url_stats
-                except Exception:
+                except WebDriverException:
                     base_url = base_url_stats
                 if not base_url:
                     raise RuntimeError(
@@ -813,7 +820,7 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
                     EC.element_to_be_clickable((By.XPATH, xpath_checkbox))
                 )
                 break
-            except Exception:
+            except TimeoutException:
                 continue
 
         if checkbox is None:
@@ -828,7 +835,7 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
                 time.sleep(1)
                 try:
                     checkbox.click()
-                except Exception:
+                except ElementClickInterceptedException:
                     driver.execute_script("arguments[0].click();", checkbox)
                 time.sleep(1)
 
@@ -836,7 +843,7 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
                 raise RuntimeError("La case 'Avancé' n'a pas pu être activée.")
 
             logger.info("La case à cocher 'Avancé' est activée.")
-        except Exception as exc:
+        except (ElementClickInterceptedException, WebDriverException, RuntimeError) as exc:
             log_dir = _get_log_dir_from_logger(logger)
             now_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
             capture_screenshot(driver, logger, "statistiques_case_avancee_echec", log_dir, now_str)
@@ -858,7 +865,7 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
         raise
     except NetworkRecoveryFailedError:
         raise
-    except Exception as e:
+    except (TimeoutException, WebDriverException, RuntimeError) as e:
         _handle_network_loss(logger, f"traitement du rapport {nom_rapport}", e)
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
         return
@@ -894,11 +901,11 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
         time.sleep(2)
         try:
             bouton_export.click()
-        except Exception:
+        except ElementClickInterceptedException:
             driver.execute_script("arguments[0].click();", bouton_export)
         time.sleep(5)
         logger.debug("Le bouton Exporter a été cliqué avec succès!")
-    except Exception as e:
+    except (TimeoutException, WebDriverException) as e:
         _handle_network_loss(logger, "clic du bouton Exporter", e)
         logger.error(f"Une erreur s'est produite lors du clic sur le bouton Exporter : {e}", exc_info=args.debug)
         return
@@ -912,7 +919,7 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
         time.sleep(1)
         bouton_export_modal.click()
         logger.debug("Le bouton Exporter de la fenêtre modale a été cliqué avec succès!")
-    except Exception as e:
+    except (TimeoutException, WebDriverException) as e:
         _handle_network_loss(logger, "clic du bouton Exporter de la modale", e)
         logger.error(f"Impossible de cliquer sur le bouton Exporter de la fenêtre modale : {e}")
         return
@@ -939,7 +946,7 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
                 "Le composant export-dialog est toujours présent 10 s après le clic Fermer "
                 "(poursuite — la déconnexion peut être interceptée)."
             )
-    except Exception as e:
+    except (TimeoutException, WebDriverException) as e:
         _handle_network_loss(logger, "fermeture de la fenêtre modale d'export", e)
         logger.warning(f"Bouton Fermer non trouvé ou non cliquable dans la fenêtre modale : {e}")
 
