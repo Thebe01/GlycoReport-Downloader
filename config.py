@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-04-17
-Version       : 0.5.10
+Modifié le    : 2026-04-21
+Version       : 0.5.11
 Copyright     : Pierre Théberge
 
 Description
@@ -97,6 +97,9 @@ Modifications
 0.5.8  - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
 0.5.9  - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
 0.5.10 - 2026-04-17   [ES-26] : Synchronisation de version (aucun changement fonctionnel).
+0.5.11 - 2026-04-21   [ES-28] : Sécurité : subprocess.Popen("start powershell", shell=True)
+                               remplacé par Popen(["powershell.exe"], creationflags=
+                               CREATE_NEW_CONSOLE) — élimine le risque d'injection shell.
 
 Paramètres
 ----------
@@ -469,7 +472,7 @@ def ensure_encryption_key():
     print_info("\nEnsuite, tapez : Exit puis appuyez sur Entrée pour fermer la fenêtre PowerShell.")
     print_info("L'application va se fermer. Veuillez la relancer pour continuer la configuration.\n")
     logger.info("Création d'une nouvelle clé Fernet et demande à l'utilisateur de créer la variable d'environnement ENV_DEXCOM_KEY.")
-    subprocess.Popen("start powershell", shell=True)
+    subprocess.Popen(["powershell.exe"], creationflags=subprocess.CREATE_NEW_CONSOLE)
     sys.exit(0)
 
 # --- Gestion des credentials Dexcom ---

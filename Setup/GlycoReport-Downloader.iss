@@ -2,7 +2,7 @@
 ; Généré automatiquement
 
 #define MyAppName "GlycoReport-Downloader"
-#define MyAppVersion "0.5.10" ; Sera mis à jour par le script PowerShell
+#define MyAppVersion "0.5.11" ; Sera mis à jour par le script PowerShell
 #define MyAppPublisher "Pierre Théberge"
 #define MyAppURL "https://github.com/thebe01/GlycoReport-Downloader"
 #define MyAppExeName "GlycoReport-Downloader.exe"

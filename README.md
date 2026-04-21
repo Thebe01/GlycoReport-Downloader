@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.10-blue)
+![Version](https://img.shields.io/badge/version-0.5.11-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0510--17-avril-2026)
+- [Nouveautés](#version--0511--21-avril-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,18 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.5.11 — 21 avril 2026
+
+### Nouveautés (0.5.11)
+
+**Sécurité :**
+
+- `config.py` : `subprocess.Popen("start powershell", shell=True)` remplacé par
+  `subprocess.Popen(["powershell.exe"], creationflags=CREATE_NEW_CONSOLE)` —
+  élimine le risque d'injection shell (ES-28).
 
 ---
 
@@ -418,6 +430,10 @@ traduction stricte de la version francaise.
 ---
 
 ## Historique des versions
+
+### 0.5.11 — 21 avril 2026
+
+- Sécurité : `subprocess.Popen(shell=True)` → `Popen(["powershell.exe"], creationflags=CREATE_NEW_CONSOLE)` dans `config.py`.
 
 ### 0.5.10 — 17 avril 2026
 
@@ -1248,6 +1264,14 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.5.11 — April 21, 2026
+
+**Security:**
+
+- `config.py`: replaced `subprocess.Popen("start powershell", shell=True)` with
+  `subprocess.Popen(["powershell.exe"], creationflags=CREATE_NEW_CONSOLE)` —
+  eliminates shell injection risk (ES-28).
+
 ### Version: 0.5.10 — April 17, 2026
 
 **Structure and quality:**
@@ -1584,6 +1608,10 @@ translation of the French version.
 ---
 
 ## Version History (English)
+
+### 0.5.11 — April 21, 2026
+
+- Security: `subprocess.Popen(shell=True)` → `Popen(["powershell.exe"], creationflags=CREATE_NEW_CONSOLE)` in `config.py`.
 
 ### 0.5.10 — April 17, 2026
 

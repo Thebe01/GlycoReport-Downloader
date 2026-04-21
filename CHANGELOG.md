@@ -5,6 +5,15 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.5.11] - 2026-04-21 — ES-28
+
+### Corrigé
+- Sécurité : `subprocess.Popen("start powershell", shell=True)` remplacé par
+  `subprocess.Popen(["powershell.exe"], creationflags=CREATE_NEW_CONSOLE)` dans `config.py` —
+  élimine le risque d'injection shell.
+
+---
+
 ## [0.5.10] - 2026-04-17 — ES-26
 
 ### Modifié
@@ -173,6 +182,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.5.11]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.11
 [0.5.10]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.10
 [0.5.9]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.9
 [0.5.8]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.8

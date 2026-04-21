@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-04-17
-Version       : 0.5.10
+Modifié le    : 2026-04-21
+Version       : 0.5.11
 Copyright     : Pierre Théberge
 
 Description
@@ -82,6 +82,9 @@ Modifications
                                 Couverture de tests : ajout de test_config_validation.py,
                                 test_rapports_period.py et TestValidateDates dans
                                 test_glycodownload_dates.py (81 tests).
+0.5.11 - 2026-04-21   [ES-28] : Sécurité : subprocess.Popen(shell=True) remplacé par
+                                Popen(["powershell.exe"], creationflags=CREATE_NEW_CONSOLE)
+                                dans config.py — élimine le risque d'injection shell.
 
 Paramètres
 ----------
@@ -93,4 +96,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.10"
+__version__ = "0.5.11"
