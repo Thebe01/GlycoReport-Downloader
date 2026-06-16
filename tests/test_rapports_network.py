@@ -36,6 +36,7 @@ Exemple
 import logging
 import os
 import sys
+import types
 
 import pytest
 
@@ -214,3 +215,89 @@ def test_selection_rapport_propagates_network_recovery_failed(monkeypatch):
         )
 
     assert calls["handler"] == 0
+
+
+def test_traitement_rapport_comparer_preserves_selected_dates(monkeypatch):
+    """Comparer réapplique ?dates et restaure la page d'origine pour les rapports suivants."""
+    logger = logging.getLogger("tests.rapports.comparer.dates")
+
+    class DummyElement:
+        def __init__(self, driver, locator=None):
+            self.driver = driver
+            self.locator = locator
+
+        def click(self):
+            xpath = ""
+            if self.locator and isinstance(self.locator, tuple) and len(self.locator) == 2:
+                xpath = self.locator[1]
+            if "/compare/trends" in xpath:
+                self.driver.current_url = "https://clarity.dexcom.eu/i/#/compare/trends"
+
+    class DummyDriver:
+        def __init__(self):
+            self.current_url = "https://clarity.dexcom.eu/i/#/data/daily?dates=2026-04-13%2F2026-04-27"
+            self.get_calls = []
+            self.title = "Dexcom Clarity"
+
+        def execute_script(self, *_args, **_kwargs):
+            return None
+
+        def get(self, url):
+            self.get_calls.append(url)
+            self.current_url = url
+
+    class DummyWait:
+        def __init__(self, driver, _timeout):
+            self.driver = driver
+
+        def until(self, condition):
+            if callable(condition):
+                assert condition(self.driver)
+                return True
+            if isinstance(condition, tuple) and condition and condition[0] == "clickable":
+                return DummyElement(self.driver, condition[1])
+            return DummyElement(self.driver)
+
+    driver = DummyDriver()
+    recorded_download_urls = []
+
+    monkeypatch.setattr(rapports, "_recover_network_or_fail", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(rapports, "attendre_disparition_overlay", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(rapports.time, "sleep", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(rapports, "WebDriverWait", DummyWait)
+    monkeypatch.setattr(
+        rapports,
+        "_find_clickable_with_xpath_candidates",
+        lambda d, *_args, **_kwargs: DummyElement(d),
+    )
+    monkeypatch.setattr(
+        rapports.EC,
+        "element_to_be_clickable",
+        lambda locator: ("clickable", locator),
+    )
+    monkeypatch.setattr(
+        rapports.EC,
+        "presence_of_element_located",
+        lambda _locator: ("presence", _locator),
+    )
+    monkeypatch.setattr(
+        rapports,
+        "telechargement_rapport",
+        lambda *_args, **_kwargs: recorded_download_urls.append(driver.current_url),
+    )
+
+    args = types.SimpleNamespace(debug=False)
+    rapports.traitement_rapport_comparer(
+        "Comparer",
+        driver,
+        logger,
+        DOWNLOAD_DIR=".",
+        DIR_FINAL_BASE=".",
+        DATE_FIN="2026-04-26",
+        DATE_DEBUT="2026-04-13",
+        args=args,
+    )
+
+    assert recorded_download_urls
+    assert "dates=2026-04-13%2F2026-04-27" in recorded_download_urls[0]
+    assert driver.get_calls[-1] == "https://clarity.dexcom.eu/i/#/data/daily?dates=2026-04-13%2F2026-04-27"

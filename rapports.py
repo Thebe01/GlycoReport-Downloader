@@ -121,6 +121,7 @@ import glob
 import locale
 import logging
 from datetime import datetime
+from urllib.parse import parse_qs, urlencode, urlparse
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import (
     ElementClickInterceptedException,
@@ -620,6 +621,37 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
     logger.info(f"Traitement des rapports {nom_rapport}")
     _recover_network_or_fail(logger, f"traitement du rapport {nom_rapport}")
     try:
+        try:
+            compare_entry_url = driver.current_url or ""
+        except Exception:
+            compare_entry_url = ""
+
+        def _extract_dates_query(url: str) -> str:
+            """Retourne la query 'dates=...' d'une URL, ou chaîne vide si absente."""
+            if not url:
+                return ""
+            try:
+                parsed = urlparse(url)
+                query_to_parse = parsed.query
+                # Clarity place souvent les paramètres dans le fragment (ex: #/overview?dates=...).
+                if not query_to_parse and parsed.fragment and "?" in parsed.fragment:
+                    query_to_parse = parsed.fragment.split("?", 1)[1]
+                dates_values = parse_qs(query_to_parse).get("dates")
+                if not dates_values or not dates_values[0]:
+                    return ""
+                return urlencode({"dates": dates_values[0]})
+            except Exception:
+                return ""
+
+        compare_dates_query = _extract_dates_query(compare_entry_url)
+
+        def _append_dates_query_if_missing(url: str) -> str:
+            """Ajoute la query 'dates' à l'URL cible si elle est disponible et absente."""
+            if not compare_dates_query or not url or "dates=" in url:
+                return url
+            separator = "&" if "?" in url else "?"
+            return f"{url}{separator}{compare_dates_query}"
+
         def get_base_url():
             return driver.current_url.split("#")[0]
 
@@ -645,12 +677,6 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
 
         def ouvrir_modale_comparer():
             """Ouvre la modale du rapport Comparer."""
-            try:
-                base_url = get_base_url()
-                driver.get(base_url)
-                WebDriverWait(driver, 60).until(lambda d: base_url in d.current_url)
-            except TimeoutException:
-                logger.debug("Navigation vers l'URL base non confirmee; poursuite.")
             attendre_disparition_overlay(driver, 30, logger=logger, debug=args.debug)
             xpath_candidates = _get_report_xpath_candidates(nom_rapport)
             element = _find_clickable_with_xpath_candidates(driver, xpath_candidates, timeout=30)
@@ -664,14 +690,17 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
             logger.debug("Modale Comparer ouverte.")
 
         def fermer_modale_rapport():
-            """Ferme la modale en naviguant vers l'URL base."""
+            """Ferme la modale en revenant vers la page d'origine pour préserver les dates."""
             try:
-                base_url = get_base_url()
-                driver.get(base_url)
-                WebDriverWait(driver, 60).until(lambda d: base_url in d.current_url)
+                target_url = compare_entry_url or get_base_url()
+                driver.get(target_url)
+                expected_prefix = target_url.split("?")[0]
+                WebDriverWait(driver, 60).until(
+                    lambda d: (d.current_url or "").startswith(expected_prefix)
+                )
                 time.sleep(2)
                 attendre_disparition_overlay(driver, 30, logger=logger, debug=args.debug)
-                logger.debug("Modale de rapport fermee (navigation vers URL base).")
+                logger.debug("Modale de rapport fermee (retour vers la page d'origine).")
             except (TimeoutException, WebDriverException) as e:
                 logger.debug(f"Erreur lors de la fermeture de modale: {e}")
 
@@ -679,6 +708,22 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
             """Sélectionne un sous-rapport dans la modale Comparer."""
             click_element_with_retry(link_xpath, label)
             WebDriverWait(driver, 60).until(lambda d: url_fragment in d.current_url)
+            # Dexcom peut supprimer ?dates lors d'une navigation Comparer.
+            # On la réapplique explicitement pour conserver la période choisie.
+            try:
+                current_url = driver.current_url or ""
+            except Exception:
+                current_url = ""
+            if compare_dates_query and "/compare/" in current_url and "dates=" not in current_url:
+                target_with_dates = _append_dates_query_if_missing(current_url)
+                logger.debug(
+                    "Comparer: réapplication de la période sélectionnée sur l'URL: %s",
+                    target_with_dates,
+                )
+                driver.get(target_with_dates)
+                WebDriverWait(driver, 60).until(
+                    lambda d: url_fragment in (d.current_url or "") and "dates=" in (d.current_url or "")
+                )
             attendre_contenu_graphique(label)
 
         def attendre_contenu_graphique(label):
