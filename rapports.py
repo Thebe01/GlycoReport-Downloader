@@ -120,7 +120,7 @@ import time
 import glob
 import locale
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import parse_qs, urlencode, urlparse
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import (
@@ -643,7 +643,32 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
             except Exception:
                 return ""
 
+        def _build_dates_query_from_selected_dates(date_debut: str, date_fin: str) -> str:
+            """
+            Construit la query ``dates=...`` à partir des dates sélectionnées.
+
+            Dexcom encode la borne de fin de façon exclusive dans l'URL (date_fin + 1 jour).
+            """
+            if not date_debut or not date_fin:
+                return ""
+            try:
+                debut = datetime.strptime(date_debut, "%Y-%m-%d")
+                fin_inclusive = datetime.strptime(date_fin, "%Y-%m-%d")
+                fin_exclusive = fin_inclusive + timedelta(days=1)
+                return urlencode(
+                    {"dates": f"{debut.strftime('%Y-%m-%d')}/{fin_exclusive.strftime('%Y-%m-%d')}"}
+                )
+            except Exception:
+                return ""
+
         compare_dates_query = _extract_dates_query(compare_entry_url)
+        if not compare_dates_query:
+            compare_dates_query = _build_dates_query_from_selected_dates(DATE_DEBUT, DATE_FIN)
+            if compare_dates_query:
+                logger.debug(
+                    "Comparer: période absente de l'URL courante, fallback via DATE_DEBUT/DATE_FIN: %s",
+                    compare_dates_query,
+                )
 
         def _append_dates_query_if_missing(url: str) -> str:
             """Ajoute la query 'dates' à l'URL cible si elle est disponible et absente."""
@@ -651,6 +676,32 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
                 return url
             separator = "&" if "?" in url else "?"
             return f"{url}{separator}{compare_dates_query}"
+
+        def _ensure_dates_on_compare_page(url_fragment: str, context_label: str) -> None:
+            """
+            Réapplique `dates` sur la page Comparer si Dexcom les retire.
+
+            Le retrait peut survenir après un premier chargement valide, donc on
+            revérifie explicitement avant téléchargement.
+            """
+            try:
+                current_url = driver.current_url or ""
+            except Exception:
+                current_url = ""
+
+            if not (compare_dates_query and "/compare/" in current_url and "dates=" not in current_url):
+                return
+
+            target_with_dates = _append_dates_query_if_missing(current_url)
+            logger.debug(
+                "Comparer (%s): réapplication de la période sélectionnée sur l'URL: %s",
+                context_label,
+                target_with_dates,
+            )
+            driver.get(target_with_dates)
+            WebDriverWait(driver, 60).until(
+                lambda d: url_fragment in (d.current_url or "") and "dates=" in (d.current_url or "")
+            )
 
         def get_base_url():
             return driver.current_url.split("#")[0]
@@ -692,7 +743,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         def fermer_modale_rapport():
             """Ferme la modale en revenant vers la page d'origine pour préserver les dates."""
             try:
-                target_url = compare_entry_url or get_base_url()
+                target_url = _append_dates_query_if_missing(compare_entry_url or get_base_url())
                 driver.get(target_url)
                 expected_prefix = target_url.split("?")[0]
                 WebDriverWait(driver, 60).until(
@@ -708,23 +759,9 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
             """Sélectionne un sous-rapport dans la modale Comparer."""
             click_element_with_retry(link_xpath, label)
             WebDriverWait(driver, 60).until(lambda d: url_fragment in d.current_url)
-            # Dexcom peut supprimer ?dates lors d'une navigation Comparer.
-            # On la réapplique explicitement pour conserver la période choisie.
-            try:
-                current_url = driver.current_url or ""
-            except Exception:
-                current_url = ""
-            if compare_dates_query and "/compare/" in current_url and "dates=" not in current_url:
-                target_with_dates = _append_dates_query_if_missing(current_url)
-                logger.debug(
-                    "Comparer: réapplication de la période sélectionnée sur l'URL: %s",
-                    target_with_dates,
-                )
-                driver.get(target_with_dates)
-                WebDriverWait(driver, 60).until(
-                    lambda d: url_fragment in (d.current_url or "") and "dates=" in (d.current_url or "")
-                )
+            _ensure_dates_on_compare_page(url_fragment, "apres-clic")
             attendre_contenu_graphique(label)
+            _ensure_dates_on_compare_page(url_fragment, "avant-telechargement")
 
         def attendre_contenu_graphique(label):
             # Attendre que le contenu graphique soit charge
@@ -754,6 +791,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         # Tendances: ouvrir modale -> selectionner -> telecharger -> fermer
         rapport_comparer = "Comparer-Tendances"
         logger.info(f"Traitement du rapport {rapport_comparer}")
+        logger.debug("Comparer: URL d'entrée capturée: %s", compare_entry_url)
         ouvrir_modale_comparer()
         xpath_tendances = "//a[contains(@href, '/compare/trends') and contains(@class, 'data-page__report-choice-button--trends')]"
         click_compare_link(xpath_tendances, "/compare/trends", "Tendances")
