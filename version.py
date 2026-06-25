@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-04-21
-Version       : 0.5.12
+Modifié le    : 2026-06-25
+Version       : 0.5.13
 Copyright     : Pierre Théberge
 
 Description
@@ -90,6 +90,9 @@ Modifications
                                 ElementClickInterceptedException, WebDriverException,
                                 StaleElementReferenceException, OSError, URLError,
                                 InvalidToken, ValueError, etc.) dans les 4 modules.
+0.5.13 - 2026-06-25   [ES-27] : Conservation de la période sélectionnée après Comparer-Tendances :
+                                capture de l'URL d'entrée, fallback DATE_DEBUT/DATE_FIN,
+                                double vérification avant téléchargement, retour page d'origine.
 
 Paramètres
 ----------
@@ -101,4 +104,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.12"
+__version__ = "0.5.13"

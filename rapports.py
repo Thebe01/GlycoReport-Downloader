@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-04-21
-Version       : 0.5.12
+Modifié le    : 2026-06-25
+Version       : 0.5.13
 Copyright     : Pierre Théberge
 
 Description
@@ -105,6 +105,9 @@ Modifications
 0.5.11 - 2026-04-21   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
 0.5.12 - 2026-04-21   [ES-28] : Robustesse : except Exception remplacé par des exceptions
                                spécifiques Selenium et Python dans tous les blocs try/except.
+0.5.13 - 2026-06-25   [ES-27] : Conservation de la période sélectionnée après Comparer-Tendances :
+                               capture de l'URL d'entrée, fallback DATE_DEBUT/DATE_FIN,
+                               double vérification avant téléchargement, retour page d'origine.
 
 Paramètres
 ----------
