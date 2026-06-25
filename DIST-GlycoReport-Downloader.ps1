@@ -103,10 +103,10 @@ Write-Host "Génération de l'exécutable principal ($appName)..."
 # Nettoyage préalable si nécessaire (optionnel, mais recommandé pour éviter les conflits)
 # Remove-Item -Path "$distDir\$appName.exe" -ErrorAction SilentlyContinue
 
-& $pythonCmd -m PyInstaller --noconfirm --onefile --windowed --hidden-import=yaml --name "$appName" --distpath $distDir --workpath build --specpath . GlycoDownload.py
+& $pythonCmd -m PyInstaller --noconfirm --onefile --windowed --hidden-import=yaml --hidden-import=selenium.webdriver.chrome.webdriver --hidden-import=selenium.webdriver.chrome.service --hidden-import=selenium.webdriver.remote.webdriver --collect-submodules selenium --name "$appName" --distpath $distDir --workpath build --specpath . GlycoDownload.py
 
 Write-Host "Génération de l'exécutable de migration (migrate)..."
-& $pythonCmd -m PyInstaller --noconfirm --onefile --console --hidden-import=yaml --hidden-import=colorama --name "migrate" --distpath $distDir --workpath build --specpath . migrate.py
+& $pythonCmd -m PyInstaller --noconfirm --onefile --console --hidden-import=yaml --hidden-import=colorama --collect-submodules selenium --name "migrate" --distpath $distDir --workpath build --specpath . migrate.py
 
 # --- 4b. Copier les fichiers annexes dans dist ---
 Write-Host "Copie des fichiers annexes dans $distDir..."
