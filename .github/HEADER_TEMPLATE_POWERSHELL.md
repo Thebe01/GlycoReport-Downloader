@@ -1,10 +1,19 @@
 <!--
 META:
-    1.0.0 - 2026-01-29 - -     : Version initiale.
-    1.0.1 - 2026-01-29 - ES-19 : Ajout des variables standard.
-    1.0.2 - 2026-03-19 - ES-15 : Références .github/ et ajout de la référence dans l'exemple .DESCRIPTION.
-    1.0.3 - 2026-03-20 - ES-15 : Suppression des lignes de consigne dans l'exemple .DESCRIPTION.
-    1.0.4 - 2026-04-21 - ES-28 : Correction alignement exemple section 3; règles alignement billet et normalisation longueur version.
+    1.0.0 - 2026-01-29 - -         : Version initiale.
+    1.0.1 - 2026-01-29 - ES-19     : Ajout des variables standard.
+    1.0.2 - 2026-03-19 - ES-15     : Références .github/ et ajout de la référence dans l'exemple .DESCRIPTION.
+    1.0.3 - 2026-03-20 - ES-15     : Suppression des lignes de consigne dans l'exemple .DESCRIPTION.
+    1.0.4 - 2026-04-21 - ES-28     : Correction alignement exemple section 3; règles alignement billet et normalisation longueur version.
+    1.0.5 - 2026-06-08 - SUP1-1159 : Ajout convention Début/Fin : afficher le nom et la version du script en
+                                     première et dernière ligne d'exécution (checklist + section code obligatoire).
+    1.0.6 - 2026-06-08 - SUP1-1159 : Lignes Début/Fin : Write-Output → Write-Host -ForegroundColor Green.
+    1.0.7 - 2026-06-08 - SUP1-1159 : $Script:NomScript — valeur dynamique via $PSCommandPath au lieu
+                                     d'un nom codé en dur (évite divergence si renommage).
+    1.0.8 - 2026-07-03 - OBS-78    : Clarification convention Début/Fin — la ligne Fin doit
+                                     précéder toute pause interactive de fermeture (Read-Host,
+                                     pause); la mesure de durée porte sur le travail effectif du
+                                     script, pas sur l'attente utilisateur.
 -->
 
 # 📘 Template d'en-tête PowerShell - IPT inc
@@ -264,9 +273,27 @@ Set-StrictMode -Version Latest
 $Script:ComputerName = $env:COMPUTERNAME
 $Script:TimeStamp = (Get-Date).ToString("yyyy-MM-dd_HH-mm-ss", [System.Globalization.CultureInfo]::InvariantCulture)
 $Script:StartTime = Get-Date
+$Script:NomScript = [System.IO.Path]::GetFileName($PSCommandPath)
+$Script:Version   = "0.0.0"
 ```
 
 **⚠️ IMPORTANT :** Toujours utiliser `InvariantCulture` pour les timestamps !
+
+### 5. Lignes Début / Fin (OBLIGATOIRE)
+
+La **première** ligne d'exécution (après la vérification admin si présente) et la **dernière** doivent afficher le nom et la version du script :
+
+```powershell
+Write-Host "$((Get-Date).ToString('yyyy-MM-dd HH:mm:ss', [System.Globalization.CultureInfo]::InvariantCulture)) Début $($Script:NomScript) $($Script:Version)" -ForegroundColor Green
+
+# ... corps du script ...
+
+Write-Host "$((Get-Date).ToString('yyyy-MM-dd HH:mm:ss', [System.Globalization.CultureInfo]::InvariantCulture)) Fin $($Script:NomScript) $($Script:Version)" -ForegroundColor Green
+```
+
+**Pourquoi :** Permet d'identifier immédiatement quel script a tourné, quelle version, et d'en mesurer la durée dans les logs.
+
+**Précision — pauses interactives :** Si le script se termine par une pause interactive de fermeture (`Read-Host "Appuyez sur Entrée..."`, `pause`, etc.), la ligne `Fin` doit **précéder** cette pause, pas la suivre. La mesure de durée doit porter sur le travail effectif du script, pas sur le temps d'attente de l'utilisateur avant de fermer la fenêtre.
 
 ---
 
@@ -363,6 +390,8 @@ Avant de commiter un script PowerShell :
 - [ ] Variables globales avec préfixe `$Script:`
 - [ ] Fonction `Write-Log` pour logging
 - [ ] Gestion d'erreurs avec try/catch
+- [ ] Ligne `Début NomScript Version` en première ligne d'exécution
+- [ ] Ligne `Fin NomScript Version` en dernière ligne d'exécution
 - [ ] Code testé et fonctionnel
 
 ---
@@ -418,6 +447,6 @@ Dans VS Code, tapez `headerps` puis `Tab` :
 ---
 
 **Document créé le** : 2025-11-06  
-**Version** : 1.0.4  
+**Version** : 1.0.8  
 **Mainteneur** : Pierre Théberge  
 **Compagnie** : Innovations, Performances, Technologies inc.
