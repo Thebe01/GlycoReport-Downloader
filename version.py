@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-04-17
-Version       : 0.5.10
+Modifié le    : 2026-06-25
+Version       : 0.5.13
 Copyright     : Pierre Théberge
 
 Description
@@ -82,6 +82,19 @@ Modifications
                                 Couverture de tests : ajout de test_config_validation.py,
                                 test_rapports_period.py et TestValidateDates dans
                                 test_glycodownload_dates.py (81 tests).
+0.5.11 - 2026-04-21   [ES-28] : Sécurité : subprocess.Popen(shell=True) remplacé par
+                                Popen(["powershell.exe"], creationflags=CREATE_NEW_CONSOLE)
+                                dans config.py — élimine le risque d'injection shell.
+0.5.12 - 2026-04-21   [ES-28] : Robustesse : remplacement de tous les except Exception par
+                                des exceptions spécifiques (TimeoutException,
+                                ElementClickInterceptedException, WebDriverException,
+                                StaleElementReferenceException, OSError, URLError,
+                                InvalidToken, ValueError, etc.) dans les 4 modules.
+0.5.13 - 2026-06-11   [ES-27] : rapports.py : locale.getdefaultlocale() remplacé par
+                                locale.getlocale() (déprécié depuis Python 3.11).
+0.5.13 - 2026-06-25   [ES-27] : Conservation de la période sélectionnée après Comparer-Tendances :
+                                capture de l'URL d'entrée, fallback DATE_DEBUT/DATE_FIN,
+                                double vérification avant téléchargement, retour page d'origine.
 
 Paramètres
 ----------
@@ -93,4 +106,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.10"
+__version__ = "0.5.13"

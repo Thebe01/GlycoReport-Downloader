@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.10-blue)
+![Version](https://img.shields.io/badge/version-0.5.13-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0510--17-avril-2026)
+- [Nouveautés](#version--0513--11-juin-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -26,6 +26,42 @@ traduction stricte de la version francaise.
 
 ---
 
+## Version : 0.5.13 — 11 juin 2026
+
+### Nouveautés (0.5.13)
+
+**Maintenance :**
+
+- `rapports.py` : `locale.getdefaultlocale()` remplacé par `locale.getlocale()`,
+  déprécié depuis Python 3.11, retrait prévu en Python 3.15 — ES-27.
+
+---
+
+## Version : 0.5.12 — 21 avril 2026
+
+### Nouveautés (0.5.12)
+
+**Robustesse :**
+
+- Tous les blocs `except Exception` remplacés par des exceptions spécifiques
+  (`TimeoutException`, `ElementClickInterceptedException`, `WebDriverException`,
+  `StaleElementReferenceException`, `OSError`, `URLError`, `InvalidToken`,
+  `ValueError`, etc.) dans les quatre modules — ES-28.
+
+---
+
+## Version : 0.5.11 — 21 avril 2026
+
+### Nouveautés (0.5.11)
+
+**Sécurité :**
+
+- `config.py` : `subprocess.Popen("start powershell", shell=True)` remplacé par
+  `subprocess.Popen(["powershell.exe"], creationflags=CREATE_NEW_CONSOLE)` —
+  élimine le risque d'injection shell (ES-28).
+
+---
+
 ## Version : 0.5.10 — 17 avril 2026
 
 ### Nouveautés (0.5.10)
@@ -33,10 +69,12 @@ traduction stricte de la version francaise.
 **Structure et qualité :**
 
 - `CHANGELOG.md` ajouté au dépôt pour le suivi des versions.
-- `requirements-dev.txt` créé : `pytest` et `pyinstaller` séparés de `requirements.txt`.
+- `requirements-dev.txt` créé : `pytest` et `pyinstaller` séparés de
+  `requirements.txt`.
 - `CLAUDE.md` retiré du dépôt (instructions IA locales uniquement).
-- Couverture de tests élargie : `test_config_validation.py`, `test_rapports_period.py`,
-  `TestValidateDates` dans `test_glycodownload_dates.py` — 81 tests au total.
+- Couverture de tests élargie : `test_config_validation.py`,
+  `test_rapports_period.py`, `TestValidateDates` dans
+  `test_glycodownload_dates.py` — 81 tests au total.
 
 ---
 
@@ -59,10 +97,11 @@ traduction stricte de la version francaise.
 
 **Correctifs :**
 
-- Déconnexion : `except Exception` remplacé par `except ElementClickInterceptedException`
-  sur les clics du menu utilisateur et du lien logout — les autres exceptions
-  (élément périmé, non interactable, etc.) se propagent désormais correctement
-  au lieu d'être masquées par le fallback JS.
+- Déconnexion : `except Exception` remplacé par
+  `except ElementClickInterceptedException` sur les clics du menu utilisateur et
+  du lien logout — les autres exceptions (élément périmé, non interactable,
+  etc.) se propagent désormais correctement au lieu d'être masquées par le
+  fallback JS.
 
 ---
 
@@ -74,9 +113,9 @@ traduction stricte de la version francaise.
 
 - Fermeture de la modale Export : le sélecteur XPath du bouton Fermer est
   désormais ancré dans le composant `<export-dialog>` (les conditions
-  `data-test` obsolètes ont été supprimées). Attente explicite de la
-  disparition du composant après le clic, ce qui garantit que la modale est
-  réellement fermée avant la déconnexion.
+  `data-test` obsolètes ont été supprimées). Attente explicite de la disparition
+  du composant après le clic, ce qui garantit que la modale est réellement
+  fermée avant la déconnexion.
 
 ---
 
@@ -419,10 +458,28 @@ traduction stricte de la version francaise.
 
 ## Historique des versions
 
+### 0.5.13 — 11 juin 2026
+
+- Maintenance : `locale.getdefaultlocale()` → `locale.getlocale()` dans
+  `rapports.py` (ES-27).
+
+### 0.5.12 — 21 avril 2026
+
+- Robustesse : tous les `except Exception` remplacés par des exceptions
+  spécifiques dans les 4 modules.
+
+### 0.5.11 — 21 avril 2026
+
+- Sécurité : `subprocess.Popen(shell=True)` →
+  `Popen(["powershell.exe"], creationflags=CREATE_NEW_CONSOLE)` dans
+  `config.py`.
+
 ### 0.5.10 — 17 avril 2026
 
-- Structure dépôt : `CHANGELOG.md`, `requirements-dev.txt` ajoutés; `CLAUDE.md` local uniquement.
-- Tests : `test_config_validation.py`, `test_rapports_period.py`, `TestValidateDates` (81 tests).
+- Structure dépôt : `CHANGELOG.md`, `requirements-dev.txt` ajoutés; `CLAUDE.md`
+  local uniquement.
+- Tests : `test_config_validation.py`, `test_rapports_period.py`,
+  `TestValidateDates` (81 tests).
 
 ### 0.5.9 — 17 avril 2026
 
@@ -431,8 +488,8 @@ traduction stricte de la version francaise.
 
 ### 0.5.8 — 17 avril 2026
 
-- Déconnexion : `except ElementClickInterceptedException` au lieu d'`except Exception`
-  sur les clics menu et logout.
+- Déconnexion : `except ElementClickInterceptedException` au lieu
+  d'`except Exception` sur les clics menu et logout.
 
 ### 0.5.7 — 17 avril 2026
 
@@ -451,8 +508,8 @@ traduction stricte de la version francaise.
 
 ### 0.5.4 — 15 avril 2026
 
-- Validation de `days` dans `config.yaml` : type, valeurs autorisées
-  {7, 14, 30, 90}, avertissement si conflit avec `date_debut`/`date_fin`.
+- Validation de `days` dans `config.yaml` : type, valeurs autorisées {7, 14, 30,
+  90}, avertissement si conflit avec `date_debut`/`date_fin`.
 
 ### 0.5.3 — 15 avril 2026
 
@@ -1002,7 +1059,8 @@ Parametres disponibles dans `config.yaml` :
 - `rapports` : liste des rapports a generer.
 - `log_retention_days` : retention des logs en jours (0 = illimite).
 - `debug` : active le mode debug (logs detailles, captures d'ecran).
-- `days` : nombre de jours a inclure (7, 14, 30 ou 90); moins prioritaire que les arguments CLI.
+- `days` : nombre de jours a inclure (7, 14, 30 ou 90); moins prioritaire que
+  les arguments CLI.
 - `date_debut` : date de debut par defaut (AAAA-MM-JJ).
 - `date_fin` : date de fin par defaut (AAAA-MM-JJ).
 
@@ -1152,8 +1210,8 @@ Options disponibles :
 
 - `.\tests\Run-Tests.ps1` : exécution complète en mode verbose (défaut).
 - `.\tests\Run-Tests.ps1 -Bref` : mode compact (résumé final seulement).
-- `.\tests\Run-Tests.ps1 -Filtre "dates"` : exécute uniquement les tests dont
-  le nom contient "dates".
+- `.\tests\Run-Tests.ps1 -Filtre "dates"` : exécute uniquement les tests dont le
+  nom contient "dates".
 
 Modules de tests couverts :
 
@@ -1248,15 +1306,41 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.5.13 — June 11, 2026
+
+**Maintenance:**
+
+- `rapports.py`: replaced `locale.getdefaultlocale()` with `locale.getlocale()`,
+  deprecated since Python 3.11, scheduled for removal in Python 3.15 — ES-27.
+
+### Version: 0.5.12 — April 21, 2026
+
+**Robustness:**
+
+- All `except Exception` blocks replaced with specific exceptions
+  (`TimeoutException`, `ElementClickInterceptedException`, `WebDriverException`,
+  `StaleElementReferenceException`, `OSError`, `URLError`, `InvalidToken`,
+  `ValueError`, etc.) across all four modules — ES-28.
+
+### Version: 0.5.11 — April 21, 2026
+
+**Security:**
+
+- `config.py`: replaced `subprocess.Popen("start powershell", shell=True)` with
+  `subprocess.Popen(["powershell.exe"], creationflags=CREATE_NEW_CONSOLE)` —
+  eliminates shell injection risk (ES-28).
+
 ### Version: 0.5.10 — April 17, 2026
 
 **Structure and quality:**
 
 - `CHANGELOG.md` added to the repository for version tracking.
-- `requirements-dev.txt` created: `pytest` and `pyinstaller` separated from `requirements.txt`.
+- `requirements-dev.txt` created: `pytest` and `pyinstaller` separated from
+  `requirements.txt`.
 - `CLAUDE.md` removed from the repository (local AI instructions only).
-- Expanded test coverage: `test_config_validation.py`, `test_rapports_period.py`,
-  `TestValidateDates` in `test_glycodownload_dates.py` — 81 tests total.
+- Expanded test coverage: `test_config_validation.py`,
+  `test_rapports_period.py`, `TestValidateDates` in
+  `test_glycodownload_dates.py` — 81 tests total.
 
 ### Version: 0.5.9 — April 17, 2026
 
@@ -1270,10 +1354,10 @@ translation of the French version.
 
 **Fixes:**
 
-- Logout: replaced `except Exception` with `except ElementClickInterceptedException`
-  on both the user menu and logout link clicks — other exceptions (stale element,
-  not interactable, etc.) now propagate correctly instead of being silently
-  swallowed by the JS fallback.
+- Logout: replaced `except Exception` with
+  `except ElementClickInterceptedException` on both the user menu and logout
+  link clicks — other exceptions (stale element, not interactable, etc.) now
+  propagate correctly instead of being silently swallowed by the JS fallback.
 
 ### Version: 0.5.7 — April 17, 2026
 
@@ -1281,16 +1365,16 @@ translation of the French version.
 
 - Export modal close: the XPath selector for the Fermer/Close button is now
   anchored inside the `<export-dialog>` component (obsolete `data-test`
-  conditions removed). Explicit wait for the component to disappear from the
-  DOM after the click, ensuring the modal is fully closed before logout.
+  conditions removed). Explicit wait for the component to disappear from the DOM
+  after the click, ensuring the modal is fully closed before logout.
 
 ### Version: 0.5.6 — April 16, 2026
 
 **Fixes:**
 
 - Logout: a second overlay wait is added after opening the user menu (opening
-  the menu may trigger a new overlay); JS fallback on the logout link in case
-  of `ElementClickInterceptedException`.
+  the menu may trigger a new overlay); JS fallback on the logout link in case of
+  `ElementClickInterceptedException`.
 
 ### Version: 0.5.5 — April 15, 2026
 
@@ -1314,8 +1398,8 @@ translation of the French version.
 
 - Date entry robustness: use `element_to_be_clickable` instead of
   `presence_of_element_located`; click, clear, and send_keys performed
-  sequentially per field (avoids `StaleElementReferenceException` if the
-  Dexcom UI re-renders between the two fields).
+  sequentially per field (avoids `StaleElementReferenceException` if the Dexcom
+  UI re-renders between the two fields).
 
 ### Version: 0.5.2 — April 15, 2026
 
@@ -1328,8 +1412,8 @@ translation of the French version.
 
 **Fixes:**
 
-- Documented `get_period_suffix` (`rapports.py`): full docstring
-  (Args, Returns, Description).
+- Documented `get_period_suffix` (`rapports.py`): full docstring (Args, Returns,
+  Description).
 - Version synchronization across all Python modules (no functional change).
 
 ### Version: 0.5.0 — April 14, 2026
@@ -1338,8 +1422,8 @@ translation of the French version.
 
 - Added `days` parameter in `config.yaml` to set the default period without
   using the command line.
-- Date priority chain: CLI `--date_debut`/`--date_fin` > CLI `--days` >
-  `days` in `config.yaml` > `date_debut`/`date_fin` in `config.yaml`.
+- Date priority chain: CLI `--date_debut`/`--date_fin` > CLI `--days` > `days`
+  in `config.yaml` > `date_debut`/`date_fin` in `config.yaml`.
 - Extracted `resolve_effective_date_range` as a pure, testable function.
 - Added unit tests for date range resolution
   (`tests/test_glycodownload_dates.py`).
@@ -1585,10 +1669,27 @@ translation of the French version.
 
 ## Version History (English)
 
+### 0.5.13 — June 11, 2026
+
+- Maintenance: `locale.getdefaultlocale()` → `locale.getlocale()` in
+  `rapports.py` (ES-27).
+
+### 0.5.12 — April 21, 2026
+
+- Robustness: all `except Exception` replaced with specific exceptions across
+  all 4 modules.
+
+### 0.5.11 — April 21, 2026
+
+- Security: `subprocess.Popen(shell=True)` →
+  `Popen(["powershell.exe"], creationflags=CREATE_NEW_CONSOLE)` in `config.py`.
+
 ### 0.5.10 — April 17, 2026
 
-- Repository structure: `CHANGELOG.md`, `requirements-dev.txt` added; `CLAUDE.md` local only.
-- Tests: `test_config_validation.py`, `test_rapports_period.py`, `TestValidateDates` (81 tests).
+- Repository structure: `CHANGELOG.md`, `requirements-dev.txt` added;
+  `CLAUDE.md` local only.
+- Tests: `test_config_validation.py`, `test_rapports_period.py`,
+  `TestValidateDates` (81 tests).
 
 ### 0.5.9 — April 17, 2026
 
@@ -1597,8 +1698,8 @@ translation of the French version.
 
 ### 0.5.8 — April 17, 2026
 
-- Logout: `except ElementClickInterceptedException` instead of `except Exception`
-  on menu and logout clicks.
+- Logout: `except ElementClickInterceptedException` instead of
+  `except Exception` on menu and logout clicks.
 
 ### 0.5.7 — April 17, 2026
 
@@ -2147,7 +2248,8 @@ Available parameters in `config.yaml`:
 - `rapports`: list of reports to generate.
 - `log_retention_days`: log retention in days (0 = unlimited).
 - `debug`: enables debug mode (detailed logs, screenshots).
-- `days`: number of days to include (7, 14, 30, or 90); lower priority than CLI arguments.
+- `days`: number of days to include (7, 14, 30, or 90); lower priority than CLI
+  arguments.
 - `date_debut`: default start date (YYYY-MM-DD).
 - `date_fin`: default end date (YYYY-MM-DD).
 

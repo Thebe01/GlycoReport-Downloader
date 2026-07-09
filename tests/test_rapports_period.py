@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-04-17
-Modifié le    : 2026-04-17
-Version       : 0.1.0
+Modifié le    : 2026-06-11
+Version       : 0.1.1
 Copyright     : Pierre Théberge
 
 Description
@@ -21,6 +21,8 @@ Tests unitaires pour get_period_suffix (rapports.py).
 Modifications
 -------------
 0.1.0 - 2026-04-17   [ES-26] : Version initiale.
+0.1.1 - 2026-06-11   [ES-27] : Mocks mis à jour vers locale.getlocale() (locale.getdefaultlocale()
+                               déprécié depuis Python 3.11).
 
 Paramètres
 ----------
@@ -106,16 +108,16 @@ class TestGetPeriodSuffix:
     # ------------------------------------------------------------------
 
     def test_unit_j_for_french_locale(self, monkeypatch):
-        monkeypatch.setattr(locale, "getdefaultlocale", lambda: ("fr_CA", "UTF-8"))
+        monkeypatch.setattr(locale, "getlocale", lambda cat=None: ("fr_CA", "UTF-8"))
         suffix = get_period_suffix("2025-01-01", "2025-01-14", _args())
         assert suffix == "14j"
 
     def test_unit_d_for_english_locale(self, monkeypatch):
-        monkeypatch.setattr(locale, "getdefaultlocale", lambda: ("en_US", "UTF-8"))
+        monkeypatch.setattr(locale, "getlocale", lambda cat=None: ("en_US", "UTF-8"))
         suffix = get_period_suffix("2025-01-01", "2025-01-14", _args())
         assert suffix == "14d"
 
     def test_unit_d_when_locale_is_none(self, monkeypatch):
-        monkeypatch.setattr(locale, "getdefaultlocale", lambda: (None, None))
+        monkeypatch.setattr(locale, "getlocale", lambda cat=None: (None, None))
         suffix = get_period_suffix("2025-01-01", "2025-01-14", _args())
         assert suffix == "14d"
