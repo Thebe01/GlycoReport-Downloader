@@ -90,6 +90,8 @@ Modifications
                                 ElementClickInterceptedException, WebDriverException,
                                 StaleElementReferenceException, OSError, URLError,
                                 InvalidToken, ValueError, etc.) dans les 4 modules.
+0.5.13 - 2026-06-11   [ES-27] : rapports.py : locale.getdefaultlocale() remplacé par
+                                locale.getlocale() (déprécié depuis Python 3.11).
 0.5.13 - 2026-06-25   [ES-27] : Conservation de la période sélectionnée après Comparer-Tendances :
                                 capture de l'URL d'entrée, fallback DATE_DEBUT/DATE_FIN,
                                 double vérification avant téléchargement, retour page d'origine.

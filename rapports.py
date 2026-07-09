@@ -105,6 +105,8 @@ Modifications
 0.5.11 - 2026-04-21   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
 0.5.12 - 2026-04-21   [ES-28] : Robustesse : except Exception remplacé par des exceptions
                                spécifiques Selenium et Python dans tous les blocs try/except.
+0.5.13 - 2026-06-11   [ES-27] : locale.getdefaultlocale() remplacé par locale.getlocale()
+                               (déprécié depuis Python 3.11).
 0.5.13 - 2026-06-25   [ES-27] : Conservation de la période sélectionnée après Comparer-Tendances :
                                capture de l'URL d'entrée, fallback DATE_DEBUT/DATE_FIN,
                                double vérification avant téléchargement, retour page d'origine.
@@ -335,7 +337,7 @@ def get_period_suffix(date_debut, date_fin, args, logger=None):
     if jours is None or jours <= 0:
         return None
 
-    langue = locale.getdefaultlocale()[0] if locale.getdefaultlocale() else None
+    langue = locale.getlocale()[0]
     unite = "j" if langue and langue.lower().startswith("fr") else "d"
     return f"{jours}{unite}"
 
