@@ -115,7 +115,10 @@ Modifications
                                suffixe "j" n'était jamais détecté en environnement francophone.
                                Limité à LC_CTYPE (pas LC_ALL) et restauration de la locale
                                précédente après lecture pour éviter tout effet de bord sur le
-                               formatage des nombres/dates ailleurs dans le processus.
+                               formatage des nombres/dates ailleurs dans le processus. Requête
+                               initiale de la locale courante également protégée par
+                               locale.Error (previous_locale reste None si elle échoue, la
+                               restauration finale est alors ignorée).
 0.5.14 - 2026-07-09   [CR]    : Comparer-Tendances : except Exception remplacé par
                                WebDriverException (lectures driver.current_url) et
                                ValueError/TypeError (parsing URL/date) dans
@@ -347,17 +350,21 @@ def get_period_suffix(date_debut, date_fin, args, logger=None):
     if jours is None or jours <= 0:
         return None
 
-    previous_locale = locale.setlocale(locale.LC_CTYPE)
+    try:
+        previous_locale = locale.setlocale(locale.LC_CTYPE)
+    except locale.Error:
+        previous_locale = None
     try:
         locale.setlocale(locale.LC_CTYPE, "")
         langue = locale.getlocale(locale.LC_CTYPE)[0]
     except locale.Error:
         langue = None
     finally:
-        try:
-            locale.setlocale(locale.LC_CTYPE, previous_locale)
-        except locale.Error:
-            pass
+        if previous_locale is not None:
+            try:
+                locale.setlocale(locale.LC_CTYPE, previous_locale)
+            except locale.Error:
+                pass
     unite = "j" if langue and langue.lower().startswith("fr") else "d"
     return f"{jours}{unite}"
 

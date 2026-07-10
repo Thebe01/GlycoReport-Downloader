@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-04-17
 Modifié le    : 2026-07-09
-Version       : 0.1.2
+Version       : 0.1.4
 Copyright     : Pierre Théberge
 
 Description
@@ -27,6 +27,17 @@ Modifications
                                setlocale(LC_CTYPE) : restauration de la valeur précédente,
                                usage exclusif de LC_CTYPE (jamais LC_ALL), résilience si
                                setlocale échoue à la lecture ou à la restauration.
+0.1.3 - 2026-07-09   [CR]    : Mock de locale.setlocale ajouté aux tests test_unit_j_for_french_locale,
+                               test_unit_d_for_english_locale et test_unit_d_when_locale_is_none —
+                               sans ce mock, un échec réel de setlocale(LC_CTYPE, "") sur la
+                               machine/CI aurait fait retourner "d" avant même d'atteindre le
+                               mock de getlocale, rendant ces tests dépendants de l'environnement.
+0.1.4 - 2026-07-09   [CR]    : Ajout de test_setlocale_query_error_is_handled — couvre l'échec de
+                               la requête initiale de locale (locale.setlocale(LC_CTYPE) sans
+                               second argument), cas non testé jusqu'ici malgré la mention dans
+                               l'entrée 0.1.2 (rendue exacte par ce test et le durcissement
+                               correspondant dans rapports.py : previous_locale reste None si
+                               la requête échoue, la restauration finale est alors ignorée).
 
 Paramètres
 ----------
@@ -112,16 +123,21 @@ class TestGetPeriodSuffix:
     # ------------------------------------------------------------------
 
     def test_unit_j_for_french_locale(self, monkeypatch):
+        # setlocale mocké en no-op : le test ne doit dépendre que du mock de getlocale,
+        # pas de la configuration de locale réelle de la machine/CI (voir revue Copilot).
+        monkeypatch.setattr(locale, "setlocale", lambda category, loc=None: "C")
         monkeypatch.setattr(locale, "getlocale", lambda cat=None: ("fr_CA", "UTF-8"))
         suffix = get_period_suffix("2025-01-01", "2025-01-14", _args())
         assert suffix == "14j"
 
     def test_unit_d_for_english_locale(self, monkeypatch):
+        monkeypatch.setattr(locale, "setlocale", lambda category, loc=None: "C")
         monkeypatch.setattr(locale, "getlocale", lambda cat=None: ("en_US", "UTF-8"))
         suffix = get_period_suffix("2025-01-01", "2025-01-14", _args())
         assert suffix == "14d"
 
     def test_unit_d_when_locale_is_none(self, monkeypatch):
+        monkeypatch.setattr(locale, "setlocale", lambda category, loc=None: "C")
         monkeypatch.setattr(locale, "getlocale", lambda cat=None: (None, None))
         suffix = get_period_suffix("2025-01-01", "2025-01-14", _args())
         assert suffix == "14d"
@@ -176,3 +192,22 @@ class TestGetPeriodSuffix:
         suffix = get_period_suffix("2025-01-01", "2025-01-14", _args())
 
         assert suffix == "14j"
+
+    def test_setlocale_query_error_is_handled(self, monkeypatch):
+        calls = []
+
+        def fake_setlocale(category, loc=None):
+            calls.append((category, loc))
+            if loc is None:
+                raise locale.Error("simulated query failure")
+            return loc
+
+        monkeypatch.setattr(locale, "setlocale", fake_setlocale)
+        monkeypatch.setattr(locale, "getlocale", lambda cat=None: ("fr_CA", "UTF-8"))
+
+        suffix = get_period_suffix("2025-01-01", "2025-01-14", _args())
+
+        assert suffix == "14j"
+        # Requête initiale échouée, puis réglage réussi : aucune tentative de
+        # restauration puisque previous_locale est resté None après l'échec.
+        assert calls == [(locale.LC_CTYPE, None), (locale.LC_CTYPE, "")]
