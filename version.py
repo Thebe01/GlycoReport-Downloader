@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-07-09
-Version       : 0.5.14
+Modifié le    : 2026-07-10
+Version       : 0.5.16
 Copyright     : Pierre Théberge
 
 Description
@@ -108,6 +108,20 @@ Modifications
                                 par WebDriverException (lectures driver.current_url) et
                                 ValueError/TypeError (parsing URL/date) dans
                                 traitement_rapport_comparer.
+0.5.15 - 2026-07-10   [ES-28] : utils.py : attendre_disparition_overlay : logger.debug remplacé
+                                par logger.warning pour le TimeoutException — invisible en
+                                usage normal (niveau de log par défaut INFO) avec logger.debug.
+0.5.16 - 2026-07-10   [ES-28] : Setup/GlycoReport-Downloader.iss : raccourcis Menu Démarrer et
+                                Bureau ([Icons]) pointaient directement vers
+                                GlycoReport-Downloader.exe au lieu de Launch-Dexcom-And-Run.ps1
+                                (seul le [Run] post-installation le faisait). Alignés sur
+                                powershell.exe + Launch-Dexcom-And-Run.ps1 (IconFilename
+                                conservé sur l'exe pour l'icône affichée). WorkingDir={app}
+                                ajouté sur les 3 entrées (Icons + Run) — absent auparavant,
+                                le répertoire de travail par défaut de Inno Setup pour un
+                                Filename=powershell.exe est le dossier de powershell.exe
+                                (System32), pas {app}, ce qui aurait empêché le script de
+                                trouver config.yaml et l'exécutable via ses chemins relatifs.
 
 Paramètres
 ----------
@@ -119,4 +133,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.14"
+__version__ = "0.5.16"

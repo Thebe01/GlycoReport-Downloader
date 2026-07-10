@@ -5,6 +5,38 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.5.16] - 2026-07-10 — ES-28
+
+### Corrigé
+- `Setup/GlycoReport-Downloader.iss` : les raccourcis Menu Démarrer et Bureau
+  (`[Icons]`) pointaient directement vers `GlycoReport-Downloader.exe` au
+  lieu de `Launch-Dexcom-And-Run.ps1` (seule l'entrée `[Run]`
+  post-installation le faisait). Alignés sur `powershell.exe` +
+  `Launch-Dexcom-And-Run.ps1`, en conservant l'icône de l'exe via
+  `IconFilename`. `WorkingDir={app}` ajouté aux 3 entrées (`Icons` + `Run`) :
+  absent auparavant, ce qui aurait fait résoudre les chemins relatifs du
+  script (`config.yaml`, exécutable) depuis le dossier de `powershell.exe`
+  (`System32`) plutôt que le dossier d'installation.
+
+---
+
+## [0.5.15] - 2026-07-10 — ES-28
+
+### Corrigé
+- `utils.py` : `attendre_disparition_overlay` loggait le `TimeoutException` en
+  `DEBUG` (invisible en usage normal, niveau de log par défaut `INFO`) —
+  remplacé par `WARNING` pour rester visible sans activer `--debug`.
+  Constat identifié lors de l'audit de code ES-26.
+
+### Note
+- `migrate.py` (versionné indépendamment de l'application, toujours en
+  1.0.1) n'a subi aucun changement de code. Son exécutable distribué
+  (`migrate.exe`) a néanmoins dû être recompilé suite à la mise à jour de
+  l'outil de build PyInstaller (6.16.0 → 6.21.0) utilisé pour la
+  distribution.
+
+---
+
 ## [0.5.14] - 2026-07-09 — CR
 
 ### Corrigé
@@ -219,6 +251,8 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.5.16]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.16
+[0.5.15]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.15
 [0.5.14]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.14
 [0.5.13]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.13
 [0.5.12]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.12

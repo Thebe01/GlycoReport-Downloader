@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.14-blue)
+![Version](https://img.shields.io/badge/version-0.5.16-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0514--9-juillet-2026)
+- [Nouveautés](#version--0516--10-juillet-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,42 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.5.16 — 10 juillet 2026
+
+### Nouveautés (0.5.16)
+
+**Correction (installateur) :**
+
+- `Setup/GlycoReport-Downloader.iss` : les raccourcis Menu Démarrer et Bureau
+  (`[Icons]`) pointaient directement vers `GlycoReport-Downloader.exe` au lieu
+  de `Launch-Dexcom-And-Run.ps1` (seule l'entrée post-installation le faisait).
+  Alignés sur `powershell.exe` + `Launch-Dexcom-And-Run.ps1`, en conservant
+  l'icône de l'exe (`IconFilename`). `WorkingDir={app}` ajouté sur les 3
+  entrées (`Icons` + `Run`) : absent auparavant, ce qui aurait fait résoudre
+  les chemins relatifs du script (`config.yaml`, exécutable) depuis le
+  dossier de `powershell.exe` (`System32`) plutôt que le dossier d'installation
+  — ES-28.
+
+---
+
+## Version : 0.5.15 — 10 juillet 2026
+
+### Nouveautés (0.5.15)
+
+**Correction (audit ES-26) :**
+
+- `utils.py` : `attendre_disparition_overlay` loggait le `TimeoutException` en
+  `DEBUG` (invisible en usage normal, niveau de log par défaut `INFO`) —
+  remplacé par `WARNING` pour rester visible sans activer `--debug` — ES-28.
+
+**Note technique (10 juillet 2026) :** `migrate.py` (versionné indépendamment
+de l'application, toujours en 1.0.1) n'a subi **aucun changement de code**.
+Son exécutable distribué (`migrate.exe`) a néanmoins dû être recompilé suite
+à la mise à jour de l'outil de build PyInstaller (6.16.0 → 6.21.0) utilisé
+pour la distribution.
 
 ---
 
@@ -482,6 +518,17 @@ traduction stricte de la version francaise.
 ---
 
 ## Historique des versions
+
+### 0.5.16 — 10 juillet 2026
+
+- Correction (installateur) : les raccourcis Menu Démarrer/Bureau pointent
+  désormais vers `Launch-Dexcom-And-Run.ps1` (au lieu de l'exe directement),
+  avec `WorkingDir={app}` sur les 3 entrées `[Icons]`/`[Run]` (ES-28).
+
+### 0.5.15 — 10 juillet 2026
+
+- Correction (audit ES-26) : `attendre_disparition_overlay` (`utils.py`) logge
+  désormais le `TimeoutException` en `WARNING` au lieu de `DEBUG` (ES-28).
 
 ### 0.5.14 — 9 juillet 2026
 
@@ -1343,6 +1390,37 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.5.16 — July 10, 2026
+
+**Fix (installer):**
+
+- `Setup/GlycoReport-Downloader.iss`: the Start Menu and Desktop shortcuts
+  (`[Icons]`) pointed directly at `GlycoReport-Downloader.exe` instead of
+  `Launch-Dexcom-And-Run.ps1` (only the post-install entry did). Aligned on
+  `powershell.exe` + `Launch-Dexcom-And-Run.ps1`, keeping the exe's icon
+  (`IconFilename`). `WorkingDir={app}` added to all 3 entries (`Icons` +
+  `Run`): previously absent, which would have resolved the script's relative
+  paths (`config.yaml`, executable) from `powershell.exe`'s own directory
+  (`System32`) instead of the install directory — ES-28.
+
+---
+
+### Version: 0.5.15 — July 10, 2026
+
+**Fix (ES-26 audit):**
+
+- `utils.py`: `attendre_disparition_overlay` logged the `TimeoutException` at
+  `DEBUG` level (invisible in normal operation, default log level `INFO`) —
+  changed to `WARNING` to remain visible without `--debug` — ES-28.
+
+**Technical note (July 10, 2026):** `migrate.py` (versioned independently
+from the application, still at 1.0.1) had **no code changes**. Its
+distributed executable (`migrate.exe`) nonetheless had to be recompiled
+following the PyInstaller build tool upgrade (6.16.0 → 6.21.0) used for
+distribution.
+
+---
+
 ### Version: 0.5.14 — July 9, 2026
 
 **Fix:**
@@ -1726,6 +1804,17 @@ translation of the French version.
 ---
 
 ## Version History (English)
+
+### 0.5.16 — July 10, 2026
+
+- Fix (installer): Start Menu/Desktop shortcuts now point to
+  `Launch-Dexcom-And-Run.ps1` (instead of the exe directly), with
+  `WorkingDir={app}` on all 3 `[Icons]`/`[Run]` entries (ES-28).
+
+### 0.5.15 — July 10, 2026
+
+- Fix (ES-26 audit): `attendre_disparition_overlay` (`utils.py`) now logs the
+  `TimeoutException` at `WARNING` instead of `DEBUG` (ES-28).
 
 ### 0.5.14 — July 9, 2026
 
