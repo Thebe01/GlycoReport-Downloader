@@ -95,10 +95,13 @@ Modifications
 0.5.13 - 2026-06-25   [ES-27] : Conservation de la période sélectionnée après Comparer-Tendances :
                                 capture de l'URL d'entrée, fallback DATE_DEBUT/DATE_FIN,
                                 double vérification avant téléchargement, retour page d'origine.
-0.5.14 - 2026-07-09   [CR]    : rapports.py : locale.setlocale(LC_ALL, "") appelé avant
+0.5.14 - 2026-07-09   [CR]    : rapports.py : locale.setlocale(LC_CTYPE, "") appelé avant
                                 locale.getlocale() — sans cet appel, getlocale() retournait
                                 (None, None) et le suffixe "j" n'était jamais détecté en
-                                environnement francophone.
+                                environnement francophone. Limité à LC_CTYPE (pas LC_ALL) et
+                                restauration de la locale précédente après lecture pour éviter
+                                tout effet de bord sur le formatage des nombres/dates ailleurs
+                                dans le processus.
 0.5.14 - 2026-07-09   [CR]    : rapports.py : Comparer-Tendances : except Exception remplacé
                                 par WebDriverException (lectures driver.current_url) et
                                 ValueError/TypeError (parsing URL/date) dans
