@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-07-09
-Version       : 0.5.14
+Modifié le    : 2026-07-10
+Version       : 0.5.16
 Copyright     : Pierre Théberge
 
 Description
@@ -123,6 +123,8 @@ Modifications
                                WebDriverException (lectures driver.current_url) et
                                ValueError/TypeError (parsing URL/date) dans
                                traitement_rapport_comparer.
+0.5.15 - 2026-07-10   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
+0.5.16 - 2026-07-10   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------

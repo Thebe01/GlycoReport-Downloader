@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
-Modifié le    : 2026-07-09
-Version       : 0.5.14
+Modifié le    : 2026-07-10
+Version       : 0.5.16
 Copyright     : Pierre Théberge
 
 Description
@@ -163,6 +163,8 @@ Modifications
                                  spécifiques Selenium et Python dans tous les blocs try/except.
 0.5.13  - 2026-06-25   [ES-27] : Synchronisation de version (aucun changement fonctionnel).
 0.5.14  - 2026-07-09   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.15  - 2026-07-10   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
+0.5.16  - 2026-07-10   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------

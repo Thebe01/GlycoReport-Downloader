@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-13
-Modifié le    : 2026-04-21
-Version       : 0.5.12
+Modifié le    : 2026-07-10
+Version       : 0.5.13
 Copyright     : Pierre Théberge
 
 Description
@@ -43,6 +43,10 @@ Modifications
 0.3.6  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
 0.5.12 - 2026-04-21   [ES-28] : DummyDriver.find_element ajouté (lève NoSuchElementException) —
                                alignement avec le narrowing except dans attendre_disparition_overlay.
+0.5.13 - 2026-07-10   [ES-28] : Ajout de DummyDriverOverlayPresent et de
+                               test_attendre_disparition_overlay_timeout_logs_warning — couvre
+                               le passage logger.debug -> logger.warning sur TimeoutException
+                               (audit ES-26). DummyLogger.warning accepte désormais exc_info.
 
 Paramètres
 ----------
@@ -91,11 +95,16 @@ class DummyDriver:
     def find_element(self, by, value):
         raise NoSuchElementException("aucun élément (dummy)")
 
+class DummyDriverOverlayPresent:
+    """Simule un overlay qui ne disparaît jamais (find_element ne lève pas)."""
+    def find_element(self, by, value):
+        return DummyWebElement()
+
 class DummyLogger:
     def __init__(self):
         self.messages = []
     def info(self, msg): self.messages.append(("info", msg))
-    def warning(self, msg): self.messages.append(("warning", msg))
+    def warning(self, msg, exc_info=None): self.messages.append(("warning", msg))
     def error(self, msg): self.messages.append(("error", msg))
     def debug(self, msg, exc_info=None): self.messages.append(("debug", msg))
 
@@ -243,6 +252,15 @@ def test_attendre_disparition_overlay_no_overlay(dummy_driver, dummy_logger):
         attendre_disparition_overlay(dummy_driver, timeout=1, logger=dummy_logger)
     except Exception:
         pytest.fail("attendre_disparition_overlay a levé une exception alors qu'il ne devait pas.")
+
+def test_attendre_disparition_overlay_timeout_logs_warning(dummy_logger):
+    # Overlay qui ne disparaît jamais : la fonction doit logger le TimeoutException
+    # en WARNING (visible en usage normal, niveau de log par défaut INFO), pas en
+    # DEBUG (invisible hors mode --debug).
+    driver = DummyDriverOverlayPresent()
+    attendre_disparition_overlay(driver, timeout=1, logger=dummy_logger)
+    assert any(level == "warning" for level, _ in dummy_logger.messages)
+    assert not any(level == "debug" for level, _ in dummy_logger.messages)
 
 def test_attendre_nouveau_bouton_telecharger_signature():
     # On ne peut pas tester le comportement réel sans Selenium, mais on peut tester la signature
