@@ -12,7 +12,7 @@
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2025-09-03
     Modifié le     : 2026-07-09
-    Version        : 2.0.8
+    Version        : 2.0.9
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
@@ -39,6 +39,10 @@
                                   Set-Content — l'encodage par défaut de ces cmdlets n'est pas le
                                   même entre Windows PowerShell 5.1 et PowerShell 7+, ce qui pouvait
                                   corrompre les caractères accentués ou ajouter un BOM inattendu.
+    2.0.9 - 2026-07-09 - CR    : Message d'erreur de substitution de version corrigé pour référencer
+                                  $issFilePath (chemin absolu réellement lu/écrit) au lieu de
+                                  $issFile (chemin relatif), pour faciliter le diagnostic si le
+                                  script est invoqué depuis un autre répertoire.
 
 .EXAMPLE
     PS> .\DIST-GlycoReport-Downloader.ps1
@@ -122,7 +126,7 @@ $issContent = [System.IO.File]::ReadAllText($issFilePath, [System.Text.Encoding]
 # Utilisation d'une regex qui préserve les commentaires éventuels en fin de ligne
 $newIssContent = $issContent -replace '(?m)^#define MyAppVersion "[^"]+"', "#define MyAppVersion ""$version"""
 if ($newIssContent -notmatch [regex]::Escape("#define MyAppVersion ""$version""")) {
-    Write-Error "Échec de la mise à jour de la version dans $issFile : le motif '#define MyAppVersion `"...`"' n'a pas été trouvé ou remplacé."
+    Write-Error "Échec de la mise à jour de la version dans $issFilePath : le motif '#define MyAppVersion `"...`"' n'a pas été trouvé ou remplacé."
     exit 1
 }
 [System.IO.File]::WriteAllText($issFilePath, $newIssContent, [System.Text.UTF8Encoding]::new($false))
