@@ -16,7 +16,13 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
   `IconFilename`. `WorkingDir={app}` ajouté aux 3 entrées (`Icons` + `Run`) :
   absent auparavant, ce qui aurait fait résoudre les chemins relatifs du
   script (`config.yaml`, exécutable) depuis le dossier de `powershell.exe`
-  (`System32`) plutôt que le dossier d'installation.
+  (`System32`) plutôt que le dossier d'installation. `-NoProfile` ajouté aux
+  3 invocations `powershell.exe` — évite de charger le profil PowerShell de
+  l'utilisateur (effets de bord, surface d'attaque).
+- `utils.py` : message de `attendre_disparition_overlay` corrigé — "Aucun
+  overlay/loader détecté" était trompeur pour un `TimeoutException` (qui
+  signifie au contraire que l'overlay est resté présent jusqu'à l'échéance) ;
+  message reformulé et valeur du timeout ajoutée.
 
 ---
 

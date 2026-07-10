@@ -91,7 +91,10 @@ Modifications
 0.5.15 - 2026-07-10   [ES-28] : attendre_disparition_overlay : logger.debug remplacé par
                                logger.warning pour le TimeoutException — invisible en usage
                                normal (niveau de log par défaut INFO) avec logger.debug.
-0.5.16 - 2026-07-10   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
+0.5.16 - 2026-07-10   [CR]    : attendre_disparition_overlay : message du logger.warning corrigé —
+                               "Aucun overlay/loader détecté" était trompeur pour un
+                               TimeoutException (qui signifie au contraire que l'overlay est
+                               resté présent jusqu'à l'échéance) ; message + valeur du timeout.
 
 Paramètres
 ----------
@@ -214,7 +217,7 @@ def attendre_disparition_overlay(driver: WebDriver, timeout: int = 60, logger=No
         )
     except TimeoutException as e:
         if logger:
-            logger.warning(f"Aucun overlay/loader détecté ou disparition non confirmée : {e}", exc_info=debug)
+            logger.warning(f"Overlay/loader toujours présent après {timeout}s (délai dépassé) : {e}", exc_info=debug)
 
 def get_last_downloaded_file(download_dir: str, logger=None) -> Optional[str]:
     """Retourne le chemin du fichier le plus récemment téléchargé dans le dossier donné."""

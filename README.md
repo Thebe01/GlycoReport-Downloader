@@ -39,8 +39,14 @@ traduction stricte de la version francaise.
   l'icône de l'exe (`IconFilename`). `WorkingDir={app}` ajouté sur les 3
   entrées (`Icons` + `Run`) : absent auparavant, ce qui aurait fait résoudre
   les chemins relatifs du script (`config.yaml`, exécutable) depuis le
-  dossier de `powershell.exe` (`System32`) plutôt que le dossier d'installation
-  — ES-28.
+  dossier de `powershell.exe` (`System32`) plutôt que le dossier d'installation.
+  `-NoProfile` ajouté aux 3 invocations `powershell.exe` — évite de charger le
+  profil PowerShell de l'utilisateur (effets de bord, surface d'attaque) —
+  ES-28.
+- `utils.py` : message de `attendre_disparition_overlay` corrigé — "Aucun
+  overlay/loader détecté" était trompeur pour un `TimeoutException` (qui
+  signifie au contraire que l'overlay est resté présent jusqu'à l'échéance) ;
+  message reformulé et valeur du timeout ajoutée — CR.
 
 ---
 
@@ -524,6 +530,8 @@ pour la distribution.
 - Correction (installateur) : les raccourcis Menu Démarrer/Bureau pointent
   désormais vers `Launch-Dexcom-And-Run.ps1` (au lieu de l'exe directement),
   avec `WorkingDir={app}` sur les 3 entrées `[Icons]`/`[Run]` (ES-28).
+- Correction : message de `attendre_disparition_overlay` (`utils.py`) corrigé
+  pour refléter qu'un timeout signifie que l'overlay est resté présent (CR).
 
 ### 0.5.15 — 10 juillet 2026
 
@@ -1401,7 +1409,13 @@ translation of the French version.
   (`IconFilename`). `WorkingDir={app}` added to all 3 entries (`Icons` +
   `Run`): previously absent, which would have resolved the script's relative
   paths (`config.yaml`, executable) from `powershell.exe`'s own directory
-  (`System32`) instead of the install directory — ES-28.
+  (`System32`) instead of the install directory. `-NoProfile` added to all 3
+  `powershell.exe` invocations — avoids loading the user's PowerShell profile
+  (side effects, attack surface) — ES-28.
+- `utils.py`: fixed the `attendre_disparition_overlay` message — "No
+  overlay/loader detected" was misleading for a `TimeoutException` (which
+  actually means the overlay stayed present until the deadline); message
+  reworded and timeout value added — CR.
 
 ---
 
@@ -1810,6 +1824,8 @@ distribution.
 - Fix (installer): Start Menu/Desktop shortcuts now point to
   `Launch-Dexcom-And-Run.ps1` (instead of the exe directly), with
   `WorkingDir={app}` on all 3 `[Icons]`/`[Run]` entries (ES-28).
+- Fix: `attendre_disparition_overlay` (`utils.py`) message corrected to
+  reflect that a timeout means the overlay stayed present (CR).
 
 ### 0.5.15 — July 10, 2026
 
