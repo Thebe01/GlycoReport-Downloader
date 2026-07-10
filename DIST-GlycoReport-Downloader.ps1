@@ -12,7 +12,7 @@
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2025-09-03
     Modifié le     : 2026-07-09
-    Version        : 2.0.7
+    Version        : 2.0.8
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
@@ -34,6 +34,11 @@
                                   -Raw capture déjà le retour à la ligne final du fichier, donc
                                   Set-Content sans -NoNewline en ajoutait un second à chaque
                                   exécution (ligne vide accumulée à chaque build).
+    2.0.8 - 2026-07-09 - CR    : Lecture/écriture du .iss via [System.IO.File]::ReadAllText/
+                                  WriteAllText (UTF-8 sans BOM explicite) au lieu de Get-Content/
+                                  Set-Content — l'encodage par défaut de ces cmdlets n'est pas le
+                                  même entre Windows PowerShell 5.1 et PowerShell 7+, ce qui pouvait
+                                  corrompre les caractères accentués ou ajouter un BOM inattendu.
 
 .EXAMPLE
     PS> .\DIST-GlycoReport-Downloader.ps1
@@ -107,7 +112,12 @@ else {
 
 # --- 3. Mettre à jour le fichier .iss avec la version ---
 Write-Host "Mise à jour du fichier .iss..."
-$issContent = Get-Content $issFile -Raw
+# Lecture/écriture via les API .NET (et non Get-Content/Set-Content) : l'encodage UTF-8
+# sans BOM du .iss (caractères accentués) doit être préservé de façon identique sous
+# Windows PowerShell 5.1 et PowerShell 7+, dont les encodages par défaut divergent
+# (Get-Content/Set-Content sans -Encoding ne sont pas déterministes entre les deux).
+$issFilePath = Join-Path $PSScriptRoot $issFile
+$issContent = [System.IO.File]::ReadAllText($issFilePath, [System.Text.Encoding]::UTF8)
 # Remplacement de la ligne #define MyAppVersion "..."
 # Utilisation d'une regex qui préserve les commentaires éventuels en fin de ligne
 $newIssContent = $issContent -replace '(?m)^#define MyAppVersion "[^"]+"', "#define MyAppVersion ""$version"""
@@ -115,7 +125,7 @@ if ($newIssContent -notmatch [regex]::Escape("#define MyAppVersion ""$version"""
     Write-Error "Échec de la mise à jour de la version dans $issFile : le motif '#define MyAppVersion `"...`"' n'a pas été trouvé ou remplacé."
     exit 1
 }
-Set-Content -Path $issFile -Value $newIssContent -NoNewline
+[System.IO.File]::WriteAllText($issFilePath, $newIssContent, [System.Text.UTF8Encoding]::new($false))
 Write-Host "Fichier .iss mis à jour avec la version $version"
 
 # --- 4. Générer les exécutables avec PyInstaller ---

@@ -8,9 +8,11 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 ## [0.5.14] - 2026-07-09 — CR
 
 ### Corrigé
-- `rapports.py` : `locale.setlocale(LC_ALL, "")` appelé avant `locale.getlocale()` —
+- `rapports.py` : `locale.setlocale(LC_CTYPE, "")` appelé avant `locale.getlocale()` —
   sans cet appel, `getlocale()` retournait `(None, None)` et le suffixe "j" n'était
-  jamais détecté en environnement francophone.
+  jamais détecté en environnement francophone. Limité à `LC_CTYPE` (pas `LC_ALL`)
+  et restauration de la locale précédente après lecture, pour éviter tout effet
+  de bord sur le formatage des nombres/dates ailleurs dans le processus.
 - `rapports.py` (Comparer-Tendances) : `except Exception` remplacé par
   `WebDriverException` (lectures `driver.current_url`) et `ValueError`/`TypeError`
   (parsing URL/date) dans `traitement_rapport_comparer`.

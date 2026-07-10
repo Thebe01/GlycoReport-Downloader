@@ -110,9 +110,12 @@ Modifications
 0.5.13 - 2026-06-25   [ES-27] : Conservation de la période sélectionnée après Comparer-Tendances :
                                capture de l'URL d'entrée, fallback DATE_DEBUT/DATE_FIN,
                                double vérification avant téléchargement, retour page d'origine.
-0.5.14 - 2026-07-09   [CR]    : locale.setlocale(LC_ALL, "") appelé avant locale.getlocale() —
+0.5.14 - 2026-07-09   [CR]    : locale.setlocale(LC_CTYPE, "") appelé avant locale.getlocale() —
                                sans cet appel, getlocale() retournait (None, None) et le
                                suffixe "j" n'était jamais détecté en environnement francophone.
+                               Limité à LC_CTYPE (pas LC_ALL) et restauration de la locale
+                               précédente après lecture pour éviter tout effet de bord sur le
+                               formatage des nombres/dates ailleurs dans le processus.
 0.5.14 - 2026-07-09   [CR]    : Comparer-Tendances : except Exception remplacé par
                                WebDriverException (lectures driver.current_url) et
                                ValueError/TypeError (parsing URL/date) dans
@@ -344,11 +347,17 @@ def get_period_suffix(date_debut, date_fin, args, logger=None):
     if jours is None or jours <= 0:
         return None
 
+    previous_locale = locale.setlocale(locale.LC_CTYPE)
     try:
-        locale.setlocale(locale.LC_ALL, "")
+        locale.setlocale(locale.LC_CTYPE, "")
+        langue = locale.getlocale(locale.LC_CTYPE)[0]
     except locale.Error:
-        pass
-    langue = locale.getlocale()[0]
+        langue = None
+    finally:
+        try:
+            locale.setlocale(locale.LC_CTYPE, previous_locale)
+        except locale.Error:
+            pass
     unite = "j" if langue and langue.lower().startswith("fr") else "d"
     return f"{jours}{unite}"
 

@@ -32,9 +32,11 @@ traduction stricte de la version francaise.
 
 **Correction :**
 
-- `rapports.py` : `locale.setlocale(LC_ALL, "")` appelé avant `locale.getlocale()` —
+- `rapports.py` : `locale.setlocale(LC_CTYPE, "")` appelé avant `locale.getlocale()` —
   sans cet appel, `getlocale()` retournait `(None, None)` et le suffixe "j" n'était
-  jamais détecté en environnement francophone — CR.
+  jamais détecté en environnement francophone. Limité à `LC_CTYPE` (pas `LC_ALL`)
+  et restauration de la locale précédente après lecture, pour éviter tout effet
+  de bord sur le formatage des nombres/dates ailleurs dans le processus — CR.
 - `rapports.py` (Comparer-Tendances) : `except Exception` remplacé par
   `WebDriverException` (lectures de `driver.current_url`) et
   `ValueError`/`TypeError` (parsing URL/date) dans
@@ -483,8 +485,9 @@ traduction stricte de la version francaise.
 
 ### 0.5.14 — 9 juillet 2026
 
-- Correction : `locale.setlocale(LC_ALL, "")` appelé avant `locale.getlocale()`
-  dans `rapports.py` (CR).
+- Correction : `locale.setlocale(LC_CTYPE, "")` appelé avant `locale.getlocale()`
+  dans `rapports.py`, limité à `LC_CTYPE` avec restauration de la locale
+  précédente (CR).
 - Correction : `except Exception` remplacé par
   `WebDriverException`/`ValueError`/`TypeError` dans
   `traitement_rapport_comparer` (CR).
@@ -1344,10 +1347,12 @@ translation of the French version.
 
 **Fix:**
 
-- `rapports.py`: `locale.setlocale(LC_ALL, "")` is now called before
+- `rapports.py`: `locale.setlocale(LC_CTYPE, "")` is now called before
   `locale.getlocale()` — without this call, `getlocale()` returned
   `(None, None)` and the "j" suffix was never detected on French-language
-  environments — CR.
+  environments. Limited to `LC_CTYPE` (not `LC_ALL`) and restores the
+  previous locale afterward to avoid side effects on number/date formatting
+  elsewhere in the process — CR.
 - `rapports.py` (Comparer-Tendances): `except Exception` replaced with
   `WebDriverException` (reads of `driver.current_url`) and
   `ValueError`/`TypeError` (URL/date parsing) in
@@ -1724,8 +1729,8 @@ translation of the French version.
 
 ### 0.5.14 — July 9, 2026
 
-- Fix: `locale.setlocale(LC_ALL, "")` called before `locale.getlocale()` in
-  `rapports.py` (CR).
+- Fix: `locale.setlocale(LC_CTYPE, "")` called before `locale.getlocale()` in
+  `rapports.py`, limited to `LC_CTYPE` with previous-locale restoration (CR).
 - Fix: `except Exception` replaced with
   `WebDriverException`/`ValueError`/`TypeError` in
   `traitement_rapport_comparer` (CR).
