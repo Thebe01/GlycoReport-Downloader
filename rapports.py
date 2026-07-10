@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-06-25
-Version       : 0.5.13
+Modifié le    : 2026-07-09
+Version       : 0.5.14
 Copyright     : Pierre Théberge
 
 Description
@@ -110,6 +110,13 @@ Modifications
 0.5.13 - 2026-06-25   [ES-27] : Conservation de la période sélectionnée après Comparer-Tendances :
                                capture de l'URL d'entrée, fallback DATE_DEBUT/DATE_FIN,
                                double vérification avant téléchargement, retour page d'origine.
+0.5.14 - 2026-07-09   [CR]    : locale.setlocale(LC_ALL, "") appelé avant locale.getlocale() —
+                               sans cet appel, getlocale() retournait (None, None) et le
+                               suffixe "j" n'était jamais détecté en environnement francophone.
+0.5.14 - 2026-07-09   [CR]    : Comparer-Tendances : except Exception remplacé par
+                               WebDriverException (lectures driver.current_url) et
+                               ValueError/TypeError (parsing URL/date) dans
+                               traitement_rapport_comparer.
 
 Paramètres
 ----------
@@ -337,6 +344,10 @@ def get_period_suffix(date_debut, date_fin, args, logger=None):
     if jours is None or jours <= 0:
         return None
 
+    try:
+        locale.setlocale(locale.LC_ALL, "")
+    except locale.Error:
+        pass
     langue = locale.getlocale()[0]
     unite = "j" if langue and langue.lower().startswith("fr") else "d"
     return f"{jours}{unite}"
@@ -628,7 +639,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
     try:
         try:
             compare_entry_url = driver.current_url or ""
-        except Exception:
+        except WebDriverException:
             compare_entry_url = ""
 
         def _extract_dates_query(url: str) -> str:
@@ -645,7 +656,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
                 if not dates_values or not dates_values[0]:
                     return ""
                 return urlencode({"dates": dates_values[0]})
-            except Exception:
+            except (ValueError, TypeError):
                 return ""
 
         def _build_dates_query_from_selected_dates(date_debut: str, date_fin: str) -> str:
@@ -663,7 +674,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
                 return urlencode(
                     {"dates": f"{debut.strftime('%Y-%m-%d')}/{fin_exclusive.strftime('%Y-%m-%d')}"}
                 )
-            except Exception:
+            except ValueError:
                 return ""
 
         compare_dates_query = _extract_dates_query(compare_entry_url)
@@ -691,7 +702,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
             """
             try:
                 current_url = driver.current_url or ""
-            except Exception:
+            except WebDriverException:
                 current_url = ""
 
             if not (compare_dates_query and "/compare/" in current_url and "dates=" not in current_url):

@@ -5,6 +5,29 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.5.14] - 2026-07-09 — CR
+
+### Corrigé
+- `rapports.py` : `locale.setlocale(LC_ALL, "")` appelé avant `locale.getlocale()` —
+  sans cet appel, `getlocale()` retournait `(None, None)` et le suffixe "j" n'était
+  jamais détecté en environnement francophone.
+- `rapports.py` (Comparer-Tendances) : `except Exception` remplacé par
+  `WebDriverException` (lectures `driver.current_url`) et `ValueError`/`TypeError`
+  (parsing URL/date) dans `traitement_rapport_comparer`.
+
+---
+
+## [0.5.13] - 2026-06-25 — ES-27
+
+### Modifié
+- Maintenance : `locale.getdefaultlocale()` remplacé par `locale.getlocale()` dans
+  `rapports.py` (déprécié depuis Python 3.11).
+- Robustesse : conservation de la période sélectionnée après Comparer-Tendances
+  (capture de l'URL d'entrée, fallback DATE_DEBUT/DATE_FIN, réapplication avant
+  téléchargement).
+
+---
+
 ## [0.5.12] - 2026-04-21 — ES-28
 
 ### Modifié
@@ -192,6 +215,8 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.5.14]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.14
+[0.5.13]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.13
 [0.5.12]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.12
 [0.5.11]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.11
 [0.5.10]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.10

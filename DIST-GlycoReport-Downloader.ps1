@@ -11,8 +11,8 @@
     Auteur         : Pierre Théberge
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2025-09-03
-    Modifié le     : 2026-03-26
-    Version        : 2.0.5
+    Modifié le     : 2026-07-09
+    Version        : 2.0.7
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
@@ -24,6 +24,16 @@
     2.0.3 - 2025-12-22 - ES-3  : Synchronisation de version.
     2.0.4 - 2026-01-29 - ES-19 : Ajout du script Launch-Dexcom-And-Run.ps1 dans la distribution.
     2.0.5 - 2026-03-26 - ES-20 : Mise en conformité de l'en-tête au format standard.
+    2.0.6 - 2026-07-09 - ES-27 : Set-Location $PSScriptRoot (chemins relatifs fiables peu importe
+                                  le répertoire courant d'appel). Vérification $LASTEXITCODE et
+                                  fraîcheur des .exe générés après chaque appel PyInstaller (évite
+                                  d'empaqueter un exécutable verrouillé/obsolète en cas d'échec
+                                  silencieux). Vérification que la substitution de version dans
+                                  le .iss a réellement eu lieu.
+    2.0.7 - 2026-07-09 - ES-27 : Set-Content -NoNewline lors de la mise à jour du .iss — Get-Content
+                                  -Raw capture déjà le retour à la ligne final du fichier, donc
+                                  Set-Content sans -NoNewline en ajoutait un second à chaque
+                                  exécution (ligne vide accumulée à chaque build).
 
 .EXAMPLE
     PS> .\DIST-GlycoReport-Downloader.ps1
@@ -31,12 +41,18 @@
 
 $ErrorActionPreference = "Stop"
 
+# Se placer dans le dossier du script : garantit la résolution correcte de tous les
+# chemins relatifs ci-dessous, peu importe le répertoire courant depuis lequel le
+# script est invoqué.
+Set-Location -Path $PSScriptRoot
+
 # --- Configuration ---
 $appName = "GlycoReport-Downloader"
 $versionFile = "version.py"
 $issFile = "Setup\${appName}.iss"
 $distDir = "dist"
 $setupOutputDir = "dist_setup"
+$buildStartTime = Get-Date
 
 # Détection de l'interpréteur Python (venv ou global)
 $venvPython = ".\.venv\Scripts\python.exe"
@@ -95,18 +111,49 @@ $issContent = Get-Content $issFile -Raw
 # Remplacement de la ligne #define MyAppVersion "..."
 # Utilisation d'une regex qui préserve les commentaires éventuels en fin de ligne
 $newIssContent = $issContent -replace '(?m)^#define MyAppVersion "[^"]+"', "#define MyAppVersion ""$version"""
-Set-Content -Path $issFile -Value $newIssContent
+if ($newIssContent -notmatch [regex]::Escape("#define MyAppVersion ""$version""")) {
+    Write-Error "Échec de la mise à jour de la version dans $issFile : le motif '#define MyAppVersion `"...`"' n'a pas été trouvé ou remplacé."
+    exit 1
+}
+Set-Content -Path $issFile -Value $newIssContent -NoNewline
 Write-Host "Fichier .iss mis à jour avec la version $version"
 
 # --- 4. Générer les exécutables avec PyInstaller ---
+
+# Vérifie qu'un appel PyInstaller a réellement produit un .exe frais. PyInstaller peut
+# échouer à écrire le fichier (ex. .exe verrouillé par une instance en cours d'exécution)
+# sans que le script s'arrête : on vérifie donc explicitement le code de sortie et la
+# date de modification du fichier généré, pour éviter d'empaqueter silencieusement un
+# exécutable obsolète dans l'installateur.
+function Assert-PyInstallerOutput {
+    param(
+        [Parameter(Mandatory)][string]$ExePath,
+        [Parameter(Mandatory)][string]$Label
+    )
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "ÉCHEC : PyInstaller a retourné le code $LASTEXITCODE pour $Label."
+        exit 1
+    }
+    if (-not (Test-Path $ExePath)) {
+        Write-Error "ÉCHEC : $ExePath introuvable après la génération de $Label."
+        exit 1
+    }
+    if ((Get-Item $ExePath).LastWriteTime -lt $buildStartTime) {
+        Write-Error "ÉCHEC : $ExePath n'a pas été régénéré (probablement verrouillé par une instance en cours d'exécution) lors de la génération de $Label."
+        exit 1
+    }
+}
+
 Write-Host "Génération de l'exécutable principal ($appName)..."
 # Nettoyage préalable si nécessaire (optionnel, mais recommandé pour éviter les conflits)
 # Remove-Item -Path "$distDir\$appName.exe" -ErrorAction SilentlyContinue
 
 & $pythonCmd -m PyInstaller --noconfirm --onefile --windowed --hidden-import=yaml --hidden-import=selenium.webdriver.chrome.webdriver --hidden-import=selenium.webdriver.chrome.service --hidden-import=selenium.webdriver.remote.webdriver --collect-submodules selenium --name "$appName" --distpath $distDir --workpath build --specpath . GlycoDownload.py
+Assert-PyInstallerOutput -ExePath "$distDir\$appName.exe" -Label "l'exécutable principal ($appName)"
 
 Write-Host "Génération de l'exécutable de migration (migrate)..."
 & $pythonCmd -m PyInstaller --noconfirm --onefile --console --hidden-import=yaml --hidden-import=colorama --collect-submodules selenium --name "migrate" --distpath $distDir --workpath build --specpath . migrate.py
+Assert-PyInstallerOutput -ExePath "$distDir\migrate.exe" -Label "l'exécutable de migration (migrate)"
 
 # --- 4b. Copier les fichiers annexes dans dist ---
 Write-Host "Copie des fichiers annexes dans $distDir..."
