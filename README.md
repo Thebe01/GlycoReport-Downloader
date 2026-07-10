@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.13-blue)
+![Version](https://img.shields.io/badge/version-0.5.14-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0513--11-juin-2026)
+- [Nouveautés](#version--0514--9-juillet-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -26,7 +26,23 @@ traduction stricte de la version francaise.
 
 ---
 
-## Version : 0.5.13 — 11 juin 2026
+## Version : 0.5.14 — 9 juillet 2026
+
+### Nouveautés (0.5.14)
+
+**Correction :**
+
+- `rapports.py` : `locale.setlocale(LC_ALL, "")` appelé avant `locale.getlocale()` —
+  sans cet appel, `getlocale()` retournait `(None, None)` et le suffixe "j" n'était
+  jamais détecté en environnement francophone — CR.
+- `rapports.py` (Comparer-Tendances) : `except Exception` remplacé par
+  `WebDriverException` (lectures de `driver.current_url`) et
+  `ValueError`/`TypeError` (parsing URL/date) dans
+  `traitement_rapport_comparer` — CR.
+
+---
+
+## Version : 0.5.13 — 25 juin 2026
 
 ### Nouveautés (0.5.13)
 
@@ -34,6 +50,13 @@ traduction stricte de la version francaise.
 
 - `rapports.py` : `locale.getdefaultlocale()` remplacé par `locale.getlocale()`,
   déprécié depuis Python 3.11, retrait prévu en Python 3.15 — ES-27.
+
+**Robustesse (Comparer) :**
+
+- Conservation de la période sélectionnée après Comparer-Tendances : capture de
+  l'URL d'entrée, fallback sur `DATE_DEBUT`/`DATE_FIN` si absente, double
+  vérification avant téléchargement, retour à la page d'origine en fermant la
+  modale — ES-27.
 
 ---
 
@@ -458,10 +481,21 @@ traduction stricte de la version francaise.
 
 ## Historique des versions
 
-### 0.5.13 — 11 juin 2026
+### 0.5.14 — 9 juillet 2026
+
+- Correction : `locale.setlocale(LC_ALL, "")` appelé avant `locale.getlocale()`
+  dans `rapports.py` (CR).
+- Correction : `except Exception` remplacé par
+  `WebDriverException`/`ValueError`/`TypeError` dans
+  `traitement_rapport_comparer` (CR).
+
+### 0.5.13 — 25 juin 2026
 
 - Maintenance : `locale.getdefaultlocale()` → `locale.getlocale()` dans
   `rapports.py` (ES-27).
+- Robustesse (Comparer) : conservation de la période sélectionnée après
+  Comparer-Tendances, fallback `DATE_DEBUT`/`DATE_FIN`, double vérification
+  avant téléchargement (ES-27).
 
 ### 0.5.12 — 21 avril 2026
 
@@ -1306,12 +1340,31 @@ translation of the French version.
 
 ## What's New (English)
 
-### Version: 0.5.13 — June 11, 2026
+### Version: 0.5.14 — July 9, 2026
+
+**Fix:**
+
+- `rapports.py`: `locale.setlocale(LC_ALL, "")` is now called before
+  `locale.getlocale()` — without this call, `getlocale()` returned
+  `(None, None)` and the "j" suffix was never detected on French-language
+  environments — CR.
+- `rapports.py` (Comparer-Tendances): `except Exception` replaced with
+  `WebDriverException` (reads of `driver.current_url`) and
+  `ValueError`/`TypeError` (URL/date parsing) in
+  `traitement_rapport_comparer` — CR.
+
+### Version: 0.5.13 — June 25, 2026
 
 **Maintenance:**
 
 - `rapports.py`: replaced `locale.getdefaultlocale()` with `locale.getlocale()`,
   deprecated since Python 3.11, scheduled for removal in Python 3.15 — ES-27.
+
+**Robustness (Comparer):**
+
+- Preserved the selected period after Comparer-Tendances: capture the entry
+  URL, fall back to `DATE_DEBUT`/`DATE_FIN` if missing, double-check before
+  download, return to the original page when closing the modal — ES-27.
 
 ### Version: 0.5.12 — April 21, 2026
 
@@ -1669,10 +1722,21 @@ translation of the French version.
 
 ## Version History (English)
 
-### 0.5.13 — June 11, 2026
+### 0.5.14 — July 9, 2026
+
+- Fix: `locale.setlocale(LC_ALL, "")` called before `locale.getlocale()` in
+  `rapports.py` (CR).
+- Fix: `except Exception` replaced with
+  `WebDriverException`/`ValueError`/`TypeError` in
+  `traitement_rapport_comparer` (CR).
+
+### 0.5.13 — June 25, 2026
 
 - Maintenance: `locale.getdefaultlocale()` → `locale.getlocale()` in
   `rapports.py` (ES-27).
+- Robustness (Comparer): preserved the selected period after
+  Comparer-Tendances, `DATE_DEBUT`/`DATE_FIN` fallback, double-check before
+  download (ES-27).
 
 ### 0.5.12 — April 21, 2026
 

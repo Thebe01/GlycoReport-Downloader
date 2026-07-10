@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-06-25
-Version       : 0.5.13
+Modifié le    : 2026-07-09
+Version       : 0.5.14
 Copyright     : Pierre Théberge
 
 Description
@@ -95,6 +95,14 @@ Modifications
 0.5.13 - 2026-06-25   [ES-27] : Conservation de la période sélectionnée après Comparer-Tendances :
                                 capture de l'URL d'entrée, fallback DATE_DEBUT/DATE_FIN,
                                 double vérification avant téléchargement, retour page d'origine.
+0.5.14 - 2026-07-09   [CR]    : rapports.py : locale.setlocale(LC_ALL, "") appelé avant
+                                locale.getlocale() — sans cet appel, getlocale() retournait
+                                (None, None) et le suffixe "j" n'était jamais détecté en
+                                environnement francophone.
+0.5.14 - 2026-07-09   [CR]    : rapports.py : Comparer-Tendances : except Exception remplacé
+                                par WebDriverException (lectures driver.current_url) et
+                                ValueError/TypeError (parsing URL/date) dans
+                                traitement_rapport_comparer.
 
 Paramètres
 ----------
@@ -106,4 +114,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.13"
+__version__ = "0.5.14"

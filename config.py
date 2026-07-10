@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-06-25
-Version       : 0.5.13
+Modifié le    : 2026-07-09
+Version       : 0.5.14
 Copyright     : Pierre Théberge
 
 Description
@@ -104,6 +104,7 @@ Modifications
                                spécifiques (OSError, InvalidToken, ValueError) dans tous
                                les blocs try/except.
 0.5.13 - 2026-06-25   [ES-27] : Synchronisation de version (aucun changement fonctionnel).
+0.5.14 - 2026-07-09   [CR]    : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
