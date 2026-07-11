@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.16-blue)
+![Version](https://img.shields.io/badge/version-0.5.18-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0516--10-juillet-2026)
+- [Nouveautés](#version--0518--10-juillet-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,31 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.5.18 — 10 juillet 2026
+
+### Nouveautés (0.5.18)
+
+**Correction :**
+
+- `Setup/GlycoReport-Downloader.iss` : `-NoProfile` ajouté aux 3 invocations
+  `powershell.exe` (2× `[Icons]` + `[Run]`) — évite de charger le profil
+  PowerShell de l'utilisateur (effets de bord, surface d'attaque) — CR.
+
+---
+
+## Version : 0.5.17 — 10 juillet 2026
+
+### Nouveautés (0.5.17)
+
+**Correction :**
+
+- `utils.py` : message de `attendre_disparition_overlay` corrigé — "Aucun
+  overlay/loader détecté" était trompeur pour un `TimeoutException` (qui
+  signifie au contraire que l'overlay est resté présent jusqu'à l'échéance) ;
+  message reformulé et valeur du timeout ajoutée — CR.
 
 ---
 
@@ -39,14 +64,8 @@ traduction stricte de la version francaise.
   l'icône de l'exe (`IconFilename`). `WorkingDir={app}` ajouté sur les 3
   entrées (`Icons` + `Run`) : absent auparavant, ce qui aurait fait résoudre
   les chemins relatifs du script (`config.yaml`, exécutable) depuis le
-  dossier de `powershell.exe` (`System32`) plutôt que le dossier d'installation.
-  `-NoProfile` ajouté aux 3 invocations `powershell.exe` — évite de charger le
-  profil PowerShell de l'utilisateur (effets de bord, surface d'attaque) —
-  ES-28.
-- `utils.py` : message de `attendre_disparition_overlay` corrigé — "Aucun
-  overlay/loader détecté" était trompeur pour un `TimeoutException` (qui
-  signifie au contraire que l'overlay est resté présent jusqu'à l'échéance) ;
-  message reformulé et valeur du timeout ajoutée — CR.
+  dossier de `powershell.exe` (`System32`) plutôt que le dossier d'installation
+  — ES-28.
 
 ---
 
@@ -525,13 +544,21 @@ pour la distribution.
 
 ## Historique des versions
 
+### 0.5.18 — 10 juillet 2026
+
+- Correction : `-NoProfile` ajouté aux 3 invocations `powershell.exe` du
+  `.iss` (`[Icons]`/`[Run]`) (CR).
+
+### 0.5.17 — 10 juillet 2026
+
+- Correction : message de `attendre_disparition_overlay` (`utils.py`) corrigé
+  pour refléter qu'un timeout signifie que l'overlay est resté présent (CR).
+
 ### 0.5.16 — 10 juillet 2026
 
 - Correction (installateur) : les raccourcis Menu Démarrer/Bureau pointent
   désormais vers `Launch-Dexcom-And-Run.ps1` (au lieu de l'exe directement),
   avec `WorkingDir={app}` sur les 3 entrées `[Icons]`/`[Run]` (ES-28).
-- Correction : message de `attendre_disparition_overlay` (`utils.py`) corrigé
-  pour refléter qu'un timeout signifie que l'overlay est resté présent (CR).
 
 ### 0.5.15 — 10 juillet 2026
 
@@ -1398,6 +1425,27 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.5.18 — July 10, 2026
+
+**Fix:**
+
+- `Setup/GlycoReport-Downloader.iss`: `-NoProfile` added to all 3
+  `powershell.exe` invocations (2× `[Icons]` + `[Run]`) — avoids loading the
+  user's PowerShell profile (side effects, attack surface) — CR.
+
+---
+
+### Version: 0.5.17 — July 10, 2026
+
+**Fix:**
+
+- `utils.py`: fixed the `attendre_disparition_overlay` message — "No
+  overlay/loader detected" was misleading for a `TimeoutException` (which
+  actually means the overlay stayed present until the deadline); message
+  reworded and timeout value added — CR.
+
+---
+
 ### Version: 0.5.16 — July 10, 2026
 
 **Fix (installer):**
@@ -1409,13 +1457,7 @@ translation of the French version.
   (`IconFilename`). `WorkingDir={app}` added to all 3 entries (`Icons` +
   `Run`): previously absent, which would have resolved the script's relative
   paths (`config.yaml`, executable) from `powershell.exe`'s own directory
-  (`System32`) instead of the install directory. `-NoProfile` added to all 3
-  `powershell.exe` invocations — avoids loading the user's PowerShell profile
-  (side effects, attack surface) — ES-28.
-- `utils.py`: fixed the `attendre_disparition_overlay` message — "No
-  overlay/loader detected" was misleading for a `TimeoutException` (which
-  actually means the overlay stayed present until the deadline); message
-  reworded and timeout value added — CR.
+  (`System32`) instead of the install directory — ES-28.
 
 ---
 
@@ -1819,13 +1861,21 @@ distribution.
 
 ## Version History (English)
 
+### 0.5.18 — July 10, 2026
+
+- Fix: `-NoProfile` added to the 3 `powershell.exe` invocations in the
+  `.iss` (`[Icons]`/`[Run]`) (CR).
+
+### 0.5.17 — July 10, 2026
+
+- Fix: `attendre_disparition_overlay` (`utils.py`) message corrected to
+  reflect that a timeout means the overlay stayed present (CR).
+
 ### 0.5.16 — July 10, 2026
 
 - Fix (installer): Start Menu/Desktop shortcuts now point to
   `Launch-Dexcom-And-Run.ps1` (instead of the exe directly), with
   `WorkingDir={app}` on all 3 `[Icons]`/`[Run]` entries (ES-28).
-- Fix: `attendre_disparition_overlay` (`utils.py`) message corrected to
-  reflect that a timeout means the overlay stayed present (CR).
 
 ### 0.5.15 — July 10, 2026
 

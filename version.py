@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
 Modifié le    : 2026-07-10
-Version       : 0.5.16
+Version       : 0.5.18
 Copyright     : Pierre Théberge
 
 Description
@@ -122,14 +122,15 @@ Modifications
                                 Filename=powershell.exe est le dossier de powershell.exe
                                 (System32), pas {app}, ce qui aurait empêché le script de
                                 trouver config.yaml et l'exécutable via ses chemins relatifs.
-                                -NoProfile ajouté aux 3 invocations powershell.exe — évite de
-                                charger le profil PowerShell de l'utilisateur (effets de bord,
-                                surface d'attaque) pour un lancement applicatif déterministe.
-0.5.16 - 2026-07-10   [CR]    : utils.py : attendre_disparition_overlay : message du
+0.5.17 - 2026-07-10   [CR]    : utils.py : attendre_disparition_overlay : message du
                                 logger.warning corrigé — "Aucun overlay/loader détecté" était
                                 trompeur pour un TimeoutException (qui signifie au contraire
                                 que l'overlay est resté présent jusqu'à l'échéance) ; message
                                 + valeur du timeout.
+0.5.18 - 2026-07-10   [CR]    : Setup/GlycoReport-Downloader.iss : -NoProfile ajouté aux 3
+                                invocations powershell.exe (2x [Icons] + [Run]) — évite de
+                                charger le profil PowerShell de l'utilisateur (effets de bord,
+                                surface d'attaque) pour un lancement applicatif déterministe.
 
 Paramètres
 ----------
@@ -141,4 +142,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.16"
+__version__ = "0.5.18"
