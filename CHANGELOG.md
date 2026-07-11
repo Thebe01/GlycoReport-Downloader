@@ -5,6 +5,25 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.5.18] - 2026-07-10 — CR
+
+### Corrigé
+- `Setup/GlycoReport-Downloader.iss` : `-NoProfile` ajouté aux 3 invocations
+  `powershell.exe` (2× `[Icons]` + `[Run]`) — évite de charger le profil
+  PowerShell de l'utilisateur (effets de bord, surface d'attaque).
+
+---
+
+## [0.5.17] - 2026-07-10 — CR
+
+### Corrigé
+- `utils.py` : message de `attendre_disparition_overlay` corrigé — "Aucun
+  overlay/loader détecté" était trompeur pour un `TimeoutException` (qui
+  signifie au contraire que l'overlay est resté présent jusqu'à l'échéance) ;
+  message reformulé et valeur du timeout ajoutée.
+
+---
+
 ## [0.5.16] - 2026-07-10 — ES-28
 
 ### Corrigé
@@ -16,13 +35,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
   `IconFilename`. `WorkingDir={app}` ajouté aux 3 entrées (`Icons` + `Run`) :
   absent auparavant, ce qui aurait fait résoudre les chemins relatifs du
   script (`config.yaml`, exécutable) depuis le dossier de `powershell.exe`
-  (`System32`) plutôt que le dossier d'installation. `-NoProfile` ajouté aux
-  3 invocations `powershell.exe` — évite de charger le profil PowerShell de
-  l'utilisateur (effets de bord, surface d'attaque).
-- `utils.py` : message de `attendre_disparition_overlay` corrigé — "Aucun
-  overlay/loader détecté" était trompeur pour un `TimeoutException` (qui
-  signifie au contraire que l'overlay est resté présent jusqu'à l'échéance) ;
-  message reformulé et valeur du timeout ajoutée.
+  (`System32`) plutôt que le dossier d'installation.
 
 ---
 
@@ -257,6 +270,8 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.5.18]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.18
+[0.5.17]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.17
 [0.5.16]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.16
 [0.5.15]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.15
 [0.5.14]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.14

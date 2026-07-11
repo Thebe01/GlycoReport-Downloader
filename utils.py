@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-07-10
-Version       : 0.5.16
+Version       : 0.5.18
 Copyright     : Pierre Théberge
 
 Description
@@ -91,10 +91,12 @@ Modifications
 0.5.15 - 2026-07-10   [ES-28] : attendre_disparition_overlay : logger.debug remplacé par
                                logger.warning pour le TimeoutException — invisible en usage
                                normal (niveau de log par défaut INFO) avec logger.debug.
-0.5.16 - 2026-07-10   [CR]    : attendre_disparition_overlay : message du logger.warning corrigé —
+0.5.16 - 2026-07-10   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
+0.5.17 - 2026-07-10   [CR]    : attendre_disparition_overlay : message du logger.warning corrigé —
                                "Aucun overlay/loader détecté" était trompeur pour un
                                TimeoutException (qui signifie au contraire que l'overlay est
                                resté présent jusqu'à l'échéance) ; message + valeur du timeout.
+0.5.18 - 2026-07-10   [CR]    : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
