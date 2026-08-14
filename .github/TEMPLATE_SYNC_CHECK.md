@@ -1,13 +1,24 @@
 <!--
 META:
-   1.0.0 - 2026-01-29 - ES-19  : Version initiale.
-   1.0.1 - 2026-02-11 - PD-188 : Chemin de référence via variable d’environnement.
-   1.0.2 - 2026-02-11 - PD-188 : $repoRoot via REPO_ROOT ou détection Git.
-   1.0.3 - 2026-02-11 - PD-188 : Templates optionnels selon le repo.
-   1.0.4 - 2026-02-11 - PD-188 : Message d’erreur REPO_ROOT corrigé.
-   1.0.5 - 2026-02-12 - ES-3   : Validation REPO_ROOT et gestion sources
-                                  officielles manquantes.
-   1.0.6 - 2026-02-12 - ES-3   : Validation fichier officiel en mode Leaf.
+    1.0.0  - 2026-01-29 - ES-19  : Version initiale.
+    1.0.1  - 2026-02-11 - PD-188 : Chemin de référence via variable d'environnement.
+    1.0.2  - 2026-02-11 - PD-188 : $repoRoot via REPO_ROOT ou détection Git.
+    1.0.3  - 2026-02-11 - PD-188 : Templates optionnels selon le repo.
+    1.0.4  - 2026-02-11 - PD-188 : Message d'erreur REPO_ROOT corrigé.
+    1.0.5  - 2026-02-12 - ES-3   : Validation REPO_ROOT et gestion sources
+                                   officielles manquantes.
+    1.0.6  - 2026-02-12 - ES-3   : Validation fichier officiel en mode Leaf.
+    1.0.7  - 2026-03-19 - ES-15  : Ajout du déclenchement à l'activation d'une conversation Copilot.
+    1.0.8  - 2026-03-19 - ES-15  : Ajout de la section finale standard du document.
+    1.0.9  - 2026-03-19 - ES-15  : Règle une version par séance sauf indication contraire.
+    1.0.10 - 2026-07-22 - PD-202 : Ajout de HEADER_TEMPLATE_SHELL.md à la liste des fichiers
+                                    comparés/synchronisés (section et paires PowerShell).
+    1.0.11 - 2026-07-23 - PD-202 : Copilot Review — chemin par défaut d’officialRoot assemblé via
+                                    [IO.Path]::Combine($HOME, ...) au lieu de Join-Path avec un backslash
+                                    littéral, pour rester portable sur pwsh non-Windows.
+    1.0.12 - 2026-07-31 - PD-206 : Ajout de HEADER_TEMPLATE_POWERSHELL_MODULE.md à la liste et aux
+                                    paires PowerShell (comparaison et synchro), en cohérence avec
+                                    IPT.PromptSync 0.2.0 (LanguageMap.PowerShell.TemplateNames).
 -->
 
 # Vérification des templates d’en-tête
@@ -25,6 +36,8 @@ $env:USERPROFILE\Sources\IPTDevLib\prompts)
 
 - .github/HEADER_TEMPLATE_PYTHON.md (optionnel selon le repo)
 - .github/HEADER_TEMPLATE_POWERSHELL.md (optionnel selon le repo)
+- .github/HEADER_TEMPLATE_POWERSHELL_MODULE.md (optionnel selon le repo — présent si le repo contient du PowerShell, script ou module, cf. HEADER_TEMPLATE_POWERSHELL.md)
+- .github/HEADER_TEMPLATE_SHELL.md (optionnel selon le repo)
 - .github/TEMPLATE_SYNC_CHECK.md (toujours présent)
 
 ## Procédure attendue
@@ -35,6 +48,8 @@ $env:USERPROFILE\Sources\IPTDevLib\prompts)
 3. Si des écarts sont détectés, suggérer une mise à jour du repo pour s’aligner
    sur la source.
 4. Ne pas modifier automatiquement sans validation explicite.
+5. Regrouper les changements d’une même séance dans une seule version et une
+   seule entrée .MODIFICATIONS, sauf indication contraire explicite.
 
 ## Procédure PowerShell (pwsh)
 
@@ -57,13 +72,15 @@ if (-not (Test-Path -LiteralPath $repoRoot -PathType Container)) {
 }
 $officialRoot = $env:IPTDEVLIB_PROMPTS
 if ([string]::IsNullOrWhiteSpace($officialRoot)) {
-   $officialRoot = Join-Path $env:USERPROFILE "Sources\IPTDevLib\prompts"
+   $officialRoot = [IO.Path]::Combine($HOME, "Sources", "IPTDevLib", "prompts")
 }
 
 $pairs = @(
-   @{ Name = "Python"; Repo = Join-Path $repoRoot ".github\HEADER_TEMPLATE_PYTHON.md"; Official = Join-Path $officialRoot "HEADER_TEMPLATE_PYTHON.md" },
-   @{ Name = "PowerShell"; Repo = Join-Path $repoRoot ".github\HEADER_TEMPLATE_POWERSHELL.md"; Official = Join-Path $officialRoot "HEADER_TEMPLATE_POWERSHELL.md" },
-   @{ Name = "TemplateSync"; Repo = Join-Path $repoRoot ".github\TEMPLATE_SYNC_CHECK.md"; Official = Join-Path $officialRoot "TEMPLATE_SYNC_CHECK.md" }
+   @{ Name = "Python"; Repo = [IO.Path]::Combine($repoRoot, ".github", "HEADER_TEMPLATE_PYTHON.md"); Official = Join-Path $officialRoot "HEADER_TEMPLATE_PYTHON.md" },
+   @{ Name = "PowerShell"; Repo = [IO.Path]::Combine($repoRoot, ".github", "HEADER_TEMPLATE_POWERSHELL.md"); Official = Join-Path $officialRoot "HEADER_TEMPLATE_POWERSHELL.md" },
+   @{ Name = "PowerShellModule"; Repo = [IO.Path]::Combine($repoRoot, ".github", "HEADER_TEMPLATE_POWERSHELL_MODULE.md"); Official = Join-Path $officialRoot "HEADER_TEMPLATE_POWERSHELL_MODULE.md" },
+   @{ Name = "Shell"; Repo = [IO.Path]::Combine($repoRoot, ".github", "HEADER_TEMPLATE_SHELL.md"); Official = Join-Path $officialRoot "HEADER_TEMPLATE_SHELL.md" },
+   @{ Name = "TemplateSync"; Repo = [IO.Path]::Combine($repoRoot, ".github", "TEMPLATE_SYNC_CHECK.md"); Official = Join-Path $officialRoot "TEMPLATE_SYNC_CHECK.md" }
 )
 
 foreach ($p in $pairs) {
@@ -100,13 +117,15 @@ if (-not (Test-Path -LiteralPath $repoRoot -PathType Container)) {
 }
 $officialRoot = $env:IPTDEVLIB_PROMPTS
 if ([string]::IsNullOrWhiteSpace($officialRoot)) {
-   $officialRoot = Join-Path $env:USERPROFILE "Sources\IPTDevLib\prompts"
+   $officialRoot = [IO.Path]::Combine($HOME, "Sources", "IPTDevLib", "prompts")
 }
 
 $pairs = @(
-   @{ Name = "Python"; Repo = Join-Path $repoRoot ".github\HEADER_TEMPLATE_PYTHON.md"; Official = Join-Path $officialRoot "HEADER_TEMPLATE_PYTHON.md" },
-   @{ Name = "PowerShell"; Repo = Join-Path $repoRoot ".github\HEADER_TEMPLATE_POWERSHELL.md"; Official = Join-Path $officialRoot "HEADER_TEMPLATE_POWERSHELL.md" },
-   @{ Name = "TemplateSync"; Repo = Join-Path $repoRoot ".github\TEMPLATE_SYNC_CHECK.md"; Official = Join-Path $officialRoot "TEMPLATE_SYNC_CHECK.md" }
+   @{ Name = "Python"; Repo = [IO.Path]::Combine($repoRoot, ".github", "HEADER_TEMPLATE_PYTHON.md"); Official = Join-Path $officialRoot "HEADER_TEMPLATE_PYTHON.md" },
+   @{ Name = "PowerShell"; Repo = [IO.Path]::Combine($repoRoot, ".github", "HEADER_TEMPLATE_POWERSHELL.md"); Official = Join-Path $officialRoot "HEADER_TEMPLATE_POWERSHELL.md" },
+   @{ Name = "PowerShellModule"; Repo = [IO.Path]::Combine($repoRoot, ".github", "HEADER_TEMPLATE_POWERSHELL_MODULE.md"); Official = Join-Path $officialRoot "HEADER_TEMPLATE_POWERSHELL_MODULE.md" },
+   @{ Name = "Shell"; Repo = [IO.Path]::Combine($repoRoot, ".github", "HEADER_TEMPLATE_SHELL.md"); Official = Join-Path $officialRoot "HEADER_TEMPLATE_SHELL.md" },
+   @{ Name = "TemplateSync"; Repo = [IO.Path]::Combine($repoRoot, ".github", "TEMPLATE_SYNC_CHECK.md"); Official = Join-Path $officialRoot "TEMPLATE_SYNC_CHECK.md" }
 )
 
 foreach ($p in $pairs) {
@@ -114,7 +133,7 @@ foreach ($p in $pairs) {
       "(Ignoré) Fichier absent dans ce repo : $($p.Repo)"
       continue
    }
-   if (-not (Test-Path -LiteralPath $p.Official)) {
+   if (-not (Test-Path -LiteralPath $p.Official -PathType Leaf)) {
       throw "Source officielle introuvable : $($p.Official)"
    }
    Copy-Item -LiteralPath $p.Official -Destination $p.Repo -Force
@@ -125,3 +144,11 @@ foreach ($p in $pairs) {
 
 - Après une mise à jour de IPTDevLib\prompts.
 - Avant une release du repo.
+- À l'activation d'une conversation Copilot dans ce repo.
+
+---
+
+**Document créé le** : 2026-01-29  
+**Version** : 1.0.12  
+**Mainteneur** : Pierre Théberge  
+**Compagnie** : Innovations, Performances, Technologies inc.
