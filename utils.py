@@ -3,15 +3,15 @@
 
 """
 Format d'en-tête standard à respecter pour ce projet.
-Voir HEADER_TEMPLATE_PYTHON.md pour les détails.
+Voir .github/HEADER_TEMPLATE_PYTHON.md pour les détails.
 
 Module        : utils.py
 Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-02-13
-Version       : 0.3.14
+Modifié le    : 2026-07-10
+Version       : 0.5.18
 Copyright     : Pierre Théberge
 
 Description
@@ -68,6 +68,35 @@ Modifications
 0.3.4  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
 0.3.5  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
 0.3.6  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
+0.3.15 - 2026-02-26   [ES-6]  : Synchronisation de version (harmonisation XPath independants de la langue).
+0.3.16 - 2026-03-19   [ES-15] : Synchronisation de version (documentation retention logs par defaut a 30 jours).
+0.3.17 - 2026-03-23   [ES-14] : Synchronisation de version (aucun changement fonctionnel).
+0.3.18 - 2026-03-25   [ES-14] : Synchronisation de version (aucun changement fonctionnel).
+0.3.19 - 2026-03-25   [ES-14] : Synchronisation de version (aucun changement fonctionnel).
+0.5.1  - 2026-04-15   [ES-22] : Synchronisation de version (aucun changement fonctionnel).
+0.5.2  - 2026-04-15   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.3  - 2026-04-15   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.4  - 2026-04-15   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.5  - 2026-04-15   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.6  - 2026-04-16   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.7  - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.8  - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.9  - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.10 - 2026-04-17   [ES-26] : Synchronisation de version (aucun changement fonctionnel).
+0.5.11 - 2026-04-21   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
+0.5.12 - 2026-04-21   [ES-28] : Robustesse : except Exception remplacé par des exceptions
+                               spécifiques Selenium et Python dans tous les blocs try/except.
+0.5.13 - 2026-06-25   [ES-27] : Synchronisation de version (aucun changement fonctionnel).
+0.5.14 - 2026-07-09   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.15 - 2026-07-10   [ES-28] : attendre_disparition_overlay : logger.debug remplacé par
+                               logger.warning pour le TimeoutException — invisible en usage
+                               normal (niveau de log par défaut INFO) avec logger.debug.
+0.5.16 - 2026-07-10   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
+0.5.17 - 2026-07-10   [CR]    : attendre_disparition_overlay : message du logger.warning corrigé —
+                               "Aucun overlay/loader détecté" était trompeur pour un
+                               TimeoutException (qui signifie au contraire que l'overlay est
+                               resté présent jusqu'à l'échéance) ; message + valeur du timeout.
+0.5.18 - 2026-07-10   [CR]    : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -86,12 +115,14 @@ import time
 import urllib.request
 import urllib.parse
 from urllib.parse import urlparse
+from urllib.error import URLError
 from typing import Optional
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import StaleElementReferenceException, TimeoutException, WebDriverException
 from colorama import Fore  # type: ignore
 
 ONE_DAY_SECONDS = 86400
@@ -158,7 +189,7 @@ def url_is_allowed(
     """
     try:
         parsed = urlparse(url)
-    except Exception:
+    except ValueError:
         return False
 
     scheme = (parsed.scheme or "").lower()
@@ -177,7 +208,7 @@ def check_internet(url: str = "https://clarity.dexcom.eu", timeout: int = 5) -> 
             return False
         urllib.request.urlopen(url, timeout=timeout)
         return True
-    except Exception:
+    except (URLError, OSError):
         return False
 
 def attendre_disparition_overlay(driver: WebDriver, timeout: int = 60, logger=None, debug: bool = False) -> None:
@@ -186,9 +217,9 @@ def attendre_disparition_overlay(driver: WebDriver, timeout: int = 60, logger=No
         WebDriverWait(driver, timeout).until_not(
             EC.presence_of_element_located((By.CSS_SELECTOR, ".overlay, .loader, .spinner"))
         )
-    except Exception as e:
+    except TimeoutException as e:
         if logger:
-            logger.debug(f"Aucun overlay/loader détecté ou disparition non confirmée : {e}", exc_info=debug)
+            logger.warning(f"Overlay/loader toujours présent après {timeout}s (délai dépassé) : {e}", exc_info=debug)
 
 def get_last_downloaded_file(download_dir: str, logger=None) -> Optional[str]:
     """Retourne le chemin du fichier le plus récemment téléchargé dans le dossier donné."""
@@ -278,7 +309,7 @@ def attendre_nouveau_bouton_telecharger(driver: WebDriver, bouton_avant: WebElem
         try:
             nouveau_bouton = drv.find_element(By.XPATH, "//button[.//img[@alt='Télécharger']]")
             return nouveau_bouton and nouveau_bouton != bouton_avant
-        except Exception:
+        except WebDriverException:
             return False
     WebDriverWait(driver, timeout).until(bouton_a_change)
 
@@ -288,7 +319,7 @@ def capture_screenshot(driver: WebDriver, logger, step: str, log_dir: str, now_s
         screenshot_path = os.path.join(log_dir, f"screenshot_{step}_{now_str}.png")
         driver.save_screenshot(screenshot_path)
         logger.info(f"Capture d'écran enregistrée : {screenshot_path}")
-    except Exception as e:
+    except WebDriverException as e:
         logger.warning(f"Impossible de prendre une capture d'écran : {e}")
 
 def normalize_path(path: str) -> str:
@@ -308,7 +339,7 @@ def pause_on_error() -> None:
     try:
         if sys.stdin.isatty():
             input("\nAppuyez sur Entrée pour fermer...")
-    except Exception:
+    except (EOFError, OSError):
         pass
 
 def cleanup_logs(log_dir, retention_days, logger=None):
@@ -343,7 +374,7 @@ def cleanup_logs(log_dir, retention_days, logger=None):
                     print(Fore.GREEN + msg)
                     if logger:
                         logger.info(msg)
-            except Exception as e:
+            except OSError as e:
                 msg = f"Erreur lors de la suppression de {filepath} : {e}"
                 print(Fore.RED + msg)
                 if logger:
@@ -363,7 +394,7 @@ def cloudflare_challenge_detecte(driver: WebDriver, *, deep_scan: bool = True) -
     """
     try:
         url = (driver.current_url or "").lower()
-    except Exception:
+    except WebDriverException:
         url = ""
 
     if "cdn-cgi" in url or "challenge" in url or "turnstile" in url:
@@ -375,20 +406,20 @@ def cloudflare_challenge_detecte(driver: WebDriver, *, deep_scan: bool = True) -
     # Certains challenges sont rendus via iframe (Turnstile) ou scripts dédiés.
     try:
         iframes = driver.find_elements(By.TAG_NAME, "iframe")
-    except Exception:
+    except WebDriverException:
         iframes = []
 
     for iframe in iframes:
         try:
             src = (iframe.get_attribute("src") or "").lower()
-        except Exception:
+        except (StaleElementReferenceException, WebDriverException):
             src = ""
 
         # Analyse l'URL pour vérifier le nom d'hôte plutôt qu'un simple sous-texte.
         try:
             parsed = urllib.parse.urlparse(src)
             host = (parsed.hostname or "").lower()
-        except Exception:
+        except ValueError:
             host = ""
 
         if (
@@ -409,7 +440,7 @@ def cloudflare_challenge_detecte(driver: WebDriver, *, deep_scan: bool = True) -
             "turnstile",
         ]
         return any(m in html for m in markers)
-    except Exception:
+    except WebDriverException:
         return False
 
 
@@ -539,12 +570,12 @@ def attendre_verification_humaine_cloudflare(
                     if notified:
                         logger.info("Vérification Cloudflare terminée. Reprise du script.")
                     return
-            except Exception:
+            except (StaleElementReferenceException, WebDriverException):
                 # Si on ne peut pas lire is_displayed, la présence suffit.
                 if notified:
                     logger.info("Vérification Cloudflare terminée. Reprise du script.")
                 return
-        except Exception:
+        except TimeoutException:
             # Les timeouts/interruptions de WebDriverWait sont attendus dans cette boucle.
             pass
 

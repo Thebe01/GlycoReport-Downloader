@@ -133,6 +133,9 @@ venv.bak/
 # Configuration utilisateur
 config.yaml
 
+# Instructions IA locales
+CLAUDE.md
+
 # Spyder project settings
 .spyderproject
 .spyproject

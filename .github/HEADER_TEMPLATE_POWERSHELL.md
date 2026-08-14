@@ -465,6 +465,8 @@ Avant de commiter un script PowerShell :
 - [ ] Pause interactive finale (`Read-Host`) conditionnée à `Test-InteractiveSession` (jamais de blocage en tâche planifiée)
 - [ ] `.ps1` enregistré en UTF-8 avec BOM ; ASCII pur dans le code exécutable
 - [ ] Sorties console (`Write-Host`, logs) en ASCII pur pour les scripts destinés aux serveurs
+- [ ] Ligne `Début NomScript Version` en première ligne d'exécution
+- [ ] Ligne `Fin NomScript Version` en dernière ligne d'exécution
 - [ ] Code testé et fonctionnel
 
 ---

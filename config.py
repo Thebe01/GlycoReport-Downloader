@@ -3,15 +3,15 @@
 
 """
 Format d'en-tête standard à respecter pour ce projet.
-Voir HEADER_TEMPLATE_PYTHON.md pour les détails.
+Voir .github/HEADER_TEMPLATE_PYTHON.md pour les détails.
 
 Module        : config.py
 Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-02-13
-Version       : 0.3.14
+Modifié le    : 2026-07-10
+Version       : 0.5.18
 Copyright     : Pierre Théberge
 
 Description
@@ -20,37 +20,37 @@ Centralisation et validation de la configuration (config.yaml) et des secrets (.
 
 Modifications
 -------------
-0.0.0  - 2025-08-05   [N/A]  : Version initiale.
-0.1.0  - 2025-08-06   [N/A]  : Ajout de la gestion des paramètres de configuration via un fichier YAML.
-0.1.1  - 2025-08-13   [N/A]  : Normalisation systématique des chemins, gestion d'erreur sur les paramètres,
+0.0.0  - 2025-08-05   [N/A]   : Version initiale.
+0.1.0  - 2025-08-06   [N/A]   : Ajout de la gestion des paramètres de configuration via un fichier YAML.
+0.1.1  - 2025-08-13   [N/A]   : Normalisation systématique des chemins, gestion d'erreur sur les paramètres,
                                conservation de tous les paramètres importants (chemins, URL, rapports, etc.).
-0.1.2  - 2025-08-13   [N/A]  : Ajout de la fonction normalize_path, harmonisation de l’utilisation des chemins.
-0.1.3  - 2025-08-18   [N/A]  : Suppression de la duplication de normalize_path, import depuis utils.py,
+0.1.2  - 2025-08-13   [N/A]   : Ajout de la fonction normalize_path, harmonisation de l’utilisation des chemins.
+0.1.3  - 2025-08-18   [N/A]   : Suppression de la duplication de normalize_path, import depuis utils.py,
                                harmonisation de l’utilisation des chemins dans tout le projet.
-0.1.4  - 2025-08-18   [N/A]  : Sécurisation du chargement de la configuration : utilisation stricte de yaml.safe_load,
+0.1.4  - 2025-08-18   [N/A]   : Sécurisation du chargement de la configuration : utilisation stricte de yaml.safe_load,
                                validation des types et de la présence des paramètres, vérification des droits d'accès,
                                protection contre l'exposition de secrets et contre l'injection de code.
-0.1.5  - 2025-08-22   [N/A]  : Ajout du paramètre chromedriver_path configurable via config.yaml,
+0.1.5  - 2025-08-22   [N/A]   : Ajout du paramètre chromedriver_path configurable via config.yaml,
                                valeur par défaut : "./chromedriver.exe" (même dossier que l'exécutable).
-0.1.6  - 2025-08-22   [N/A]  : Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
-0.1.7  - 2025-08-25   [N/A]  : Création automatique de config.yaml à partir de config_example.yaml si absent.
+0.1.6  - 2025-08-22   [N/A]   : Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
+0.1.7  - 2025-08-25   [N/A]   : Création automatique de config.yaml à partir de config_example.yaml si absent.
                                Gestion interactive des credentials si .env absent (demande à l'utilisateur, non conservé).
-0.1.8  - 2025-08-27   [N/A]  : Configuration interactive avancée pour config.yaml et .env.
+0.1.8  - 2025-08-27   [N/A]   : Configuration interactive avancée pour config.yaml et .env.
                                Copie minimale du profil Chrome lors de la configuration.
                                Ajout du paramètre log_retention_days (0 = conservation illimitée).
                                Nettoyage automatique des logs selon la rétention.
                                Messages utilisateurs colorés et validation renforcée.
-0.1.9  - 2025-08-28   [N/A]  : Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
+0.1.9  - 2025-08-28   [N/A]   : Vérification interactive de la clé chromedriver_log lors de la création de config.yaml.
                                Empêche la saisie d'un dossier pour le log, exige un chemin de fichier.
                                Correction de la robustesse de la configuration initiale.
-0.1.10 - 2025-08-28   [N/A]  : Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
+0.1.10 - 2025-08-28   [N/A]   : Le ménage des logs s'effectue désormais uniquement après l'activation du logging.
                                Chaque suppression de log est loggée.
-0.2.0  - 2025-08-28   [N/A]  : Le fichier .env est désormais chiffré à l'écriture et déchiffré à la volée lors de la lecture.
+0.2.0  - 2025-08-28   [N/A]   : Le fichier .env est désormais chiffré à l'écriture et déchiffré à la volée lors de la lecture.
                                La fonction get_dexcom_credentials ne propose plus de saisie interactive si les identifiants sont absents.
                                Correction de la suppression du fichier temporaire .env.tmp même en cas d'erreur.
                                Sécurisation de l'affichage des identifiants (plus d'affichage du mot de passe en clair).
-0.2.1  - 2025-08-29   [N/A]  : Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
-0.2.2  - 2025-08-29   [N/A]  : Séparation stricte de la gestion des arguments CLI (retirée de ce module).
+0.2.1  - 2025-08-29   [N/A]   : Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
+0.2.2  - 2025-08-29   [N/A]   : Séparation stricte de la gestion des arguments CLI (retirée de ce module).
                                Désactivation de tout accès à la config lors de l'affichage du help.
                                Nettoyage des doublons de fonctions utilitaires CLI.
 0.2.3  - 2025-10-14   [ES-11] : Remplacement d'une version spécifique de chromedriver par ChromeDriverManager qui charge toujours la version courante.
@@ -75,6 +75,40 @@ Modifications
 0.3.4  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
 0.3.5  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
 0.3.6  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
+0.3.15 - 2026-02-26   [ES-6]  : Synchronisation de version (aucun changement fonctionnel dans ce module).
+0.3.16 - 2026-03-19   [ES-15] : Configuration des logs : valeur par defaut de log_retention_days portee a 30 jours.
+                               Alignement de la retention par defaut lors de la saisie interactive et du chargement de la configuration.
+                               Synchronisation de version et mise a jour de la documentation release.
+0.3.17 - 2026-03-23   [ES-14] : Synchronisation de version (aucun changement fonctionnel dans ce module).
+0.3.18 - 2026-03-25   [ES-14] : Synchronisation de version (aucun changement fonctionnel dans ce module).
+0.3.19 - 2026-03-25   [ES-14] : Synchronisation de version (aucun changement fonctionnel dans ce module).
+0.4.0  - 2026-04-14   [ES-20] : Synchronisation de version (aucun changement fonctionnel dans ce module).
+0.5.0  - 2026-04-14   [ES-21] : Ajout de l'export DAYS (parametre days depuis config.yaml).
+0.5.1  - 2026-04-15   [ES-22] : Synchronisation de version (aucun changement fonctionnel).
+0.5.2  - 2026-04-15   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.3  - 2026-04-15   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.4  - 2026-04-15   [CR]    : Validation explicite de 'days' dans validate_config : type (int ou
+                               chaine entiere), valeurs autorisees (7/14/30/90), message d'erreur
+                               utilisateur. Avertissement si 'days' et 'date_debut'/'date_fin' sont
+                               tous deux definis. Conversion DAYS securisee avec try/except.
+0.5.5  - 2026-04-15   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.6  - 2026-04-16   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.7  - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.8  - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.9  - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.10 - 2026-04-17   [ES-26] : Synchronisation de version (aucun changement fonctionnel).
+0.5.11 - 2026-04-21   [ES-28] : Sécurité : subprocess.Popen("start powershell", shell=True)
+                               remplacé par Popen(["powershell.exe"], creationflags=
+                               CREATE_NEW_CONSOLE) — élimine le risque d'injection shell.
+0.5.12 - 2026-04-21   [ES-28] : Robustesse : except Exception remplacé par des exceptions
+                               spécifiques (OSError, InvalidToken, ValueError) dans tous
+                               les blocs try/except.
+0.5.13 - 2026-06-25   [ES-27] : Synchronisation de version (aucun changement fonctionnel).
+0.5.14 - 2026-07-09   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.15 - 2026-07-10   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
+0.5.16 - 2026-07-10   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
+0.5.17 - 2026-07-10   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.18 - 2026-07-10   [CR]    : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -96,7 +130,7 @@ from utils import normalize_path, pause_on_error, url_is_allowed
 import getpass
 import shutil
 import re
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 import subprocess
 import ast  # à mettre en haut du fichier si pas déjà importé
 import argparse
@@ -174,6 +208,49 @@ def validate_config(config):
         pause_on_error()
         sys.exit(1)
 
+    # Validation de 'days' (optionnel : entier parmi 7/14/30/90, ou null/absent)
+    _DAYS_ALLOWED = {7, 14, 30, 90}
+    _days_raw = config.get("days")
+    if _days_raw is not None:
+        if isinstance(_days_raw, str):
+            _days_stripped = _days_raw.strip()
+            if not _days_stripped.lstrip("-").isdigit():
+                print_error(
+                    f"Le paramètre 'days' doit être un entier parmi "
+                    f"{sorted(_DAYS_ALLOWED)} (ou null/absent). "
+                    f"Valeur reçue : {_days_raw!r}."
+                )
+                pause_on_error()
+                sys.exit(1)
+            _days_val = int(_days_stripped)
+        elif isinstance(_days_raw, int):
+            _days_val = _days_raw
+        else:
+            print_error(
+                f"Le paramètre 'days' doit être un entier parmi "
+                f"{sorted(_DAYS_ALLOWED)} (ou null/absent). "
+                f"Valeur reçue : {_days_raw!r} (type {type(_days_raw).__name__})."
+            )
+            pause_on_error()
+            sys.exit(1)
+
+        if _days_val not in _DAYS_ALLOWED:
+            print_error(
+                f"Valeur invalide pour 'days' : {_days_val}. "
+                f"Valeurs autorisées : {sorted(_DAYS_ALLOWED)}."
+            )
+            pause_on_error()
+            sys.exit(1)
+
+        # Avertissement si date_debut ou date_fin sont aussi définis dans config.yaml.
+        # Ce n'est pas une erreur (la chaîne de priorité gère le conflit), mais c'est ambigu.
+        if config.get("date_debut") or config.get("date_fin"):
+            logger.warning(
+                "config.yaml : 'days' et 'date_debut'/'date_fin' sont tous deux définis. "
+                "'days' sera prioritaire sur 'date_debut'/'date_fin' dans config.yaml "
+                "(chaîne : CLI dates > CLI --days > config days > config dates)."
+            )
+
 # --- Fonction de copie minimale du profil Chrome ---
 def copy_minimal_chrome_profile(src_base, dst_base):
     """
@@ -203,7 +280,7 @@ def copy_minimal_chrome_profile(src_base, dst_base):
                 else:
                     shutil.copy2(src_path, dst_path)
                 print(f"✅ Copié : {item}")
-            except Exception as e:
+            except OSError as e:
                 print(f"⚠️ Erreur lors de la copie de {item} : {e}")
         else:
             print(f"❌ Introuvable : {item}")
@@ -233,7 +310,7 @@ def interactive_config():
         value = example_config[key]
         # Valeur par défaut pour la rétention des logs
         if key == "log_retention_days":
-            value = 15
+            value = 30
             prompt = (
                 f"{Fore.CYAN}Entrez la valeur pour '{key}' [{value}] (0 = conservation illimitée) : {Style.RESET_ALL}"
             )
@@ -254,7 +331,7 @@ def interactive_config():
                     final_value = ast.literal_eval(user_input)
                     if not isinstance(final_value, list):
                         raise ValueError
-                except Exception:
+                except (ValueError, SyntaxError):
                     print_error("Veuillez entrer une liste Python valide, par exemple : [\"Aperçu\", \"AGP\"]")
                     logger.error("Saisie invalide pour 'rapports'.")
                     continue
@@ -294,7 +371,7 @@ def interactive_config():
                     else:
                         print_info("Le dossier cible existe déjà, aucune copie effectuée.")
                         logger.info(f"Le dossier cible {chrome_user_data_dir_value} existe déjà, copie non effectuée.")
-                except Exception as e:
+                except OSError as e:
                     print_error(f"Erreur lors de la copie du profil Chrome : {e}")
                     logger.error(f"Erreur lors de la copie du profil Chrome : {e}")
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
@@ -361,7 +438,7 @@ def interactive_env():
     try:
         fernet = Fernet(env_key.encode())
         encrypted_content = fernet.encrypt(env_content.encode())
-    except Exception as e:
+    except (InvalidToken, ValueError) as e:
         print_error(f"Erreur lors du chiffrement du fichier .env : {e}")
         logger.error(f"Erreur lors du chiffrement du fichier .env : {e}")
         pause_on_error()
@@ -388,7 +465,7 @@ def ensure_encryption_key():
             Fernet(key.encode())
             logger.info("La variable d'environnement ENV_DEXCOM_KEY existe et est valide.")
             return
-        except Exception:
+        except (InvalidToken, ValueError):
             print_error("La variable d'encryption ENV_DEXCOM_KEY existe mais n'est pas valide.")
             logger.warning("La variable d'encryption ENV_DEXCOM_KEY existe mais n'est pas valide.")
     else:
@@ -404,7 +481,7 @@ def ensure_encryption_key():
     print_info("\nEnsuite, tapez : Exit puis appuyez sur Entrée pour fermer la fenêtre PowerShell.")
     print_info("L'application va se fermer. Veuillez la relancer pour continuer la configuration.\n")
     logger.info("Création d'une nouvelle clé Fernet et demande à l'utilisateur de créer la variable d'environnement ENV_DEXCOM_KEY.")
-    subprocess.Popen("start powershell", shell=True)
+    subprocess.Popen(["powershell.exe"], creationflags=subprocess.CREATE_NEW_CONSOLE)
     sys.exit(0)
 
 # --- Gestion des credentials Dexcom ---
@@ -428,7 +505,7 @@ def get_dexcom_credentials():
         with open(temp_env_path, "w", encoding="utf-8") as f:
             f.write(decrypted_content)
         load_dotenv(temp_env_path)
-    except Exception as e:
+    except (InvalidToken, ValueError, OSError) as e:
         print_error(f"Erreur lors du déchiffrement du fichier .env : {e}")
         logger.error(f"Erreur lors du déchiffrement du fichier .env : {e}")
         pause_on_error()
@@ -437,7 +514,7 @@ def get_dexcom_credentials():
         if os.path.exists(temp_env_path):
             try:
                 os.remove(temp_env_path)
-            except Exception:
+            except OSError:
                 pass
 
     username = os.getenv("DEXCOM_USERNAME")
@@ -508,8 +585,13 @@ if not is_help_requested():
     CHROMEDRIVER_LOG = normalize_path(cast(str, get_param("chromedriver_log")))
     DEXCOM_URL = cast(str, get_param("dexcom_url"))
     RAPPORTS = cast(list, get_param("rapports"))
-    LOG_RETENTION_DAYS = int(config.get("log_retention_days", 15))
+    LOG_RETENTION_DAYS = int(config.get("log_retention_days", 30))
     DEBUG = _coerce_bool(config.get("debug"), default=False)
+    _days_raw = config.get("days")
+    try:
+        DAYS = int(_days_raw) if _days_raw is not None else None
+    except (ValueError, TypeError):
+        DAYS = None  # validate_config a déjà rejeté les valeurs invalides
 
     DATE_FIN = config.get("date_fin")
     if not DATE_FIN:
