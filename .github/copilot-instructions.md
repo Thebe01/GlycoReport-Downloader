@@ -105,8 +105,8 @@
 - Commandes PowerShell utiles (diagnostic rapide):
 
   ```powershell
-  # Se placer à la racine du repo
-  Set-Location -LiteralPath "C:\Users\thebe\OneDrive\Sources\GlycoReport-Downloader"
+  # Se placer à la racine du repo (fonctionne depuis n'importe quel sous-dossier)
+  Set-Location -LiteralPath (git rev-parse --show-toplevel)
 
   # Extraire rapidement des chemins depuis config.yaml (supporte lignes avec ou sans guillemets)
   $chromedriverLog = (Get-Content .\config.yaml | Select-String '^\s*chromedriver_log\s*:' | Select-Object -First 1).Line -replace '^\s*chromedriver_log\s*:\s*', '' -replace '^["'']|["'']$', ''
