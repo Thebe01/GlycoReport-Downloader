@@ -1,2 +1,11 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# BEGIN IPT.PromptSync managed block - do not edit (see iptdevlib)
+.github/COPILOT_INSTRUCTIONS_UPDATE.md linguist-generated=true
+.github/HEADER_TEMPLATE_POWERSHELL_MODULE.md linguist-generated=true
+.github/HEADER_TEMPLATE_POWERSHELL.md linguist-generated=true
+.github/HEADER_TEMPLATE_PYTHON.md linguist-generated=true
+.github/HEADER_TEMPLATE_SHELL.md linguist-generated=true
+.github/TEMPLATE_SYNC_CHECK.md linguist-generated=true
+# END IPT.PromptSync managed block

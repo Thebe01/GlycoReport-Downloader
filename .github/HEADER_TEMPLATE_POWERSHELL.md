@@ -14,12 +14,32 @@ META:
                                      précéder toute pause interactive de fermeture (Read-Host,
                                      pause); la mesure de durée porte sur le travail effectif du
                                      script, pas sur l'attente utilisateur.
+    1.0.9 - 2026-07-16 - PD-202    : Ajout règle explicite — la version initiale d'un script est
+                                     toujours 0.0.0 (jamais 1.0.0). La version 1.0.0 marque le
+                                     passage en production stable (checklist + section .MODIFICATIONS).
+    1.1.0 - 2026-07-30 - PD-207    : Lignes Début/Fin encadrées d'un try/finally (Fin s'affiche à
+                                     chaque point de sortie) ; ajout de la pause interactive finale
+                                     (Read-Host) conditionnée à Test-InteractiveSession — volontairement
+                                     sans la contrainte ConsoleHost, pour fonctionner aussi dans le
+                                     terminal intégré VS Code ; ajout des règles d'encodage fichier
+                                     (.ps1 en UTF-8 avec BOM) et console (ASCII pur pour les scripts
+                                     serveurs) — recoupe SUP1-1190. Formule reprise telle qu'éprouvée
+                                     dans le module IPT.PromptSync (PD-206).
+    1.1.1 - 2026-07-31 - PD-206    : Ajout d'un renvoi vers HEADER_TEMPLATE_POWERSHELL_MODULE.md
+                                     (variante pour modules .psm1/.psd1) en tête de document et
+                                     dans les Ressources.
+    1.1.2 - 2026-07-31 - CR        : Reformulation du renvoi vers HEADER_TEMPLATE_POWERSHELL_MODULE.md
+                                     — « un module ne s'exécute pas comme un script » pouvait laisser
+                                     croire à une contrainte du langage, alors que c'est une convention
+                                     de ce standard (un .psm1 exécute bien du code à l'import).
 -->
 
 # 📘 Template d'en-tête PowerShell - IPT inc
 
 **Standard officiel pour les scripts PowerShell**  
 Innovations, Performances, Technologies inc.
+
+Pour les modules (`.psm1`/`.psd1`), voir [HEADER_TEMPLATE_POWERSHELL_MODULE.md](HEADER_TEMPLATE_POWERSHELL_MODULE.md) — gabarit adapté (différences de ce standard : pas de `param()` au niveau module, pas de lignes Début/Fin).
 
 ---
 
@@ -148,6 +168,9 @@ Changelog **complet** avec chaque version documentée.
 
 **Règles versioning :**
 
+- La version initiale d'un script est **toujours `0.0.0`** (entrée
+  `Initialisation` dans `.MODIFICATIONS`), jamais `1.0.0`. La version
+  `1.0.0` marque le passage en production stable, pas la création.
 - `MAJEUR` : Breaking changes (incompatibilité)
 - `MINEUR` : Nouvelles fonctionnalités (compatible)
 - `CORRECTIF` : Corrections de bugs uniquement
@@ -279,21 +302,67 @@ $Script:Version   = "0.0.0"
 
 **⚠️ IMPORTANT :** Toujours utiliser `InvariantCulture` pour les timestamps !
 
-### 5. Lignes Début / Fin (OBLIGATOIRE)
+### 5. Lignes Début / Fin et pause interactive (OBLIGATOIRE)
 
-La **première** ligne d'exécution (après la vérification admin si présente) et la **dernière** doivent afficher le nom et la version du script :
+La **première** ligne d'exécution (après la vérification admin si présente) doit afficher le nom et la version du script, et la **dernière** doit les afficher à nouveau — dans un `try/finally` pour garantir que la ligne `Fin` s'affiche à **chaque** point de sortie (fin normale, erreur, `exit`), pas seulement en fin de script nominale :
 
 ```powershell
-Write-Host "$((Get-Date).ToString('yyyy-MM-dd HH:mm:ss', [System.Globalization.CultureInfo]::InvariantCulture)) Début $($Script:NomScript) $($Script:Version)" -ForegroundColor Green
+function Test-InteractiveSession {
+    # Session réellement interactive ? Volontairement SANS la contrainte
+    # $Host.Name -eq 'ConsoleHost' : la pause doit aussi fonctionner dans le
+    # terminal intégré de VS Code (où $Host.Name vaut 'Visual Studio Code Host').
+    # try/catch : [Console]::IsInputRedirected peut lever une exception dans un
+    # contexte sans handle console (ex. service Windows). Cet appel se fait avant
+    # le try/finally d'affichage Debut/Fin plus bas ; sans ce try/catch ici, une
+    # telle exception ferait échouer le script avant même la ligne Debut.
+    try {
+        return [Environment]::UserInteractive -and (-not [Console]::IsInputRedirected)
+    }
+    catch {
+        return $false
+    }
+}
 
-# ... corps du script ...
+$Script:IsInteractive = Test-InteractiveSession
 
-Write-Host "$((Get-Date).ToString('yyyy-MM-dd HH:mm:ss', [System.Globalization.CultureInfo]::InvariantCulture)) Fin $($Script:NomScript) $($Script:Version)" -ForegroundColor Green
+try {
+    Write-Host "$((Get-Date).ToString('yyyy-MM-dd HH:mm:ss', [System.Globalization.CultureInfo]::InvariantCulture)) Debut $($Script:NomScript) $($Script:Version)" -ForegroundColor Green
+
+    # ... corps du script ...
+}
+finally {
+    Write-Host "$((Get-Date).ToString('yyyy-MM-dd HH:mm:ss', [System.Globalization.CultureInfo]::InvariantCulture)) Fin $($Script:NomScript) $($Script:Version)" -ForegroundColor Green
+
+    if ($Script:IsInteractive) {
+        Write-Host ""
+        Read-Host "Appuyez sur Entree pour fermer la fenetre"
+    }
+}
 ```
 
-**Pourquoi :** Permet d'identifier immédiatement quel script a tourné, quelle version, et d'en mesurer la durée dans les logs.
+**Pourquoi :** Permet d'identifier immédiatement quel script a tourné, quelle version, et d'en mesurer la durée dans les logs — y compris pour les tâches planifiées, où les lignes Début/Fin s'affichent dans tous les cas.
 
-**Précision — pauses interactives :** Si le script se termine par une pause interactive de fermeture (`Read-Host "Appuyez sur Entrée..."`, `pause`, etc.), la ligne `Fin` doit **précéder** cette pause, pas la suivre. La mesure de durée doit porter sur le travail effectif du script, pas sur le temps d'attente de l'utilisateur avant de fermer la fenêtre.
+**Pause finale interactive :** la pause (`Read-Host`) est **conditionnée** à `Test-InteractiveSession`, pour qu'un script lancé par une tâche planifiée ne bloque jamais en attente d'une touche. Elle permet à l'usager de voir le résultat avant la fermeture de la fenêtre quand le script est lancé depuis un menu (ex. `Menu-ScriptIPT-locaux.ps1`). Le texte de la pause reste en ASCII pur (voir section « 🔤 Règles d'encodage »).
+
+---
+
+## 🔤 Règles d'encodage
+
+Deux mécanismes distincts, à ne pas confondre (recoupe SUP1-1190) :
+
+1. **Lecture du fichier `.ps1`** dépend du BOM. Sans BOM, PowerShell 5.1 lit le fichier selon la page de code ANSI (CP1252 sur poste fr).
+   - Enregistrer tout `.ps1` en **UTF-8 avec BOM**.
+   - Aucun caractère non-ASCII dans le **code exécutable** (tirets cadratins, guillemets typographiques, caractères semi-graphiques cassent l'analyse). Les accents dans les **commentaires** sont sans danger, à condition que le BOM soit présent.
+
+2. **Affichage console** dépend de trois couches qui ne se synchronisent PAS automatiquement : `[Console]::OutputEncoding` (encodage .NET), la page de code de la console (`chcp`), et la police (couverture de glyphes). Forcer seulement la première sur un système désaligné aggrave l'affichage.
+
+**Règle d'affichage selon la cible d'exécution** (la distinction est OÙ le script tourne, pas quel langage) :
+
+- **Scripts destinés aux postes usagers** (menu, VS Code, console interactive en UTF-8, où les trois couches sont alignées) : `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8` en tête est permis et recommandé.
+- **Scripts destinés aux serveurs** (tâches planifiées, console en page de code OEM 850, police non garantie TrueType) : **ASCII pur** dans toutes les sorties (`Write-Host`, `Write-Output`, logs). Ne **pas** forcer `[Console]::OutputEncoding` : sur un système en 850, cela aggrave l'affichage (un `é` encodé en UTF-8 devient deux glyphes parasites relus en 850).
+- Un même script lancé aux deux endroits doit s'en tenir à l'ASCII dans ses sorties.
+
+**Pourquoi :** confusion vécue entre les deux mécanismes — le charabia des accents sur les postes usagers venait de `[Console]::OutputEncoding` en IBM850 sur Server 2019, pas du BOM (soupçonné à tort). Voir SUP1-1190 pour le détail par machine.
 
 ---
 
@@ -359,7 +428,7 @@ try {
     $result = Invoke-Something -Path $Path
 }
 catch {
-    Write-Log "❌ Erreur : $($_.Exception.Message)" -Level Error
+    Write-Log "Erreur : $($_.Exception.Message)" -Level Error
     Write-Log "   Ligne : $($_.InvocationInfo.ScriptLineNumber)" -Level Error
     exit 1
 }
@@ -378,6 +447,7 @@ Avant de commiter un script PowerShell :
 - [ ] En-tête complet avec toutes les sections obligatoires
 - [ ] `.SYNOPSIS` clair et concis (1 ligne)
 - [ ] `.DESCRIPTION` avec métadonnées alignées
+- [ ] Version initiale `0.0.0` (jamais `1.0.0`)
 - [ ] `.MODIFICATIONS` à jour avec dernière version
 - [ ] `.PARAMETER` pour tous les paramètres
 - [ ] `.EXAMPLE` avec au moins 1 cas d'usage réel
@@ -390,6 +460,11 @@ Avant de commiter un script PowerShell :
 - [ ] Variables globales avec préfixe `$Script:`
 - [ ] Fonction `Write-Log` pour logging
 - [ ] Gestion d'erreurs avec try/catch
+- [ ] Ligne `Debut NomScript Version` en première ligne d'exécution
+- [ ] Ligne `Fin NomScript Version` dans un `finally` (s'affiche à chaque point de sortie)
+- [ ] Pause interactive finale (`Read-Host`) conditionnée à `Test-InteractiveSession` (jamais de blocage en tâche planifiée)
+- [ ] `.ps1` enregistré en UTF-8 avec BOM ; ASCII pur dans le code exécutable
+- [ ] Sorties console (`Write-Host`, logs) en ASCII pur pour les scripts destinés aux serveurs
 - [ ] Ligne `Début NomScript Version` en première ligne d'exécution
 - [ ] Ligne `Fin NomScript Version` en dernière ligne d'exécution
 - [ ] Code testé et fonctionnel
@@ -440,6 +515,7 @@ Dans VS Code, tapez `headerps` puis `Tab` :
 
 ## 🔗 Ressources
 
+- [HEADER_TEMPLATE_POWERSHELL_MODULE.md](HEADER_TEMPLATE_POWERSHELL_MODULE.md) — variante pour les modules (`.psm1`/`.psd1`)
 - [PowerShell Comment-Based Help](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_comment_based_help)
 - [PowerShell Best Practices](https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/strongly-encouraged-development-guidelines)
 - [Semantic Versioning](https://semver.org/)
@@ -447,6 +523,6 @@ Dans VS Code, tapez `headerps` puis `Tab` :
 ---
 
 **Document créé le** : 2025-11-06  
-**Version** : 1.0.8  
+**Version** : 1.1.2  
 **Mainteneur** : Pierre Théberge  
 **Compagnie** : Innovations, Performances, Technologies inc.
