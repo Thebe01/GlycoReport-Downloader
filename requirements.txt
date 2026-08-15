@@ -2,7 +2,5 @@ selenium>=4.15.2
 pyyaml
 python-dotenv
 colorama
-pytest
 cryptography
-pyinstaller
 webdriver-manager>=4.0.2

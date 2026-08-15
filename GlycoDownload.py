@@ -3,15 +3,15 @@
 
 """
 Format d'en-tête standard à respecter pour ce projet.
-Voir HEADER_TEMPLATE_PYTHON.md pour les détails.
+Voir .github/HEADER_TEMPLATE_PYTHON.md pour les détails.
 
 Module        : GlycoDownload.py
 Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
-Modifié le    : 2026-02-13
-Version       : 0.3.14
+Modifié le    : 2026-07-10
+Version       : 0.5.18
 Copyright     : Pierre Théberge
 
 Description
@@ -20,95 +20,95 @@ Script principal (CLI + orchestration) pour automatiser le téléchargement des 
 
 Modifications
 -------------
-0.0.0   - 2025-03-03   [N/A]  : Version initiale.
-0.0.1   - 2025-03-07   [N/A]  : Connectoin à Clarity et authentification
-0.0.2   - 2025-03-20   [N/A]  : Cliquer sur le sélecteur de dates et choisir la période
-0.0.3   - 2025-03-28   [N/A]  : Ajout du traitement des rapports
-0.0.4   - 2025-04-07   [N/A]  : Conversion à Python 3.13 et une erreur de syntaxe dans le code de la fonction traitement_rapport_apercu
-0.0.5   - 2025-04-11   [N/A]  : Ajout de la sélection du rapport Apercu
-0.0.6   - 2025-04-16   [N/A]  : Ajout du code pour télécharger un rapport.
-0.0.7   - 2025-04-24   [N/A]  : Retour à Python 3.12. Besoin Tensorflow et il n'est pas supporté par Python 3.13
-0.0.8   - 2025-05-23   [N/A]  : Terminé la fonction téléchargement_rapport
-0.0.9   - 2025-07-01   [N/A]  : Ajout de l'option debug et ajout d'un fichier de log
-0.0.10  - 2025-07-02   [N/A]  : Modification pour tenir compte d'une connexion internet lente et instable (4mb/s)
-                               Ajout de la fonction traitement_rapport
-                               Ajout de la fonction check_internet pour vérifier la connexion internet
-                               Ajout du traitement pour les rapports Modèles
-                               Dans la fonction deplace_et_renomme_rapport, ne pas tenir compte des fichiers *.log
-0.0.11  - 2025-07-03   [N/A]  : La vérification de la connexion internet ne fonctionne pas avec NordVPN
-                               Ajout du traitement pour le rapport Superposition
-                               Rendre plus robuste le traitement du rapport Aperçu
-                               Ajout du traitement pour le rapport Quotidien
-                               Ajout du traitement pour le rapport AGP
-0.0.12  - 2025-07-08   [N/A]  : Ajout du traitement pour le rapport Statistiques
-0.0.13  - 2025-07-13   [N/A]  : Ajout du traitement pour le rapport Comparer
-0.0.14  - 2025-07-18   [N/A]  : Ajout de l'exportation des données en format csv
-0.0.15  - 2025-07-21   [N/A]  : Terminer la fonction traitement_export_csv
-                               Ajout des sous-rapport pour le rapport Comparer
-                               Les sous-rapports Superposition et Quotidien de comparer ne fonctioone pas.
-                               Ils produisent le même PDF que Tendances.
-                               Ajouter la déconnexion du compte avant de fermer le navigateur
-0.0.16  - 2025-07-25   [N/A]  : Correction pour la déconnexion du compte
-                               Correction pour le bouton Fermer de la fenêtre modale Exporter
-0.0.17  - 2025-07-25   [N/A]  : Correction pour le déconnexion du compte. Éliminer la référence au nom d'utilisateur.
-                               Ajout de TODO pour la correction du code.
-0.0.18  - 2025-07-30   [N/A]  : Gestion des exceptions plus précise. Évite les except: nus. Précise toujours le type d'exception
-                               Factorisation des attentes sur les overlays/loaders. Crée une fonction utilitaire
-                               pour attendre la disparition des overlays, et utilise-la partout où c'est pertinent.
-                               Centralisation des paramètres et chemins. Définis tous les chemins, URLs, et paramètres en haut du script ou dans un fichier de config.
-                               Ajout d'une fonction main()
-                               Fermeture du navigateur dans un finally
-0.0.19  - 2025-08-04   [N/A]  : Ajout de docstrings pour toutes les fonctions
-                               Logging cohérent. Utilise le logger pour tous les messages (pas de print).
-0.0.20  - 2025-08-05   [N/A]  : Ajout d'une validation pour la présende des variables d'environnement nécessaires
-                               Crée un fichier config.py pour centraliser tous les paramètres, chemins, URLs, etc.
-                               Crée un fichier utils.py pour toutes les fonctions utilitaires (connexion internet, overlay, renommage, etc.).
-                               Crée un fichier rapports.py pour le traitement des rapports
-0.0.21  - 2025-08-06   [N/A]  : Ajout d'un exemple de fichier de configuration "config_example.yaml"
-0.0.22  - 2025-08-13   [N/A]  : Centralisation et normalisation des chemins, gestion CLI améliorée,
-                               logs JS navigateur, robustesse accrue sur la gestion des erreurs,
-                               factorisation des utilitaires, gestion propre des exceptions et de la déconnexion.
-0.0.23  - 2025-08-13   [N/A]  : Capture d'écran centralisée via utils.py, délai avant capture,
-                               suppression des duplications de code, ajout de logs pour le diagnostic.
-0.1.0   - 2025-08-18   [N/A]  : Robustesse saisie identifiant : sélection usernameLogin, vérification visibilité/interactivité,
-                               captures d'écran uniquement en mode debug, gestion du bouton 'Pas maintenant' après connexion,
-                               adaptation aux changements d'interface Dexcom, logs détaillés pour le diagnostic.
-0.1.1   - 2025-09-03   [N/A]  : Ajout des logs.
-0.1.2   - 2025-09-04   [N/A]  : Vérification des répertoires.
-0.1.3   - 2025-09-05   [N/A]  : Correction de la récupération de la date de rapport.
-0.1.4   - 2025-09-05   [N/A]  : Renommage du répertoire de sortie.
-0.1.5   - 2025-09-06   [N/A]  : Répertoire de sortie dans config.yaml.
-0.1.6   - 2025-09-23   [N/A]  : Gestion améliorée de la sélection des jours (days).
-0.1.7   - 2025-10-06   [N/A]  : Détermination automatique de la version de chromedriver.
-0.2.0   - 2025-10-07   [N/A]  : Réorganisation complète de la structure en modules.
-0.2.1   - 2025-10-09   [ES-5] : Ajout de la langue dans les arguments en CLI et au rapport.
-0.2.2   - 2025-10-11   [ES-6] : Les rapports sont indépendants de la langue de l'utilisateur.
+0.0.0   - 2025-03-03   [N/A]   : Version initiale.
+0.0.1   - 2025-03-07   [N/A]   : Connectoin à Clarity et authentification
+0.0.2   - 2025-03-20   [N/A]   : Cliquer sur le sélecteur de dates et choisir la période
+0.0.3   - 2025-03-28   [N/A]   : Ajout du traitement des rapports
+0.0.4   - 2025-04-07   [N/A]   : Conversion à Python 3.13 et une erreur de syntaxe dans le code de la fonction traitement_rapport_apercu
+0.0.5   - 2025-04-11   [N/A]   : Ajout de la sélection du rapport Apercu
+0.0.6   - 2025-04-16   [N/A]   : Ajout du code pour télécharger un rapport.
+0.0.7   - 2025-04-24   [N/A]   : Retour à Python 3.12. Besoin Tensorflow et il n'est pas supporté par Python 3.13
+0.0.8   - 2025-05-23   [N/A]   : Terminé la fonction téléchargement_rapport
+0.0.9   - 2025-07-01   [N/A]   : Ajout de l'option debug et ajout d'un fichier de log
+0.0.10  - 2025-07-02   [N/A]   : Modification pour tenir compte d'une connexion internet lente et instable (4mb/s)
+                                 Ajout de la fonction traitement_rapport
+                                 Ajout de la fonction check_internet pour vérifier la connexion internet
+                                 Ajout du traitement pour les rapports Modèles
+                                 Dans la fonction deplace_et_renomme_rapport, ne pas tenir compte des fichiers *.log
+0.0.11  - 2025-07-03   [N/A]   : La vérification de la connexion internet ne fonctionne pas avec NordVPN
+                                 Ajout du traitement pour le rapport Superposition
+                                 Rendre plus robuste le traitement du rapport Aperçu
+                                 Ajout du traitement pour le rapport Quotidien
+                                 Ajout du traitement pour le rapport AGP
+0.0.12  - 2025-07-08   [N/A]   : Ajout du traitement pour le rapport Statistiques
+0.0.13  - 2025-07-13   [N/A]   : Ajout du traitement pour le rapport Comparer
+0.0.14  - 2025-07-18   [N/A]   : Ajout de l'exportation des données en format csv
+0.0.15  - 2025-07-21   [N/A]   : Terminer la fonction traitement_export_csv
+                                 Ajout des sous-rapport pour le rapport Comparer
+                                 Les sous-rapports Superposition et Quotidien de comparer ne fonctioone pas.
+                                 Ils produisent le même PDF que Tendances.
+                                 Ajouter la déconnexion du compte avant de fermer le navigateur
+0.0.16  - 2025-07-25   [N/A]   : Correction pour la déconnexion du compte
+                                 Correction pour le bouton Fermer de la fenêtre modale Exporter
+0.0.17  - 2025-07-25   [N/A]   : Correction pour le déconnexion du compte. Éliminer la référence au nom d'utilisateur.
+                                 Ajout de TODO pour la correction du code.
+0.0.18  - 2025-07-30   [N/A]   : Gestion des exceptions plus précise. Évite les except: nus. Précise toujours le type d'exception
+                                 Factorisation des attentes sur les overlays/loaders. Crée une fonction utilitaire
+                                 pour attendre la disparition des overlays, et utilise-la partout où c'est pertinent.
+                                 Centralisation des paramètres et chemins. Définis tous les chemins, URLs, et paramètres en haut du script ou dans un fichier de config.
+                                 Ajout d'une fonction main()
+                                 Fermeture du navigateur dans un finally
+0.0.19  - 2025-08-04   [N/A]   : Ajout de docstrings pour toutes les fonctions
+                                 Logging cohérent. Utilise le logger pour tous les messages (pas de print).
+0.0.20  - 2025-08-05   [N/A]   : Ajout d'une validation pour la présende des variables d'environnement nécessaires
+                                 Crée un fichier config.py pour centraliser tous les paramètres, chemins, URLs, etc.
+                                 Crée un fichier utils.py pour toutes les fonctions utilitaires (connexion internet, overlay, renommage, etc.).
+                                 Crée un fichier rapports.py pour le traitement des rapports
+0.0.21  - 2025-08-06   [N/A]   : Ajout d'un exemple de fichier de configuration "config_example.yaml"
+0.0.22  - 2025-08-13   [N/A]   : Centralisation et normalisation des chemins, gestion CLI améliorée,
+                                 logs JS navigateur, robustesse accrue sur la gestion des erreurs,
+                                 factorisation des utilitaires, gestion propre des exceptions et de la déconnexion.
+0.0.23  - 2025-08-13   [N/A]   : Capture d'écran centralisée via utils.py, délai avant capture,
+                                 suppression des duplications de code, ajout de logs pour le diagnostic.
+0.1.0   - 2025-08-18   [N/A]   : Robustesse saisie identifiant : sélection usernameLogin, vérification visibilité/interactivité,
+                                 captures d'écran uniquement en mode debug, gestion du bouton 'Pas maintenant' après connexion,
+                                 adaptation aux changements d'interface Dexcom, logs détaillés pour le diagnostic.
+0.1.1   - 2025-09-03   [N/A]   : Ajout des logs.
+0.1.2   - 2025-09-04   [N/A]   : Vérification des répertoires.
+0.1.3   - 2025-09-05   [N/A]   : Correction de la récupération de la date de rapport.
+0.1.4   - 2025-09-05   [N/A]   : Renommage du répertoire de sortie.
+0.1.5   - 2025-09-06   [N/A]   : Répertoire de sortie dans config.yaml.
+0.1.6   - 2025-09-23   [N/A]   : Gestion améliorée de la sélection des jours (days).
+0.1.7   - 2025-10-06   [N/A]   : Détermination automatique de la version de chromedriver.
+0.2.0   - 2025-10-07   [N/A]   : Réorganisation complète de la structure en modules.
+0.2.1   - 2025-10-09   [ES-5]  : Ajout de la langue dans les arguments en CLI et au rapport.
+0.2.2   - 2025-10-11   [ES-6]  : Les rapports sont indépendants de la langue de l'utilisateur.
 0.2.3   - 2025-10-14   [ES-11] : Ajout du rapport Statistiques horaires et amélioration de la robustesse d'accès aux rapports.
-                               Utilisation de ChromeDriverManager pour télécharger automatiquement la bonne version de ChromeDriver.
+                                 Utilisation de ChromeDriverManager pour télécharger automatiquement la bonne version de ChromeDriver.
 0.2.4   - 2025-10-16   [ES-12] : Synchronisation de version (aucun changement fonctionnel).
 0.2.5   - 2025-10-16   [ES-10] : Synchronisation de version (aucun changement fonctionnel).
-0.2.6   - 2025-10-21   [ES-7] : Amélioration du système d'aide (--help) avec description détaillée, exemples et groupes d'arguments.
-                               Ajout de l'option --list-rapports pour afficher la liste des rapports disponibles.
-                               Ajout de l'option --dry-run pour tester la configuration sans télécharger.
-                               Ajout de la validation des dates avec messages d'erreur clairs.
+0.2.6   - 2025-10-21   [ES-7]  : Amélioration du système d'aide (--help) avec description détaillée, exemples et groupes d'arguments.
+                                 Ajout de l'option --list-rapports pour afficher la liste des rapports disponibles.
+                                 Ajout de l'option --dry-run pour tester la configuration sans télécharger.
+                                 Ajout de la validation des dates avec messages d'erreur clairs.
 0.2.7   - 2025-10-27   [ES-16] : Ajout de la gestion des erreurs 502 (Bad Gateway) avec retry automatique.
-                               Attente et réessai automatique (3 tentatives max) en cas d'erreur serveur temporaire.
-                               Suivi et rapport des échecs de téléchargement avec raisons détaillées.
-                               Amélioration de la robustesse face aux problèmes temporaires du serveur Dexcom.
+                                 Attente et réessai automatique (3 tentatives max) en cas d'erreur serveur temporaire.
+                                 Suivi et rapport des échecs de téléchargement avec raisons détaillées.
+                                 Amélioration de la robustesse face aux problèmes temporaires du serveur Dexcom.
 0.2.8   - 2025-11-28   [ES-16] : Correction du sélecteur du bouton de connexion pour être indépendant de la langue.
-                               Utilisation de l'ID 'default-login-text' au lieu du texte du bouton.
-                               Ajout d'un fallback sur le type 'submit' pour plus de robustesse.
-                               Augmentation du timeout et amélioration des logs pour le bouton de connexion.
-                               Correction de la déconnexion bloquée par un overlay (clic JS forcé).
+                                 Utilisation de l'ID 'default-login-text' au lieu du texte du bouton.
+                                 Ajout d'un fallback sur le type 'submit' pour plus de robustesse.
+                                 Augmentation du timeout et amélioration des logs pour le bouton de connexion.
+                                 Correction de la déconnexion bloquée par un overlay (clic JS forcé).
 0.2.9   - 2025-11-28   [ES-16] : Ajout d'un fallback ultime pour la connexion : simulation de la touche ENTRÉE.
-                               Gestion du cas où le bouton de connexion est introuvable ou non cliquable.
-                               Correction des erreurs de portée de variables (debug_mode, download_dir).
-                               Correction du mode --dry-run (join, credentials).
-                               Amélioration de la connexion : détection automatique du champ login pour sauter l'étape de sélection du mode.
+                                 Gestion du cas où le bouton de connexion est introuvable ou non cliquable.
+                                 Correction des erreurs de portée de variables (debug_mode, download_dir).
+                                 Correction du mode --dry-run (join, credentials).
+                                 Amélioration de la connexion : détection automatique du champ login pour sauter l'étape de sélection du mode.
 0.2.10  - 2025-12-17   [ES-17] : Sécurité : Masquage des informations sensibles (téléphone) dans la sortie --dry-run.
-                               Synchronisation de version.
+                                 Synchronisation de version.
 0.2.11  - 2025-12-22   [ES-18] : Correction du délai d'attente pour la fermeture de la fenêtre de téléchargement (60s).
-                               Retour à Python 3.13 (après rollback v0.0.7)
+                                 Retour à Python 3.13 (après rollback v0.0.7)
 0.2.12  - 2025-12-22   [ES-3]  : Réparer le problème avec les rapports Comparer.
 0.2.13  - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
 0.2.14  - 2026-01-19   [ES-19] : Attente "vérification humaine" Cloudflare (pause + reprise automatique).
@@ -123,6 +123,50 @@ Modifications
 0.3.4   - 2026-02-12   [ES-3]  : Correction du téléchargement des sous-rapports Comparer.
 0.3.5   - 2026-02-12   [ES-3]  : Forçage du download_dir et stabilisation Comparer.
 0.3.6   - 2026-02-12   [ES-3]  : Stabilisation renforcée des sous-rapports Comparer.
+0.3.15  - 2026-02-26   [ES-6]  : Harmonisation des XPath pour reduire la dependance a la langue du navigateur.
+0.3.16  - 2026-03-19   [ES-15] : Synchronisation de version et documentation (retention logs par defaut a 30 jours).
+0.3.17  - 2026-03-23   [ES-14] : Detection des pertes reseau pendant le traitement des rapports,
+                                 tentative de reconnexion et arret propre de l'application en cas d'echec.
+                                 Fermeture de l'onglet Dexcom en fin de traitement,
+                                 et fermeture complete du navigateur si un seul onglet est ouvert.
+0.3.18  - 2026-03-25   [ES-14] : Synchronisation de version apres durcissement du flux Export CSV
+                                 pour les erreurs reseau en modale.
+0.3.19  - 2026-03-25   [ES-14] : Fermeture navigateur: utilisation du mode debug effectif
+                                 (args.debug ou config.DEBUG) pour les traces d'exception.
+0.4.0   - 2026-04-14   [ES-20] : Synchronisation de version (tous les parametres CLI acceptes par
+                                 GlycoDownload correspondent aux parametres exposes par Launch-Dexcom-And-Run.ps1).
+0.5.0   - 2026-04-14   [ES-21] : Extraction de resolve_effective_date_range (fonction pure testable).
+0.5.1   - 2026-04-15   [ES-22] : Synchronisation de version (aucun changement fonctionnel).
+                                 Chaine de priorite : CLI dates > CLI --days > config days > config dates.
+                                 Remplacement des deux blocs inline (main et dry-run) par des appels a cette fonction.
+0.5.2   - 2026-04-15   [ES-25] : Saisie des dates : erreur fatale si Selenium echoue a entrer les
+                                 dates dans l'UI Dexcom (au lieu de continuer silencieusement avec
+                                 les dates par defaut de Dexcom).
+0.5.3   - 2026-04-15   [ES-25] : Robustesse saisie des dates : element_to_be_clickable au lieu de
+                                 presence_of_element_located; clic + clear + send_keys par champ
+                                 sequentiellement (evite StaleElementReferenceException si re-render).
+0.5.4   - 2026-04-15   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.5   - 2026-04-15   [CR]    : Dates CLI partielles : erreur explicite dans validate_dates si une
+                                 seule date est fournie; garde defensif (ValueError) dans
+                                 resolve_effective_date_range. Tests mis a jour en consequence.
+0.5.6   - 2026-04-16   [ES-25] : Deconnexion : seconde attente overlay apres ouverture du menu
+                                 utilisateur; JS fallback sur logout_link.click() pour contourner
+                                 ElementClickInterceptedException.
+0.5.7   - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.8   - 2026-04-17   [ES-25] : Deconnexion : except Exception -> except
+                                 ElementClickInterceptedException sur les clics menu
+                                 utilisateur et logout_link; import ajoute.
+0.5.9   - 2026-04-17   [ES-25] : Synchronisation de version (aucun changement fonctionnel).
+0.5.10  - 2026-04-17   [ES-26] : Synchronisation de version (aucun changement fonctionnel).
+0.5.11  - 2026-04-21   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
+0.5.12  - 2026-04-21   [ES-28] : Robustesse : except Exception remplacé par des exceptions
+                                 spécifiques Selenium et Python dans tous les blocs try/except.
+0.5.13  - 2026-06-25   [ES-27] : Synchronisation de version (aucun changement fonctionnel).
+0.5.14  - 2026-07-09   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.15  - 2026-07-10   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
+0.5.16  - 2026-07-10   [ES-28] : Synchronisation de version (aucun changement fonctionnel).
+0.5.17  - 2026-07-10   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.18  - 2026-07-10   [CR]    : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -151,6 +195,11 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import (
+    ElementClickInterceptedException,
+    TimeoutException,
+    WebDriverException,
+)
 import glob
 import re
 from getpass import getpass
@@ -169,7 +218,7 @@ from utils import (
     cleanup_logs,
     attendre_verification_humaine_cloudflare
 )
-from rapports import selection_rapport
+from rapports import selection_rapport, NetworkRecoveryFailedError
 from version import __version__
 
 # --- Gestion des arguments CLI et du help ---
@@ -337,6 +386,52 @@ def list_available_reports():
     print(f"\n{Fore.CYAN}{'=' * 80}{Style.RESET_ALL}\n")
 
 
+def resolve_effective_date_range(
+    args_days, args_date_debut, args_date_fin,
+    config_days, config_date_debut, config_date_fin,
+    today=None,
+):
+    """
+    Résout la période effective selon la chaîne de priorité :
+      1. CLI date_debut + date_fin (les deux fournis)
+      2. CLI --days
+      3. config.yaml days
+      4. config.yaml date_debut / date_fin
+
+    Args:
+        args_days (int | None): Valeur de --days passée en CLI.
+        args_date_debut (str | None): --date_debut passée en CLI.
+        args_date_fin (str | None): --date_fin passée en CLI.
+        config_days (int | None): Valeur de days dans config.yaml.
+        config_date_debut (str | None): date_debut dans config.yaml.
+        config_date_fin (str | None): date_fin dans config.yaml.
+        today (datetime | None): Date de référence (None = aujourd'hui).
+
+    Returns:
+        tuple[str, str]: (date_debut_str, date_fin_str) au format AAAA-MM-JJ.
+    """
+    if today is None:
+        today = datetime.today()
+
+    # Garde défensif : validate_dates doit avoir rejeté les dates partielles en amont.
+    if bool(args_date_debut) != bool(args_date_fin):
+        raise ValueError(
+            f"Les dates CLI doivent être fournies ensemble ou aucune "
+            f"(date_debut={args_date_debut!r}, date_fin={args_date_fin!r})."
+        )
+
+    if args_date_debut and args_date_fin:
+        return args_date_debut, args_date_fin
+
+    effective_days = args_days or config_days
+    if effective_days:
+        date_fin = today - timedelta(days=1)
+        date_debut = date_fin - timedelta(days=effective_days - 1)
+        return date_debut.strftime("%Y-%m-%d"), date_fin.strftime("%Y-%m-%d")
+
+    return config_date_debut, config_date_fin
+
+
 def validate_dates(args):
     """Valide les dates fournies en arguments."""
     from datetime import datetime
@@ -366,8 +461,16 @@ def validate_dates(args):
             print(f"\n{Fore.RED}❌ Erreur : La date de début ne peut pas être postérieure à la date de fin.{Style.RESET_ALL}\n")
             sys.exit(1)
     
+    # Dates partielles : les deux doivent être fournies ensemble ou aucune.
+    if bool(args.date_debut) != bool(args.date_fin):
+        manquante = "--date_fin" if args.date_debut else "--date_debut"
+        fournie   = "--date_debut" if args.date_debut else "--date_fin"
+        print(f"\n{Fore.RED}❌ Erreur : {fournie} est fournie sans {manquante}.{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}Les deux dates doivent être spécifiées ensemble ou aucune.{Style.RESET_ALL}\n")
+        sys.exit(1)
+
     if args.days and (args.date_debut or args.date_fin):
-        print(f"\n{Fore.YELLOW}⚠ Avertissement : --days est ignoré car --date_debut ou --date_fin est spécifié.{Style.RESET_ALL}")
+        print(f"\n{Fore.YELLOW}⚠ Avertissement : --days est ignoré car --date_debut et --date_fin sont spécifiées.{Style.RESET_ALL}")
 
 
 # --- Fonctions utilitaires refactorisées ---
@@ -407,7 +510,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
                 deep_scan_interval=20.0,
                 debug=logger.isEnabledFor(logging.DEBUG),
             )
-        except Exception as e:
+        except TimeoutException as e:
             logger.error(f"Attente Cloudflare avant login: {e}")
             logger.error(
                 "La vérification humaine Cloudflare n'a pas été complétée dans le délai prévu "
@@ -441,7 +544,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
             phone_link = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((
                     By.XPATH,
-                    "//a[contains(@href, 'phone') or contains(@class, 'phone') or contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'téléphone') or contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'phone')]"
+                    "//a[contains(@href, 'phone') or contains(@class, 'phone')]"
                 ))
             )
             phone_link.click()
@@ -469,7 +572,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
                 )
                 login_field_already_visible = True
                 logger.debug("Champ d'identifiant détecté directement. Étape de sélection du mode ignorée.")
-            except Exception:
+            except TimeoutException:
                 pass
 
             if not login_field_already_visible:
@@ -480,7 +583,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
                     if radio_buttons:
                         driver.execute_script("arguments[0].click();", radio_buttons[0])
                         time.sleep(1)
-                except Exception:
+                except TimeoutException:
                     logger.debug("Boutons de sélection de mode non trouvés, tentative d'accès direct au login.")
 
             # Capture avant la recherche du champ username (en mode debug uniquement)
@@ -506,14 +609,14 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
                     if username_input is not None:
                         logger.debug(f"Champ d'identifiant trouvé via {locator}")
                         break
-                except Exception:
+                except TimeoutException:
                     continue
 
             if username_input is None:
                 current_url = getattr(driver, "current_url", "")
                 try:
                     page_title = driver.title
-                except Exception:
+                except WebDriverException:
                     page_title = ""
                 logger.error(
                     "Champ usernameLogin introuvable après sélection du mode courriel/nom d'utilisateur. "
@@ -527,7 +630,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
             try:
                 WebDriverWait(driver, 10).until(EC.visibility_of(username_input))
                 WebDriverWait(driver, 10).until(EC.element_to_be_clickable(username_input))
-            except Exception as e:
+            except TimeoutException as e:
                 logger.error("Champ usernameLogin non visible ou non interactif.")
                 if logger.isEnabledFor(logging.DEBUG):
                     capture_screenshot(driver, logger, "username_non_interactif", log_dir, NOW_STR)
@@ -540,7 +643,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
             # Clic dans le champ pour déclencher les scripts JS
             try:
                 username_input.click()
-            except Exception:
+            except ElementClickInterceptedException:
                 driver.execute_script("arguments[0].click();", username_input)
             time.sleep(0.5)
 
@@ -585,7 +688,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
                 EC.element_to_be_clickable((By.ID, "default-login-text"))
             )
             login_button.click()
-        except Exception as e:
+        except (TimeoutException, ElementClickInterceptedException) as e:
             logger.warning(f"ID 'default-login-text' introuvable ou non cliquable ({e}), tentative via type='submit'")
             # Fallback : recherche par type submit (button ou input) si l'ID n'est pas trouvé
             try:
@@ -593,7 +696,7 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
                     EC.element_to_be_clickable((By.XPATH, "//button[@type='submit'] | //input[@type='submit']"))
                 )
                 login_button.click()
-            except Exception as e2:
+            except (TimeoutException, ElementClickInterceptedException) as e2:
                 logger.warning(f"Échec du clic sur le bouton de connexion (fallback inclus) : {e2}. Tentative avec la touche ENTRÉE.")
                 # Dernier recours : appuyer sur Entrée dans le champ mot de passe
                 password_input.send_keys(Keys.ENTER)
@@ -615,23 +718,33 @@ def saisir_identifiants(driver, logger, log_dir, NOW_STR):
             not_now_button.click()
             logger.debug("Bouton 'Pas maintenant' détecté et cliqué.")
             time.sleep(2)
-        except Exception:
+        except TimeoutException:
             # Si le bouton n'est pas présent, on continue simplement
             logger.debug("Aucun bouton 'Pas maintenant' à cliquer, poursuite du script.")
 
-    except Exception as e:
+    except WebDriverException as e:
         logger.exception(f"Erreur lors de la saisie des identifiants ou de la connexion : {e}")
         raise SystemExit(1)
-def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=10):
+def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=10, required=True):
     """
     Clique sur le bouton 'Dexcom Clarity for Home Users' sur la page d'accueil.
-    Arrête le script en cas d'échec.
+
+    Args:
+        driver: Instance Selenium WebDriver.
+        logger: Logger Python de l'appelant.
+        log_dir (str): Dossier de destination pour les screenshots d'erreur.
+        NOW_STR (str): Horodatage formaté utilisé dans les noms de fichiers de screenshot.
+        timeout (int): Délai d'attente maximum (en secondes) pour trouver le bouton. Défaut : 10.
+        required (bool): Si True, loggue en erreur + screenshot et lève une exception.
+                         Si False, loggue en warning et retourne False sans lever. Défaut : True.
+
+    Returns:
+        bool: True si le bouton a été cliqué, False sinon.
     """
     try:
         xpath = (
             "//input[@type='submit' and ("
             "contains(@class, 'landing-page--button') "
-            "or contains(@value, 'Dexcom Clarity for Home Users')"
             ")]"
         )
         button = WebDriverWait(driver, timeout).until(
@@ -640,10 +753,17 @@ def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=10):
         driver.execute_script("arguments[0].scrollIntoView(true);", button)
         button.click()
         logger.debug("Le bouton 'Dexcom Clarity for Home Users' a été cliqué avec succès!")
-    except Exception as e:
-        time.sleep(2)
-        capture_screenshot(driver, logger, "home_user_button_error", log_dir, NOW_STR)
-        logger.error(f"Une erreur s'est produite au moment de cliquer sur le bouton 'Dexcom Clarity for Home Users' : {e}")
+        return True
+    except (TimeoutException, ElementClickInterceptedException) as e:
+        if required:
+            time.sleep(2)
+            capture_screenshot(driver, logger, "home_user_button_error", log_dir, NOW_STR)
+            logger.error(f"Une erreur s'est produite au moment de cliquer sur le bouton 'Dexcom Clarity for Home Users' : {e}")
+            raise
+        logger.warning(
+            "Bouton 'Dexcom Clarity for Home Users' introuvable en mode reprise; poursuite du flux sans clic."
+        )
+        return False
 
 def setup_logger(debug, log_dir, now_str):
     # Créer le répertoire de logs s'il n'existe pas
@@ -660,6 +780,36 @@ def setup_logger(debug, log_dir, now_str):
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
     return logger
+
+
+def close_browser_session(driver, logger, debug=False):
+    """Ferme proprement la session navigateur selon le nombre d'onglets ouverts."""
+    if driver is None:
+        return
+
+    try:
+        handles = list(driver.window_handles or [])
+    except WebDriverException:
+        handles = []
+
+    try:
+        if len(handles) <= 1:
+            logger.info("Fermeture du navigateur (dernier onglet).")
+            try:
+                # Ferme l'instance Chrome connectée via CDP (inclut le mode attach-debugger).
+                driver.execute_cdp_cmd("Browser.close", {})
+            except WebDriverException as close_exc:
+                logger.debug("Fermeture CDP impossible, fallback driver.quit(): %s", close_exc)
+                driver.quit()
+        else:
+            logger.info("Plusieurs onglets détectés: fermeture de l'onglet courant uniquement.")
+            try:
+                driver.close()
+            except WebDriverException as close_exc:
+                logger.debug("Fermeture de l'onglet impossible, fallback driver.quit(): %s", close_exc)
+                driver.quit()
+    except WebDriverException as e:
+        logger.warning(f"Erreur lors de la fermeture du navigateur : {e}", exc_info=debug)
 
 
 def main(args, logger, config):
@@ -680,15 +830,11 @@ def main(args, logger, config):
         now_str = config['NOW_STR']
         log_dir = os.path.dirname(chromedriver_log) or "."
 
-        # Gestion intelligente des dates
-        if args.days:
-            date_fin = datetime.today() - timedelta(days=1)
-            date_debut = date_fin - timedelta(days=args.days - 1)
-            date_debut_str = date_debut.strftime("%Y-%m-%d")
-            date_fin_str = date_fin.strftime("%Y-%m-%d")
-        else:
-            date_debut_str = args.date_debut or config['DATE_DEBUT']
-            date_fin_str = args.date_fin or config['DATE_FIN']
+        # Gestion intelligente des dates — priorité : CLI > config.yaml > défaut
+        date_debut_str, date_fin_str = resolve_effective_date_range(
+            args.days, args.date_debut, args.date_fin,
+            config.get('DAYS'), config['DATE_DEBUT'], config['DATE_FIN'],
+        )
 
         # Ménage des logs (après activation du logging)
         from utils import cleanup_logs
@@ -741,14 +887,14 @@ def main(args, logger, config):
                 "Page.setDownloadBehavior",
                 {"behavior": "allow", "downloadPath": download_dir},
             )
-        except Exception as e:
+        except WebDriverException as e:
             logger.warning(f"Impossible de forcer download_dir via CDP: {e}")
 
         if debug_mode:
             logger.debug(f"Version de Python : {sys.version}")
             try:
                 logger.debug(f"Arguments CLI: {vars(args)}")
-            except Exception:
+            except TypeError:
                 logger.debug("Arguments CLI: indisponibles")
             logger.debug(
                 "Configuration (sanitisée): "
@@ -783,12 +929,13 @@ def main(args, logger, config):
                 WebDriverWait(driver, 5).until(
                     EC.presence_of_element_located((By.XPATH, "//div[@data-test-date-range-picker-toggle]"))
                 )
-            except Exception:
+            except TimeoutException:
                 # Si la page d'accueil est encore affichée, essayer le bouton Home User.
                 try:
-                    click_home_user_button(driver, logger, log_dir, now_str)
-                    time.sleep(5)
-                except Exception:
+                    clicked = click_home_user_button(driver, logger, log_dir, now_str, required=False)
+                    if clicked:
+                        time.sleep(5)
+                except (TimeoutException, ElementClickInterceptedException):
                     logger.warning("Bouton Home User introuvable lors du mode reprise.")
 
             # Attendre l'ancre de la page principale (sélecteur de dates)
@@ -803,7 +950,7 @@ def main(args, logger, config):
                     poll_seconds=2.0,
                     debug=debug_mode,
                 )
-            except Exception as e:
+            except TimeoutException as e:
                 logger.error(
                     "Impossible d'atteindre la page principale en mode reprise. "
                     "Assurez-vous d'être déjà connecté dans le même profil Chrome."
@@ -815,7 +962,7 @@ def main(args, logger, config):
             attendre_verification_humaine_cloudflare(
                 driver,
                 logger,
-                (By.XPATH, "//input[@type='submit' and (contains(@class, 'landing-page--button') or contains(@value, 'Dexcom Clarity for Home Users'))]"),
+                (By.XPATH, "//input[@type='submit' and contains(@class, 'landing-page--button')]"),
                 log_dir,
                 now_str,
                 timeout=600,
@@ -829,10 +976,10 @@ def main(args, logger, config):
                 sys.exit(1)
 
             try:
-                click_home_user_button(driver, logger, log_dir, now_str)
+                click_home_user_button(driver, logger, log_dir, now_str, required=True)
                 time.sleep(5)
                 logger.debug("Le bouton 'Dexcom Clarity for Home Users' a été cliqué avec succès!")
-            except Exception as e:
+            except (TimeoutException, ElementClickInterceptedException):
                 # La gestion d'erreur est déjà dans click_home_user_button
                 raise
 
@@ -843,7 +990,7 @@ def main(args, logger, config):
 
             try:
                 saisir_identifiants(driver, logger, log_dir, now_str)
-            except Exception as e:
+            except WebDriverException as e:
                 logger.error(f"Erreur lors de la saisie des identifiants ou de la connexion : {e}")
                 sys.exit(1)
 
@@ -883,14 +1030,17 @@ def main(args, logger, config):
                 raise ValueError("Les variables DATE_DEBUT et DATE_FIN ne peuvent pas être None. Elles doivent être définies.")
 
             date_debut_input = WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located((By.NAME, "start_date"))
+                EC.element_to_be_clickable((By.NAME, "start_date"))
             )
-            date_fin_input = WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located((By.NAME, "end_date"))
-            )
+            date_debut_input.click()
             date_debut_input.clear()
-            date_fin_input.clear()
             date_debut_input.send_keys(date_debut_str)
+
+            date_fin_input = WebDriverWait(driver, 60).until(
+                EC.element_to_be_clickable((By.NAME, "end_date"))
+            )
+            date_fin_input.click()
+            date_fin_input.clear()
             date_fin_input.send_keys(date_fin_str)
 
             ok_button = WebDriverWait(driver, 60).until(
@@ -904,21 +1054,29 @@ def main(args, logger, config):
             logger.info(f"Date de fin: {date_fin_str}")
             logger.info("Les dates ont été saisies avec succès !")
 
-        except Exception as e:
+        except (TimeoutException, WebDriverException) as e:
             if not check_internet():
                 logger.error("Perte de connexion internet détectée lors de la saisie des dates.")
             logger.error(f"Une erreur s'est produite lors de la saisie des dates : {e}")
+            raise RuntimeError(
+                f"La saisie des dates a échoué ({date_debut_str} → {date_fin_str}). "
+                "Le rapport ne sera pas téléchargé avec des dates incorrectes."
+            ) from e
 
-        selection_rapport(
-            rapports,
-            driver,
-            logger,
-            download_dir,
-            dir_final_base,
-            date_fin_str,
-            date_debut_str,
-            args
-        )
+        try:
+            selection_rapport(
+                rapports,
+                driver,
+                logger,
+                download_dir,
+                dir_final_base,
+                date_fin_str,
+                date_debut_str,
+                args
+            )
+        except NetworkRecoveryFailedError as e:
+            logger.error("Arrêt de l'application: %s", e)
+            raise SystemExit(1)
 
         time.sleep(60)
 
@@ -934,21 +1092,28 @@ def main(args, logger, config):
             
             user_menu_button = get_user_menu_button(driver, logger, args)
             
-            # Tentative de clic standard, puis JS si échec (pour contourner l'interception)
+            # Tentative de clic standard, puis JS uniquement si le clic est intercepté
             try:
                 user_menu_button.click()
-            except Exception as e:
-                logger.debug(f"Clic standard intercepté: {e}, tentative via JS pour le menu utilisateur.")
+            except ElementClickInterceptedException as e:
+                logger.debug(f"Clic standard intercepté sur le menu utilisateur : {e}, tentative via JS.")
                 driver.execute_script("arguments[0].click();", user_menu_button)
-                
+
             time.sleep(2)
+            # Seconde attente overlay : le menu peut provoquer un nouvel overlay
+            attendre_disparition_overlay(driver, 10, logger=logger, debug=debug_mode)
             logout_link = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'cui-link__logout') and contains(., 'Déconnexion')]"))
+                EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'cui-link__logout')]"))
             )
-            logout_link.click()
+            # Tentative de clic standard, puis JS uniquement si un overlay intercepte le clic
+            try:
+                logout_link.click()
+            except ElementClickInterceptedException as e:
+                logger.debug(f"Clic standard intercepté sur le lien logout : {e}, tentative via JS.")
+                driver.execute_script("arguments[0].click();", logout_link)
             logger.info("Déconnexion effectuée avec succès.")
             time.sleep(3)
-        except Exception as e:
+        except (TimeoutException, ElementClickInterceptedException, WebDriverException) as e:
             logger.warning(f"Impossible de se déconnecter proprement : {e}", exc_info=debug_mode)
 
     except Exception as e:
@@ -956,11 +1121,7 @@ def main(args, logger, config):
         traceback.print_exc()
         pause_on_error()
     finally:
-        try:
-            if driver is not None:
-                driver.quit()
-        except Exception as e:
-            logger.warning(f"Erreur lors de la fermeture du navigateur : {e}", exc_info=args.debug)
+        close_browser_session(driver, logger, debug=bool(args.debug or config.get("DEBUG", False)))
 
         if download_dir:
             files = glob.glob(os.path.join(download_dir, '*'))
@@ -988,7 +1149,7 @@ def get_user_menu_button(driver, logger, args, timeout=10):
         return WebDriverWait(driver, timeout).until(
             EC.element_to_be_clickable((By.XPATH, xpath))
         )
-    except Exception as e:
+    except TimeoutException as e:
         logger.error(f"Bouton utilisateur introuvable : {e}", exc_info=args.debug)
         raise
 
@@ -1000,7 +1161,7 @@ def pause_on_error():
         stdin = getattr(sys, "stdin", None)
         if stdin is not None and getattr(stdin, "isatty", lambda: False)():
             input("\nAppuyez sur Entrée pour fermer...")
-    except Exception:
+    except (EOFError, OSError):
         pass
 
 # --- Point d'entrée du script ---
@@ -1032,7 +1193,7 @@ if __name__ == "__main__":
         from config import (
             DOWNLOAD_DIR, DIR_FINAL_BASE, CHROME_USER_DATA_DIR, DEXCOM_URL,
             CHROMEDRIVER_LOG, RAPPORTS, NOW_STR, DATE_DEBUT, DATE_FIN,
-            LOG_RETENTION_DAYS, get_dexcom_credentials
+            LOG_RETENTION_DAYS, DAYS, get_dexcom_credentials
         )
         import config
     except Exception as e:
@@ -1059,18 +1220,11 @@ if __name__ == "__main__":
         from datetime import datetime, timedelta
         init(autoreset=True)
         
-        # Déterminer la période selon les arguments
-        if args.date_debut and args.date_fin:
-            date_debut_str = args.date_debut
-            date_fin_str = args.date_fin
-        elif args.days:
-            fin = datetime.now() - timedelta(days=1)
-            debut = fin - timedelta(days=args.days - 1)
-            date_debut_str = debut.strftime("%Y-%m-%d")
-            date_fin_str = fin.strftime("%Y-%m-%d")
-        else:
-            date_debut_str = config.DATE_DEBUT
-            date_fin_str = config.DATE_FIN
+        # Déterminer la période selon les arguments — priorité : CLI > config.yaml > défaut
+        date_debut_str, date_fin_str = resolve_effective_date_range(
+            args.days, args.date_debut, args.date_fin,
+            config.DAYS, config.DATE_DEBUT, config.DATE_FIN,
+        )
         
         # Déterminer les rapports à télécharger
         rapports = args.rapports if args.rapports else config.RAPPORTS
@@ -1104,7 +1258,7 @@ if __name__ == "__main__":
             username, password, country_code, phone_number = get_dexcom_credentials()
             print(f"\n  {Fore.GREEN}✓ Credentials Dexcom détectés{Style.RESET_ALL}")
             print(f"    {Fore.YELLOW}• Type d'authentification :{Style.RESET_ALL} ", end="")
-            
+
             if country_code and phone_number:
                 # Masquage des données sensibles pour la sécurité
                 print(f"Numéro de téléphone (Masqué)")
@@ -1112,7 +1266,7 @@ if __name__ == "__main__":
                 print(f"Email/Nom d'utilisateur")
             else:
                 print(f"{Fore.RED}Inconnu (configuration incomplète){Style.RESET_ALL}")
-        except Exception as e:
+        except (ValueError, OSError) as e:
             print(f"\n  {Fore.RED}✗ Erreur lors de la lecture des credentials : {e}{Style.RESET_ALL}")
         
         print(f"\n{Fore.CYAN}{'=' * 80}{Style.RESET_ALL}")

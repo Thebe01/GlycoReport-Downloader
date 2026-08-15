@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.3.14-blue)
+![Version](https://img.shields.io/badge/version-0.5.18-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0314--13-f%C3%A9vrier-2026)
+- [Nouveautés](#version--0518--10-juillet-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,361 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.5.18 — 10 juillet 2026
+
+### Nouveautés (0.5.18)
+
+**Correction :**
+
+- `Setup/GlycoReport-Downloader.iss` : `-NoProfile` ajouté aux 3 invocations
+  `powershell.exe` (2× `[Icons]` + `[Run]`) — évite de charger le profil
+  PowerShell de l'utilisateur (effets de bord, surface d'attaque) — CR.
+
+---
+
+## Version : 0.5.17 — 10 juillet 2026
+
+### Nouveautés (0.5.17)
+
+**Correction :**
+
+- `utils.py` : message de `attendre_disparition_overlay` corrigé — "Aucun
+  overlay/loader détecté" était trompeur pour un `TimeoutException` (qui
+  signifie au contraire que l'overlay est resté présent jusqu'à l'échéance) ;
+  message reformulé et valeur du timeout ajoutée — CR.
+
+---
+
+## Version : 0.5.16 — 10 juillet 2026
+
+### Nouveautés (0.5.16)
+
+**Correction (installateur) :**
+
+- `Setup/GlycoReport-Downloader.iss` : les raccourcis Menu Démarrer et Bureau
+  (`[Icons]`) pointaient directement vers `GlycoReport-Downloader.exe` au lieu
+  de `Launch-Dexcom-And-Run.ps1` (seule l'entrée post-installation le faisait).
+  Alignés sur `powershell.exe` + `Launch-Dexcom-And-Run.ps1`, en conservant
+  l'icône de l'exe (`IconFilename`). `WorkingDir={app}` ajouté sur les 3
+  entrées (`Icons` + `Run`) : absent auparavant, ce qui aurait fait résoudre
+  les chemins relatifs du script (`config.yaml`, exécutable) depuis le
+  dossier de `powershell.exe` (`System32`) plutôt que le dossier d'installation
+  — ES-28.
+
+---
+
+## Version : 0.5.15 — 10 juillet 2026
+
+### Nouveautés (0.5.15)
+
+**Correction (audit ES-26) :**
+
+- `utils.py` : `attendre_disparition_overlay` loggait le `TimeoutException` en
+  `DEBUG` (invisible en usage normal, niveau de log par défaut `INFO`) —
+  remplacé par `WARNING` pour rester visible sans activer `--debug` — ES-28.
+
+**Note technique (10 juillet 2026) :** `migrate.py` (versionné indépendamment
+de l'application, toujours en 1.0.1) n'a subi **aucun changement de code**.
+Son exécutable distribué (`migrate.exe`) a néanmoins dû être recompilé suite
+à la mise à jour de l'outil de build PyInstaller (6.16.0 → 6.21.0) utilisé
+pour la distribution.
+
+---
+
+## Version : 0.5.14 — 9 juillet 2026
+
+### Nouveautés (0.5.14)
+
+**Correction :**
+
+- `rapports.py` : `locale.setlocale(LC_CTYPE, "")` appelé avant `locale.getlocale()` —
+  sans cet appel, `getlocale()` retournait `(None, None)` et le suffixe "j" n'était
+  jamais détecté en environnement francophone. Limité à `LC_CTYPE` (pas `LC_ALL`)
+  et restauration de la locale précédente après lecture, pour éviter tout effet
+  de bord sur le formatage des nombres/dates ailleurs dans le processus — CR.
+- `rapports.py` (Comparer-Tendances) : `except Exception` remplacé par
+  `WebDriverException` (lectures de `driver.current_url`) et
+  `ValueError`/`TypeError` (parsing URL/date) dans
+  `traitement_rapport_comparer` — CR.
+
+---
+
+## Version : 0.5.13 — 25 juin 2026
+
+### Nouveautés (0.5.13)
+
+**Maintenance :**
+
+- `rapports.py` : `locale.getdefaultlocale()` remplacé par `locale.getlocale()`,
+  déprécié depuis Python 3.11, retrait prévu en Python 3.15 — ES-27.
+
+**Robustesse (Comparer) :**
+
+- Conservation de la période sélectionnée après Comparer-Tendances : capture de
+  l'URL d'entrée, fallback sur `DATE_DEBUT`/`DATE_FIN` si absente, double
+  vérification avant téléchargement, retour à la page d'origine en fermant la
+  modale — ES-27.
+
+---
+
+## Version : 0.5.12 — 21 avril 2026
+
+### Nouveautés (0.5.12)
+
+**Robustesse :**
+
+- Tous les blocs `except Exception` remplacés par des exceptions spécifiques
+  (`TimeoutException`, `ElementClickInterceptedException`, `WebDriverException`,
+  `StaleElementReferenceException`, `OSError`, `URLError`, `InvalidToken`,
+  `ValueError`, etc.) dans les quatre modules — ES-28.
+
+---
+
+## Version : 0.5.11 — 21 avril 2026
+
+### Nouveautés (0.5.11)
+
+**Sécurité :**
+
+- `config.py` : `subprocess.Popen("start powershell", shell=True)` remplacé par
+  `subprocess.Popen(["powershell.exe"], creationflags=CREATE_NEW_CONSOLE)` —
+  élimine le risque d'injection shell (ES-28).
+
+---
+
+## Version : 0.5.10 — 17 avril 2026
+
+### Nouveautés (0.5.10)
+
+**Structure et qualité :**
+
+- `CHANGELOG.md` ajouté au dépôt pour le suivi des versions.
+- `requirements-dev.txt` créé : `pytest` et `pyinstaller` séparés de
+  `requirements.txt`.
+- `CLAUDE.md` retiré du dépôt (instructions IA locales uniquement).
+- Couverture de tests élargie : `test_config_validation.py`,
+  `test_rapports_period.py`, `TestValidateDates` dans
+  `test_glycodownload_dates.py` — 81 tests au total.
+
+---
+
+## Version : 0.5.9 — 17 avril 2026
+
+### Nouveautés (0.5.9)
+
+**Correctifs :**
+
+- Fermeture de la modale Export : `EC.invisibility_of_element_located` remplacé
+  par `until_not(EC.presence_of_element_located)` — garantit que le composant
+  `<export-dialog>` est réellement retiré du DOM (et non seulement rendu
+  invisible).
+
+---
+
+## Version : 0.5.8 — 17 avril 2026
+
+### Nouveautés (0.5.8)
+
+**Correctifs :**
+
+- Déconnexion : `except Exception` remplacé par
+  `except ElementClickInterceptedException` sur les clics du menu utilisateur et
+  du lien logout — les autres exceptions (élément périmé, non interactable,
+  etc.) se propagent désormais correctement au lieu d'être masquées par le
+  fallback JS.
+
+---
+
+## Version : 0.5.7 — 17 avril 2026
+
+### Nouveautés (0.5.7)
+
+**Correctifs :**
+
+- Fermeture de la modale Export : le sélecteur XPath du bouton Fermer est
+  désormais ancré dans le composant `<export-dialog>` (les conditions
+  `data-test` obsolètes ont été supprimées). Attente explicite de la disparition
+  du composant après le clic, ce qui garantit que la modale est réellement
+  fermée avant la déconnexion.
+
+---
+
+## Version : 0.5.6 — 16 avril 2026
+
+### Nouveautés (0.5.6)
+
+**Correctifs :**
+
+- Déconnexion : seconde attente de disparition de l'overlay après ouverture du
+  menu utilisateur (l'ouverture du menu peut déclencher un nouvel overlay) ;
+  fallback JS sur le lien de déconnexion en cas d'interception du clic
+  (`ElementClickInterceptedException`).
+
+---
+
+## Version : 0.5.5 — 15 avril 2026
+
+### Nouveautés (0.5.5)
+
+**Correctifs :**
+
+- Dates CLI partielles refusées explicitement : `validate_dates` échoue avec un
+  message d'erreur clair si une seule date (`--date_debut` ou `--date_fin`) est
+  fournie sans l'autre ; garde défensive dans `resolve_effective_date_range`
+  (lève `ValueError`).
+
+---
+
+## Version : 0.5.4 — 15 avril 2026
+
+### Nouveautés (0.5.4)
+
+**Correctifs :**
+
+- Validation de `days` dans `config.yaml` : type vérifié (entier ou chaîne
+  numérique), valeurs autorisées {7, 14, 30, 90}, avertissement si `days` est
+  défini en même temps que `date_debut`/`date_fin`.
+
+---
+
+## Version : 0.5.3 — 15 avril 2026
+
+### Nouveautés (0.5.3)
+
+**Correctifs :**
+
+- Robustesse de la saisie des dates : utilisation de `element_to_be_clickable`
+  au lieu de `presence_of_element_located` ; clic, effacement et saisie
+  effectués séquentiellement par champ (évite une
+  `StaleElementReferenceException` si l'UI Dexcom effectue un re-render entre
+  les deux champs).
+
+---
+
+## Version : 0.5.2 — 15 avril 2026
+
+### Nouveautés (0.5.2)
+
+**Correctifs :**
+
+- Saisie des dates : l'échec de Selenium provoque maintenant une erreur fatale
+  au lieu de continuer silencieusement avec les dates par défaut de Dexcom.
+
+---
+
+## Version : 0.5.1 — 15 avril 2026
+
+### Nouveautés (0.5.1)
+
+**Correctifs :**
+
+- Documentation de `get_period_suffix` (`rapports.py`) : docstring complet
+  (Args, Returns, Description).
+- Synchronisation de version dans tous les modules Python (aucun changement
+  fonctionnel).
+
+---
+
+## Version : 0.5.0 — 14 avril 2026
+
+### Nouveautés (0.5.0)
+
+**Nouvelles fonctionnalités :**
+
+- Ajout du paramètre `days` dans `config.yaml` pour définir la période par
+  défaut sans passer par la ligne de commande.
+- Chaîne de priorité des dates : arguments CLI `--date_debut`/`--date_fin` >
+  argument CLI `--days` > `days` dans `config.yaml` > `date_debut`/`date_fin`
+  dans `config.yaml`.
+- Extraction de `resolve_effective_date_range` en fonction pure testable.
+- Ajout de tests unitaires pour la résolution de la plage de dates
+  (`tests/test_glycodownload_dates.py`).
+
+---
+
+## Version : 0.4.0 — 14 avril 2026
+
+### Nouveautés (0.4.0)
+
+**Nouvelles fonctionnalités :**
+
+- Exposition de tous les paramètres CLI de `GlycoDownload.py` dans
+  `Launch-Dexcom-And-Run.ps1`.
+- Correction de `-StartAtDateSelection` et `-AttachDebugger` : désactivés par
+  défaut, activables explicitement (comportement inversé par rapport à
+  l'ancienne version).
+
+---
+
+## Version : 0.3.19 — 25 mars 2026
+
+### Nouveautés (0.3.19)
+
+**Correctifs :**
+
+- Fermeture de session navigateur : le niveau de debug effectif est maintenant
+  aligné sur `args.debug` ou `config.DEBUG` pour les traces d'exception.
+- Durcissement du retry réseau dans `selection_rapport` : jusqu'à 2 retries
+  après reconnexion, puis échec explicite si la connexion retombe encore.
+- Synchronisation de version et des entêtes de modules.
+
+---
+
+## Version : 0.3.18 — 25 mars 2026
+
+### Nouveautés (0.3.18)
+
+**Correctifs :**
+
+- Gestion des erreurs réseau harmonisée dans le flux Export CSV (clic du bouton
+  Exporter de la modale et fermeture de la modale).
+- Synchronisation de version et des entêtes de modules.
+
+---
+
+## Version : 0.3.17 — 23 mars 2026
+
+### Nouveautés (0.3.17)
+
+**Correctifs :**
+
+- Détection de perte réseau pendant le traitement des rapports.
+- Tentative de reconnexion automatique avant et pendant chaque traitement de
+  rapport.
+- Arrêt propre de l'application si la reconnexion échoue.
+- Fermeture de l'onglet Dexcom en fin de traitement, et fermeture complète du
+  navigateur si un seul onglet est ouvert.
+- Conservation du dispatch explicite des traitements par type de rapport.
+
+---
+
+## Version : 0.3.16 — 19 mars 2026
+
+### Nouveautés (0.3.16)
+
+**Correctifs :**
+
+- Valeur par défaut de `log_retention_days` fixée à 30 jours dans la
+  configuration.
+- Déplacement du fichier `chromedriver_log` par défaut dans le sous-répertoire
+  `log/` du dossier de téléchargement.
+- Fallback de navigation des sous-pages Statistiques rendu indépendant de la
+  région Dexcom configurée.
+- Synchronisation des entêtes de modules Python et de la documentation de
+  version.
+
+---
+
+## Version : 0.3.15 — 26 février 2026
+
+### Nouveautés (0.3.15)
+
+**Correctifs :**
+
+- Harmonisation des XPath pour réduire la dépendance à la langue du navigateur.
 
 ---
 
@@ -188,6 +543,161 @@ traduction stricte de la version francaise.
 ---
 
 ## Historique des versions
+
+### 0.5.18 — 10 juillet 2026
+
+- Correction : `-NoProfile` ajouté aux 3 invocations `powershell.exe` du
+  `.iss` (`[Icons]`/`[Run]`) (CR).
+
+### 0.5.17 — 10 juillet 2026
+
+- Correction : message de `attendre_disparition_overlay` (`utils.py`) corrigé
+  pour refléter qu'un timeout signifie que l'overlay est resté présent (CR).
+
+### 0.5.16 — 10 juillet 2026
+
+- Correction (installateur) : les raccourcis Menu Démarrer/Bureau pointent
+  désormais vers `Launch-Dexcom-And-Run.ps1` (au lieu de l'exe directement),
+  avec `WorkingDir={app}` sur les 3 entrées `[Icons]`/`[Run]` (ES-28).
+
+### 0.5.15 — 10 juillet 2026
+
+- Correction (audit ES-26) : `attendre_disparition_overlay` (`utils.py`) logge
+  désormais le `TimeoutException` en `WARNING` au lieu de `DEBUG` (ES-28).
+
+### 0.5.14 — 9 juillet 2026
+
+- Correction : `locale.setlocale(LC_CTYPE, "")` appelé avant `locale.getlocale()`
+  dans `rapports.py`, limité à `LC_CTYPE` avec restauration de la locale
+  précédente (CR).
+- Correction : `except Exception` remplacé par
+  `WebDriverException`/`ValueError`/`TypeError` dans
+  `traitement_rapport_comparer` (CR).
+
+### 0.5.13 — 25 juin 2026
+
+- Maintenance : `locale.getdefaultlocale()` → `locale.getlocale()` dans
+  `rapports.py` (ES-27).
+- Robustesse (Comparer) : conservation de la période sélectionnée après
+  Comparer-Tendances, fallback `DATE_DEBUT`/`DATE_FIN`, double vérification
+  avant téléchargement (ES-27).
+
+### 0.5.12 — 21 avril 2026
+
+- Robustesse : tous les `except Exception` remplacés par des exceptions
+  spécifiques dans les 4 modules.
+
+### 0.5.11 — 21 avril 2026
+
+- Sécurité : `subprocess.Popen(shell=True)` →
+  `Popen(["powershell.exe"], creationflags=CREATE_NEW_CONSOLE)` dans
+  `config.py`.
+
+### 0.5.10 — 17 avril 2026
+
+- Structure dépôt : `CHANGELOG.md`, `requirements-dev.txt` ajoutés; `CLAUDE.md`
+  local uniquement.
+- Tests : `test_config_validation.py`, `test_rapports_period.py`,
+  `TestValidateDates` (81 tests).
+
+### 0.5.9 — 17 avril 2026
+
+- Fermeture modale Export : `until_not(presence_of_element_located)` au lieu
+  d'`invisibility_of_element_located` — retrait effectif du DOM garanti.
+
+### 0.5.8 — 17 avril 2026
+
+- Déconnexion : `except ElementClickInterceptedException` au lieu
+  d'`except Exception` sur les clics menu et logout.
+
+### 0.5.7 — 17 avril 2026
+
+- Fermeture modale Export : XPath ancré dans `<export-dialog>` ; attente
+  explicite de disparition du composant après le clic Fermer.
+
+### 0.5.6 — 16 avril 2026
+
+- Déconnexion : seconde attente overlay après ouverture du menu utilisateur ;
+  fallback JS sur le lien de déconnexion.
+
+### 0.5.5 — 15 avril 2026
+
+- Dates CLI partielles refusées explicitement (`validate_dates` + garde
+  défensive dans `resolve_effective_date_range`).
+
+### 0.5.4 — 15 avril 2026
+
+- Validation de `days` dans `config.yaml` : type, valeurs autorisées {7, 14, 30,
+  90}, avertissement si conflit avec `date_debut`/`date_fin`.
+
+### 0.5.3 — 15 avril 2026
+
+- Robustesse de la saisie des dates : `element_to_be_clickable` au lieu de
+  `presence_of_element_located` ; clic + effacement + saisie séquentiels par
+  champ.
+
+### 0.5.2 — 15 avril 2026
+
+- Saisie des dates : erreur fatale si Selenium échoue (plus de continuation
+  silencieuse avec les dates par défaut de Dexcom).
+
+### 0.5.1 — 15 avril 2026
+
+- Documentation de `get_period_suffix` (`rapports.py`) : docstring complet.
+- Synchronisation de version dans tous les modules (aucun changement
+  fonctionnel).
+
+### 0.5.0 — 14 avril 2026
+
+- Ajout du paramètre `days` dans `config.yaml`.
+- Chaîne de priorité : CLI dates > CLI `--days` > config `days` > config dates.
+- Extraction de `resolve_effective_date_range` (fonction pure testable).
+- Ajout de tests unitaires pour la résolution de la plage de dates.
+
+### 0.4.0 — 14 avril 2026
+
+- Exposition de tous les paramètres CLI dans `Launch-Dexcom-And-Run.ps1`.
+- Correction de `-StartAtDateSelection` et `-AttachDebugger` (désactivés par
+  défaut, activables explicitement).
+
+### 0.3.19 — 25 mars 2026
+
+- Fermeture de session navigateur : le niveau de debug effectif est maintenant
+  aligné sur `args.debug` ou `config.DEBUG` pour les traces d'exception.
+- Durcissement du retry réseau dans `selection_rapport` : jusqu'à 2 retries
+  après reconnexion, puis échec explicite si la connexion retombe encore.
+- Synchronisation de version et des entêtes de modules.
+
+### 0.3.18 — 25 mars 2026
+
+- Gestion des erreurs réseau harmonisée dans le flux Export CSV (clic du bouton
+  Exporter de la modale et fermeture de la modale).
+- Synchronisation de version et des entêtes de modules.
+
+### 0.3.17 — 23 mars 2026
+
+- Détection de perte réseau pendant le traitement des rapports.
+- Tentative de reconnexion automatique avant et pendant chaque traitement de
+  rapport.
+- Arrêt propre de l'application si la reconnexion échoue.
+- Fermeture de l'onglet Dexcom en fin de traitement, et fermeture complète du
+  navigateur si un seul onglet est ouvert.
+- Conservation du dispatch explicite des traitements par type de rapport.
+
+### 0.3.16 — 19 mars 2026
+
+- Valeur par défaut de `log_retention_days` fixée à 30 jours dans la
+  configuration.
+- Déplacement du fichier `chromedriver_log` par défaut dans le sous-répertoire
+  `log/` du dossier de téléchargement.
+- Fallback de navigation des sous-pages Statistiques rendu indépendant de la
+  région Dexcom configurée.
+- Synchronisation des entêtes de modules Python et de la documentation de
+  version.
+
+### 0.3.15 — 26 février 2026
+
+- Harmonisation des XPath pour réduire la dépendance à la langue du navigateur.
 
 ### 0.3.14 — 13 février 2026
 
@@ -609,13 +1119,12 @@ Ouvre un terminal PowerShell à la racine du projet et exécute :
 - **Par défaut**, si aucune date n'est fournie en argument ou dans le fichier
   `config.yaml`, la période utilisée sera les **14 derniers jours jusqu'à
   hier**.
-- Vous pouvez surcharger ce comportement :
-  - en passant `--days 7`, `--days 14`, `--days 30` ou `--days 90` en argument,
-  - ou en définissant explicitement `date_debut` et `date_fin` dans
-    `config.yaml`,
-  - ou encore en passant `--date_debut` et `--date_fin` en argument.
-
-Note : `--days` est uniquement disponible en ligne de commande.
+- Vous pouvez surcharger ce comportement selon la chaîne de priorité suivante
+  (du plus prioritaire au moins prioritaire) :
+  1. arguments CLI `--date_debut` et `--date_fin`,
+  2. argument CLI `--days`,
+  3. paramètre `days` dans `config.yaml`,
+  4. paramètres `date_debut` et `date_fin` dans `config.yaml`.
 
 Exemple :
 
@@ -641,6 +1150,7 @@ dexcom_url: "https://clarity.dexcom.eu"
 download_dir: C:/Users/Utilisateur/Downloads/GlycoReport-Downloader
 log_retention_days: 30
 debug: false
+days: null
 date_debut: 2025-01-01
 date_fin: 2025-01-31
 output_dir: C:/Users/Utilisateur/Downloads/GlycoReport-Downloader
@@ -661,16 +1171,17 @@ Parametres disponibles dans `config.yaml` :
 
 - `chrome_user_data_dir` : dossier du profil Chrome utilise par Selenium.
 - `chromedriver_log` : chemin du log ChromeDriver.
-- `dexcom_url` : URL de Dexcom Clarity (ex: [https://clarity.dexcom.eu](https://clarity.dexcom.eu)).
+- `dexcom_url` : URL de Dexcom Clarity (ex:
+  [https://clarity.dexcom.eu](https://clarity.dexcom.eu)).
 - `download_dir` : dossier de telechargement Selenium.
 - `output_dir` : dossier de sortie final (supporte le placeholder `AAAA`).
 - `rapports` : liste des rapports a generer.
 - `log_retention_days` : retention des logs en jours (0 = illimite).
 - `debug` : active le mode debug (logs detailles, captures d'ecran).
+- `days` : nombre de jours a inclure (7, 14, 30 ou 90); moins prioritaire que
+  les arguments CLI.
 - `date_debut` : date de debut par defaut (AAAA-MM-JJ).
 - `date_fin` : date de fin par defaut (AAAA-MM-JJ).
-
-Note : `--days` est un parametre CLI uniquement (pas un champ `config.yaml`).
 
 La clé d'encryption pour le fichier `.env` est stockée dans la variable
 d'environnement système `ENV_DEXCOM_KEY`.
@@ -808,26 +1319,24 @@ Pour questions ou signalement de bug : [https://github.com/thebe01/GlycoReport-D
 
 ## Tests unitaires
 
-Pour exécuter tous les tests unitaires sur les fonctions utilitaires du projet,
-utilisez la commande suivante :
-
-**Bash/CMD :**
-
-```sh
-pytest -v --log-cli-level=INFO tests/test_utils.py
-```
-
-**PowerShell :**
+Pour exécuter tous les tests unitaires, utilisez le script PowerShell fourni :
 
 ```powershell
-pytest -v --log-cli-level=INFO tests/test_utils.py
+.\tests\Run-Tests.ps1
 ```
 
-- `-v` affiche le détail de chaque test exécuté (mode verbose).
-- `--log-cli-level=INFO` affiche les messages de log générés par les fonctions
-  testées.
-- Cette commande permet de vérifier la robustesse et la portabilité de toutes
-  les fonctions utilitaires du projet.
+Options disponibles :
+
+- `.\tests\Run-Tests.ps1` : exécution complète en mode verbose (défaut).
+- `.\tests\Run-Tests.ps1 -Bref` : mode compact (résumé final seulement).
+- `.\tests\Run-Tests.ps1 -Filtre "dates"` : exécute uniquement les tests dont le
+  nom contient "dates".
+
+Modules de tests couverts :
+
+- `tests/test_utils.py` : fonctions utilitaires (`utils.py`).
+- `tests/test_glycodownload_dates.py` : résolution de plage de dates
+  (`GlycoDownload.py`).
 
 **Note tests fonctionnels :** l'application n'exécute pas le téléchargement tant
 que l'usager n'est pas connecté. Pour les tests end-to-end, lancez d'abord
@@ -915,6 +1424,256 @@ translation of the French version.
 ---
 
 ## What's New (English)
+
+### Version: 0.5.18 — July 10, 2026
+
+**Fix:**
+
+- `Setup/GlycoReport-Downloader.iss`: `-NoProfile` added to all 3
+  `powershell.exe` invocations (2× `[Icons]` + `[Run]`) — avoids loading the
+  user's PowerShell profile (side effects, attack surface) — CR.
+
+---
+
+### Version: 0.5.17 — July 10, 2026
+
+**Fix:**
+
+- `utils.py`: fixed the `attendre_disparition_overlay` message — "No
+  overlay/loader detected" was misleading for a `TimeoutException` (which
+  actually means the overlay stayed present until the deadline); message
+  reworded and timeout value added — CR.
+
+---
+
+### Version: 0.5.16 — July 10, 2026
+
+**Fix (installer):**
+
+- `Setup/GlycoReport-Downloader.iss`: the Start Menu and Desktop shortcuts
+  (`[Icons]`) pointed directly at `GlycoReport-Downloader.exe` instead of
+  `Launch-Dexcom-And-Run.ps1` (only the post-install entry did). Aligned on
+  `powershell.exe` + `Launch-Dexcom-And-Run.ps1`, keeping the exe's icon
+  (`IconFilename`). `WorkingDir={app}` added to all 3 entries (`Icons` +
+  `Run`): previously absent, which would have resolved the script's relative
+  paths (`config.yaml`, executable) from `powershell.exe`'s own directory
+  (`System32`) instead of the install directory — ES-28.
+
+---
+
+### Version: 0.5.15 — July 10, 2026
+
+**Fix (ES-26 audit):**
+
+- `utils.py`: `attendre_disparition_overlay` logged the `TimeoutException` at
+  `DEBUG` level (invisible in normal operation, default log level `INFO`) —
+  changed to `WARNING` to remain visible without `--debug` — ES-28.
+
+**Technical note (July 10, 2026):** `migrate.py` (versioned independently
+from the application, still at 1.0.1) had **no code changes**. Its
+distributed executable (`migrate.exe`) nonetheless had to be recompiled
+following the PyInstaller build tool upgrade (6.16.0 → 6.21.0) used for
+distribution.
+
+---
+
+### Version: 0.5.14 — July 9, 2026
+
+**Fix:**
+
+- `rapports.py`: `locale.setlocale(LC_CTYPE, "")` is now called before
+  `locale.getlocale()` — without this call, `getlocale()` returned
+  `(None, None)` and the "j" suffix was never detected on French-language
+  environments. Limited to `LC_CTYPE` (not `LC_ALL`) and restores the
+  previous locale afterward to avoid side effects on number/date formatting
+  elsewhere in the process — CR.
+- `rapports.py` (Comparer-Tendances): `except Exception` replaced with
+  `WebDriverException` (reads of `driver.current_url`) and
+  `ValueError`/`TypeError` (URL/date parsing) in
+  `traitement_rapport_comparer` — CR.
+
+### Version: 0.5.13 — June 25, 2026
+
+**Maintenance:**
+
+- `rapports.py`: replaced `locale.getdefaultlocale()` with `locale.getlocale()`,
+  deprecated since Python 3.11, scheduled for removal in Python 3.15 — ES-27.
+
+**Robustness (Comparer):**
+
+- Preserved the selected period after Comparer-Tendances: capture the entry
+  URL, fall back to `DATE_DEBUT`/`DATE_FIN` if missing, double-check before
+  download, return to the original page when closing the modal — ES-27.
+
+### Version: 0.5.12 — April 21, 2026
+
+**Robustness:**
+
+- All `except Exception` blocks replaced with specific exceptions
+  (`TimeoutException`, `ElementClickInterceptedException`, `WebDriverException`,
+  `StaleElementReferenceException`, `OSError`, `URLError`, `InvalidToken`,
+  `ValueError`, etc.) across all four modules — ES-28.
+
+### Version: 0.5.11 — April 21, 2026
+
+**Security:**
+
+- `config.py`: replaced `subprocess.Popen("start powershell", shell=True)` with
+  `subprocess.Popen(["powershell.exe"], creationflags=CREATE_NEW_CONSOLE)` —
+  eliminates shell injection risk (ES-28).
+
+### Version: 0.5.10 — April 17, 2026
+
+**Structure and quality:**
+
+- `CHANGELOG.md` added to the repository for version tracking.
+- `requirements-dev.txt` created: `pytest` and `pyinstaller` separated from
+  `requirements.txt`.
+- `CLAUDE.md` removed from the repository (local AI instructions only).
+- Expanded test coverage: `test_config_validation.py`,
+  `test_rapports_period.py`, `TestValidateDates` in
+  `test_glycodownload_dates.py` — 81 tests total.
+
+### Version: 0.5.9 — April 17, 2026
+
+**Fixes:**
+
+- Export modal close: replaced `EC.invisibility_of_element_located` with
+  `until_not(EC.presence_of_element_located)` — guarantees the `<export-dialog>`
+  component is actually removed from the DOM (not merely hidden).
+
+### Version: 0.5.8 — April 17, 2026
+
+**Fixes:**
+
+- Logout: replaced `except Exception` with
+  `except ElementClickInterceptedException` on both the user menu and logout
+  link clicks — other exceptions (stale element, not interactable, etc.) now
+  propagate correctly instead of being silently swallowed by the JS fallback.
+
+### Version: 0.5.7 — April 17, 2026
+
+**Fixes:**
+
+- Export modal close: the XPath selector for the Fermer/Close button is now
+  anchored inside the `<export-dialog>` component (obsolete `data-test`
+  conditions removed). Explicit wait for the component to disappear from the DOM
+  after the click, ensuring the modal is fully closed before logout.
+
+### Version: 0.5.6 — April 16, 2026
+
+**Fixes:**
+
+- Logout: a second overlay wait is added after opening the user menu (opening
+  the menu may trigger a new overlay); JS fallback on the logout link in case of
+  `ElementClickInterceptedException`.
+
+### Version: 0.5.5 — April 15, 2026
+
+**Fixes:**
+
+- Partial CLI dates explicitly rejected: `validate_dates` fails with a clear
+  error message if only one of `--date_debut` or `--date_fin` is provided;
+  defensive guard in `resolve_effective_date_range` (raises `ValueError`).
+
+### Version: 0.5.4 — April 15, 2026
+
+**Fixes:**
+
+- Validation of `days` in `config.yaml`: type checked (integer or numeric
+  string), allowed values {7, 14, 30, 90}, warning if `days` is set together
+  with `date_debut`/`date_fin`.
+
+### Version: 0.5.3 — April 15, 2026
+
+**Fixes:**
+
+- Date entry robustness: use `element_to_be_clickable` instead of
+  `presence_of_element_located`; click, clear, and send_keys performed
+  sequentially per field (avoids `StaleElementReferenceException` if the Dexcom
+  UI re-renders between the two fields).
+
+### Version: 0.5.2 — April 15, 2026
+
+**Fixes:**
+
+- Date entry: Selenium failure now raises a fatal error instead of silently
+  continuing with Dexcom's default dates.
+
+### Version: 0.5.1 — April 15, 2026
+
+**Fixes:**
+
+- Documented `get_period_suffix` (`rapports.py`): full docstring (Args, Returns,
+  Description).
+- Version synchronization across all Python modules (no functional change).
+
+### Version: 0.5.0 — April 14, 2026
+
+**New features:**
+
+- Added `days` parameter in `config.yaml` to set the default period without
+  using the command line.
+- Date priority chain: CLI `--date_debut`/`--date_fin` > CLI `--days` > `days`
+  in `config.yaml` > `date_debut`/`date_fin` in `config.yaml`.
+- Extracted `resolve_effective_date_range` as a pure, testable function.
+- Added unit tests for date range resolution
+  (`tests/test_glycodownload_dates.py`).
+
+### Version: 0.4.0 — April 14, 2026
+
+**New features:**
+
+- Exposed all CLI parameters from `GlycoDownload.py` in
+  `Launch-Dexcom-And-Run.ps1`.
+- Fixed `-StartAtDateSelection` and `-AttachDebugger`: disabled by default,
+  enable them explicitly (inverted behaviour vs. previous version).
+
+### Version: 0.3.19 — March 25, 2026
+
+**Fixes:**
+
+- Browser session shutdown now uses the effective debug level (`args.debug` or
+  `config.DEBUG`) for exception traces.
+- Hardened network retry in `selection_rapport`: up to 2 retries after
+  reconnection, then an explicit failure if connectivity drops again.
+- Version and module header synchronization.
+
+### Version: 0.3.18 — March 25, 2026
+
+**Fixes:**
+
+- Harmonized network error handling in the CSV export flow (modal Export button
+  click and modal close).
+- Version and module header synchronization.
+
+### Version: 0.3.17 — March 23, 2026
+
+**Fixes:**
+
+- Detect network loss during report processing.
+- Retry internet reconnection before and during each report processing step.
+- Stop the application cleanly if reconnection fails.
+- Close the Dexcom tab at the end of processing, and close the browser entirely
+  when it is the only open tab.
+- Keep explicit per-report dispatch in the report selector.
+
+### Version: 0.3.16 — March 19, 2026
+
+**Fixes:**
+
+- Default `log_retention_days` value set to 30 days in configuration.
+- Moved the default `chromedriver_log` file into the `log/` subdirectory under
+  the download folder.
+- Made the Statistics sub-page navigation fallback independent of the configured
+  Dexcom region.
+- Synchronized Python module headers and release documentation.
+
+### Version: 0.3.15 — February 26, 2026
+
+**Fixes:**
+
+- Harmonized XPath selectors to reduce dependency on browser language.
 
 ### Version: 0.3.14 — February 13, 2026
 
@@ -1101,6 +1860,155 @@ translation of the French version.
 ---
 
 ## Version History (English)
+
+### 0.5.18 — July 10, 2026
+
+- Fix: `-NoProfile` added to the 3 `powershell.exe` invocations in the
+  `.iss` (`[Icons]`/`[Run]`) (CR).
+
+### 0.5.17 — July 10, 2026
+
+- Fix: `attendre_disparition_overlay` (`utils.py`) message corrected to
+  reflect that a timeout means the overlay stayed present (CR).
+
+### 0.5.16 — July 10, 2026
+
+- Fix (installer): Start Menu/Desktop shortcuts now point to
+  `Launch-Dexcom-And-Run.ps1` (instead of the exe directly), with
+  `WorkingDir={app}` on all 3 `[Icons]`/`[Run]` entries (ES-28).
+
+### 0.5.15 — July 10, 2026
+
+- Fix (ES-26 audit): `attendre_disparition_overlay` (`utils.py`) now logs the
+  `TimeoutException` at `WARNING` instead of `DEBUG` (ES-28).
+
+### 0.5.14 — July 9, 2026
+
+- Fix: `locale.setlocale(LC_CTYPE, "")` called before `locale.getlocale()` in
+  `rapports.py`, limited to `LC_CTYPE` with previous-locale restoration (CR).
+- Fix: `except Exception` replaced with
+  `WebDriverException`/`ValueError`/`TypeError` in
+  `traitement_rapport_comparer` (CR).
+
+### 0.5.13 — June 25, 2026
+
+- Maintenance: `locale.getdefaultlocale()` → `locale.getlocale()` in
+  `rapports.py` (ES-27).
+- Robustness (Comparer): preserved the selected period after
+  Comparer-Tendances, `DATE_DEBUT`/`DATE_FIN` fallback, double-check before
+  download (ES-27).
+
+### 0.5.12 — April 21, 2026
+
+- Robustness: all `except Exception` replaced with specific exceptions across
+  all 4 modules.
+
+### 0.5.11 — April 21, 2026
+
+- Security: `subprocess.Popen(shell=True)` →
+  `Popen(["powershell.exe"], creationflags=CREATE_NEW_CONSOLE)` in `config.py`.
+
+### 0.5.10 — April 17, 2026
+
+- Repository structure: `CHANGELOG.md`, `requirements-dev.txt` added;
+  `CLAUDE.md` local only.
+- Tests: `test_config_validation.py`, `test_rapports_period.py`,
+  `TestValidateDates` (81 tests).
+
+### 0.5.9 — April 17, 2026
+
+- Export modal close: `until_not(presence_of_element_located)` instead of
+  `invisibility_of_element_located` — actual DOM removal guaranteed.
+
+### 0.5.8 — April 17, 2026
+
+- Logout: `except ElementClickInterceptedException` instead of
+  `except Exception` on menu and logout clicks.
+
+### 0.5.7 — April 17, 2026
+
+- Export modal close: XPath anchored in `<export-dialog>`; explicit wait for
+  component disappearance after clicking Close.
+
+### 0.5.6 — April 16, 2026
+
+- Logout: second overlay wait after opening the user menu; JS fallback on the
+  logout link.
+
+### 0.5.5 — April 15, 2026
+
+- Partial CLI dates explicitly rejected (`validate_dates` + defensive guard in
+  `resolve_effective_date_range`).
+
+### 0.5.4 — April 15, 2026
+
+- Validation of `days` in `config.yaml`: type, allowed values {7, 14, 30, 90},
+  warning if conflict with `date_debut`/`date_fin`.
+
+### 0.5.3 — April 15, 2026
+
+- Date entry robustness: `element_to_be_clickable` instead of
+  `presence_of_element_located`; click + clear + send_keys sequentially per
+  field.
+
+### 0.5.2 — April 15, 2026
+
+- Date entry: fatal error if Selenium fails (no more silent continuation with
+  Dexcom's default dates).
+
+### 0.5.1 — April 15, 2026
+
+- Documented `get_period_suffix` (`rapports.py`): full docstring.
+- Version synchronization across all modules (no functional change).
+
+### 0.5.0 — April 14, 2026
+
+- Added `days` parameter in `config.yaml`.
+- Priority chain: CLI dates > CLI `--days` > config `days` > config dates.
+- Extracted `resolve_effective_date_range` as a pure, testable function.
+- Added unit tests for date range resolution.
+
+### 0.4.0 — April 14, 2026
+
+- Exposed all CLI parameters in `Launch-Dexcom-And-Run.ps1`.
+- Fixed `-StartAtDateSelection` and `-AttachDebugger` (disabled by default,
+  enable them explicitly).
+
+### 0.3.19 — March 25, 2026
+
+- Browser session shutdown now uses the effective debug level (`args.debug` or
+  `config.DEBUG`) for exception traces.
+- Hardened network retry in `selection_rapport`: up to 2 retries after
+  reconnection, then an explicit failure if connectivity drops again.
+- Version and module header synchronization.
+
+### 0.3.18 — March 25, 2026
+
+- Harmonized network error handling in the CSV export flow (modal Export button
+  click and modal close).
+- Version and module header synchronization.
+
+### 0.3.17 — March 23, 2026
+
+- Detect network loss during report processing.
+- Retry internet reconnection before and during each report processing step.
+- Stop the application cleanly if reconnection fails.
+- Close the Dexcom tab at the end of processing, and close the browser entirely
+  when it is the only open tab.
+- Keep explicit per-report dispatch in the report selector.
+
+### 0.3.16 — March 19, 2026
+
+- Default `log_retention_days` value set to 30 days in configuration.
+- Moved the default `chromedriver_log` file into the `log/` subdirectory under
+  the download folder.
+- Made the Statistics sub-page navigation fallback independent of the configured
+  Dexcom region.
+- Synchronized Python module headers and release documentation.
+
+### 0.3.15 — February 26, 2026
+
+- Harmonized XPath selectors to reduce dependency on browser language.
 
 ### 0.3.14 — February 13, 2026
 
@@ -1505,13 +2413,12 @@ Open a PowerShell terminal at the project root and run:
 
 - **By default**, if no date is provided as an argument or in the `config.yaml`
   file, the period used will be the **last 14 days up to yesterday**.
-- You can override this behavior:
-  - by passing `--days 7`, `--days 14`, `--days 30`, or `--days 90` as an
-    argument,
-  - or by explicitly setting `date_debut` and `date_fin` in `config.yaml`,
-  - or by passing `--date_debut` and `--date_fin` as arguments.
-
-Note: `--days` is only available on the command line.
+- You can override this behavior using the following priority chain (highest to
+  lowest priority):
+  1. CLI arguments `--date_debut` and `--date_fin`,
+  2. CLI argument `--days`,
+  3. `days` parameter in `config.yaml`,
+  4. `date_debut` and `date_fin` parameters in `config.yaml`.
 
 Example:
 
@@ -1537,6 +2444,7 @@ dexcom_url: "https://clarity.dexcom.eu"
 download_dir: C:/Users/YourUser/Downloads/GlycoReport-Downloader
 log_retention_days: 30
 debug: false
+days: null
 date_debut: 2025-01-01
 date_fin: 2025-01-31
 output_dir: C:/Users/YourUser/Downloads/GlycoReport-Downloader
@@ -1557,16 +2465,17 @@ Available parameters in `config.yaml`:
 
 - `chrome_user_data_dir`: Chrome profile directory used by Selenium.
 - `chromedriver_log`: ChromeDriver log path.
-- `dexcom_url`: Dexcom Clarity URL (e.g., [https://clarity.dexcom.eu](https://clarity.dexcom.eu)).
+- `dexcom_url`: Dexcom Clarity URL (e.g.,
+  [https://clarity.dexcom.eu](https://clarity.dexcom.eu)).
 - `download_dir`: Selenium download directory.
 - `output_dir`: final output directory (supports the `AAAA` placeholder).
 - `rapports`: list of reports to generate.
 - `log_retention_days`: log retention in days (0 = unlimited).
 - `debug`: enables debug mode (detailed logs, screenshots).
+- `days`: number of days to include (7, 14, 30, or 90); lower priority than CLI
+  arguments.
 - `date_debut`: default start date (YYYY-MM-DD).
 - `date_fin`: default end date (YYYY-MM-DD).
-
-Note: `--days` is a CLI-only option (not a `config.yaml` field).
 
 The encryption key for the `.env` file is stored in the system environment
 variable `ENV_DEXCOM_KEY`.
@@ -1599,7 +2508,7 @@ All paths used in the project (download folders, profiles, logs, etc.) are
 ## First-Time Use Procedure (English)
 
 1. Run `Launch-Dexcom-And-Run.ps1`. An encryption key will be generated, and a
-  PowerShell command to copy/paste will be displayed.
+   PowerShell command to copy/paste will be displayed.
 1. Paste this command into the PowerShell window that opens, then type `Exit`.
 1. Rerun `Launch-Dexcom-And-Run.ps1` to continue the configuration.
 1. When creating the `.env`, the entered information will be automatically
@@ -1700,25 +2609,24 @@ For questions or bug reports: https://github.com/thebe01/GlycoReport-Downloader/
 
 ## Unit Tests (English)
 
-To run all unit tests for the project's utility functions, use the following
-command:
-
-**Bash/CMD:**
-
-```sh
-pytest -v --log-cli-level=INFO tests/test_utils.py
-```
-
-**PowerShell:**
+To run all unit tests, use the provided PowerShell script:
 
 ```powershell
-pytest -v --log-cli-level=INFO tests/test_utils.py
+.\tests\Run-Tests.ps1
 ```
 
-- `-v` shows detailed output for each test (verbose mode).
-- `--log-cli-level=INFO` shows log messages produced by the tested functions.
-- This command helps verify the robustness and portability of all the project's
-  utility functions.
+Available options:
+
+- `.\tests\Run-Tests.ps1`: full run in verbose mode (default).
+- `.\tests\Run-Tests.ps1 -Bref`: compact mode (final summary only).
+- `.\tests\Run-Tests.ps1 -Filtre "dates"`: run only tests whose name contains
+  "dates".
+
+Test modules covered:
+
+- `tests/test_utils.py`: utility functions (`utils.py`).
+- `tests/test_glycodownload_dates.py`: date range resolution
+  (`GlycoDownload.py`).
 
 **Functional test note:** the app does not proceed until the user is logged in.
 For end-to-end tests, run `Launch-Dexcom-And-Run.ps1` first, complete the login,
