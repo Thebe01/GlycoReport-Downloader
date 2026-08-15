@@ -165,5 +165,5 @@
 
 - La version source de vérité est [version.py](../version.py) (`__version__`).
   Si vous modifiez la version, garder les entêtes synchronisés.
-- Éviter d’introduire de nouvelles dépendances si une utilitaire existe déjà
+- Éviter d’introduire de nouvelles dépendances si un utilitaire existe déjà
   dans [utils.py](../utils.py) ou un flux dans [config.py](../config.py).
