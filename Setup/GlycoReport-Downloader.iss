@@ -10,7 +10,7 @@
 [Setup]
 ; NOTE: La valeur de AppId identifie cette application de manière unique.
 ; Ne l'utilisez pas pour d'autres applications.
-AppId={{A1B2C3D4-E5F6-7890-1234-567890ABCDEF}
+AppId={{57936694-11EA-48F6-9178-09C8008D8851}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}

@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-07-10
-Version       : 0.5.18
+Modifié le    : 2026-08-15
+Version       : 0.5.19
 Copyright     : Pierre Théberge
 
 Description
@@ -131,6 +131,14 @@ Modifications
                                 invocations powershell.exe (2x [Icons] + [Run]) — évite de
                                 charger le profil PowerShell de l'utilisateur (effets de bord,
                                 surface d'attaque) pour un lancement applicatif déterministe.
+0.5.19 - 2026-08-15   [CR]    : Setup/GlycoReport-Downloader.iss : AppId placeholder remplacé
+                                par un GUID réel (valeur dans le .iss, source unique de vérité)
+                                — un placeholder séquentiel expose à une collision de clé de
+                                désinstallation avec un autre projet. L'AppId étant l'identité
+                                de l'application pour Windows, les postes installés jusqu'à
+                                0.5.18 ne verront pas celle-ci comme une mise à niveau ; leur
+                                entrée orpheline se retrouve sous la clé de désinstallation
+                                A1B2C3D4-E5F6-7890-1234-567890ABCDEF.
 
 Paramètres
 ----------
@@ -142,4 +150,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.18"
+__version__ = "0.5.19"
