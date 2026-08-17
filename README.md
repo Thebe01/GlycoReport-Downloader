@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.18-blue)
+![Version](https://img.shields.io/badge/version-0.5.19-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0518--10-juillet-2026)
+- [Nouveautés](#version--0519--15-août-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,23 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.5.19 — 15 août 2026
+
+### Nouveautés (0.5.19)
+
+**Correction :**
+
+- `Setup/GlycoReport-Downloader.iss` : `AppId` placeholder remplacé par un GUID
+  réel — un placeholder séquentiel expose à une collision de clé de
+  désinstallation avec un autre projet — CR.
+
+> **Mise à niveau depuis 0.5.18 ou antérieur** — l'`AppId` est l'identité de
+> l'application pour Windows. Cette version ne sera pas détectée comme une mise
+> à niveau : une seconde entrée apparaîtra dans « Applications installées » et
+> l'ancienne restera orpheline. Désinstaller l'ancienne version manuellement.
 
 ---
 
@@ -543,6 +560,11 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.5.19 — 15 août 2026
+
+- Correction : `AppId` du `.iss` — placeholder remplacé par un GUID réel ; les
+  installations antérieures ne seront pas vues comme une mise à niveau (CR).
 
 ### 0.5.18 — 10 juillet 2026
 
@@ -1425,6 +1447,21 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.5.19 — August 15, 2026
+
+**Fix:**
+
+- `Setup/GlycoReport-Downloader.iss`: placeholder `AppId` replaced with a real
+  GUID — a sequential placeholder risks an uninstall-key collision with another
+  project — CR.
+
+> **Upgrading from 0.5.18 or earlier** — the `AppId` is the application's
+> identity for Windows. This version will not be detected as an upgrade: a
+> second entry will appear under "Installed apps" and the old one will remain
+> orphaned. Uninstall the previous version manually.
+
+---
+
 ### Version: 0.5.18 — July 10, 2026
 
 **Fix:**
@@ -1860,6 +1897,11 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.5.19 — August 15, 2026
+
+- Fix: `.iss` `AppId` — placeholder replaced with a real GUID; earlier installs
+  will not be seen as an upgrade (CR).
 
 ### 0.5.18 — July 10, 2026
 

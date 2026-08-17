@@ -5,6 +5,22 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.5.19] - 2026-08-15 — CR
+
+### Corrigé
+- `Setup/GlycoReport-Downloader.iss` : `AppId` placeholder remplacé par un GUID
+  réel — un placeholder séquentiel expose à une collision de clé de
+  désinstallation avec un autre projet.
+
+  **Migration** : l'`AppId` est l'identité de l'application pour Windows. Les
+  postes installés jusqu'à `0.5.18` ne verront pas cette version comme une mise
+  à niveau : une seconde entrée apparaîtra dans « Applications installées » et
+  l'ancienne restera orpheline sous la clé
+  `A1B2C3D4-E5F6-7890-1234-567890ABCDEF`. Avec `PrivilegesRequired=lowest`, la
+  désinstallation manuelle se fait sous `HKCU`.
+
+---
+
 ## [0.5.18] - 2026-07-10 — CR
 
 ### Corrigé
@@ -270,6 +286,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.5.19]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.19
 [0.5.18]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.18
 [0.5.17]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.17
 [0.5.16]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.16

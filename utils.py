@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-07-10
-Version       : 0.5.18
+Modifié le    : 2026-08-15
+Version       : 0.5.19
 Copyright     : Pierre Théberge
 
 Description
@@ -97,6 +97,7 @@ Modifications
                                TimeoutException (qui signifie au contraire que l'overlay est
                                resté présent jusqu'à l'échéance) ; message + valeur du timeout.
 0.5.18 - 2026-07-10   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.19 - 2026-08-15   [CR]    : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
