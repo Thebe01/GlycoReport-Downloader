@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
-Modifié le    : 2026-08-15
-Version       : 0.5.19
+Modifié le    : 2026-08-18
+Version       : 0.5.20
 Copyright     : Pierre Théberge
 
 Description
@@ -168,6 +168,14 @@ Modifications
 0.5.17  - 2026-07-10   [CR]    : Synchronisation de version (aucun changement fonctionnel).
 0.5.18  - 2026-07-10   [CR]    : Synchronisation de version (aucun changement fonctionnel).
 0.5.19  - 2026-08-15   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.20  - 2026-08-18   ES-34   : ChromeService(log_path=...) remplacé par log_output=... : Selenium
+                                 4 a retiré log_path, avalé silencieusement par **kwargs, donc le
+                                 journal ChromeDriver n'était jamais écrit et --verbose restait sans
+                                 effet ; le dossier de log est créé avant l'ouverture. Échec de
+                                 saisie des dates : URL courante, capture d'écran et dump du DOM
+                                 enregistrés — ce chemin ne laissait aucune trace exploitable pour
+                                 distinguer un attribut Dexcom renommé d'un panneau qui ne s'ouvre
+                                 pas.
 
 Paramètres
 ----------
@@ -215,6 +223,7 @@ from utils import (
     renomme_prefix,
     attendre_nouveau_bouton_telecharger,
     capture_screenshot,
+    capture_page_source,
     pause_on_error,
     cleanup_logs,
     attendre_verification_humaine_cloudflare
@@ -872,9 +881,14 @@ def main(args, logger, config):
         chromedriver_service_args = ["--verbose"] if debug_mode else []
 
         # Utilisation de webdriver-manager pour télécharger automatiquement la bonne version
+        # log_output (et non log_path) : Selenium 4 a retiré log_path, que **kwargs avalait
+        # silencieusement — le journal ChromeDriver n'était jamais écrit et --verbose restait
+        # sans effet. ChromiumService traduit une chaîne en argument --log-path= passé à
+        # chromedriver, qui écrit le fichier lui-même sans créer le dossier parent.
+        os.makedirs(log_dir, exist_ok=True)
         service = ChromeService(
             ChromeDriverManager().install(),
-            log_path=chromedriver_log,
+            log_output=chromedriver_log,
             service_args=chromedriver_service_args
         )
 
@@ -1059,6 +1073,16 @@ def main(args, logger, config):
             if not check_internet():
                 logger.error("Perte de connexion internet détectée lors de la saisie des dates.")
             logger.error(f"Une erreur s'est produite lors de la saisie des dates : {e}")
+            # Diagnostic : ce chemin ne laissait aucune trace exploitable. Les champs du
+            # sélecteur (start_date / end_date) sont fournis par Dexcom et changent sans
+            # préavis ; sans capture ni DOM, impossible de distinguer un attribut renommé
+            # d'un panneau qui ne s'ouvre pas.
+            try:
+                logger.error(f"URL au moment de l'échec : {driver.current_url}")
+            except WebDriverException as err_url:
+                logger.warning(f"URL courante illisible : {err_url}")
+            capture_screenshot(driver, logger, "echec_saisie_dates", log_dir, now_str)
+            capture_page_source(driver, logger, "echec_saisie_dates", log_dir, now_str)
             raise RuntimeError(
                 f"La saisie des dates a échoué ({date_debut_str} → {date_fin_str}). "
                 "Le rapport ne sera pas téléchargé avec des dates incorrectes."

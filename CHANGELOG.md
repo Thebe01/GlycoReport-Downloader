@@ -5,6 +5,30 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.5.20] - 2026-08-18 — ES-34
+
+### Corrigé
+- `GlycoDownload.py` : `ChromeService(log_path=...)` remplacé par `log_output=...`.
+  Selenium 4 a retiré le paramètre `log_path` ; il était avalé silencieusement par
+  `**kwargs`, sans aucun avertissement. Conséquence : la clé `chromedriver_log` de
+  `config.yaml` était inopérante, le journal ChromeDriver n'était jamais écrit et le
+  `--verbose` de `service_args` restait sans effet. Le dossier de destination est
+  désormais créé avant l'ouverture du journal.
+
+### Ajouté
+- `GlycoDownload.py` : sur échec de la saisie des dates, l'URL courante, une capture
+  d'écran et un dump du DOM sont enregistrés. Ce chemin d'erreur ne laissait aucune
+  trace exploitable, alors que les champs du sélecteur de dates (`start_date` /
+  `end_date`) sont fournis par Dexcom et changent sans préavis : sans DOM, impossible
+  de distinguer un attribut renommé d'un panneau qui ne s'ouvre pas.
+- `utils.py` : `capture_page_source` — enregistre le DOM courant pour le diagnostic.
+  Le DOM est lu **avant** l'ouverture du fichier : en mode `"w"`, un échec de lecture
+  laisserait un `.html` vide, indiscernable d'une page réellement vide.
+- `tests/test_utils.py` : couverture de `capture_page_source` (écriture UTF-8 et
+  absence de fichier résiduel quand la lecture du DOM échoue) — 91 tests.
+
+---
+
 ## [0.5.19] - 2026-08-15 — CR
 
 ### Corrigé
@@ -286,6 +310,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.5.20]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.20
 [0.5.19]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.19
 [0.5.18]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.18
 [0.5.17]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.17

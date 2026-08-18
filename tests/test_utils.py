@@ -63,7 +63,7 @@ import tempfile
 import pytest
 import time
 from typing import cast
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.remote.webdriver import WebDriver
 
@@ -79,6 +79,7 @@ from utils import (
     renomme_prefix,
     attendre_nouveau_bouton_telecharger,
     capture_screenshot,
+    capture_page_source,
     cleanup_logs,
     _compute_backoff_seconds
 )
@@ -87,6 +88,7 @@ from utils import (
 class DummyDriver:
     def __init__(self):
         self.screenshot_taken = False
+        self.page_source = "<html><body>Aperçu des modèles</body></html>"
     def save_screenshot(self, path):
         with open(path, "wb") as f:
             f.write(b"fake image")
@@ -94,6 +96,12 @@ class DummyDriver:
         return True
     def find_element(self, by, value):
         raise NoSuchElementException("aucun élément (dummy)")
+
+class DummyDriverPageSourceKO:
+    """Simule un driver dont la lecture du DOM echoue (session perdue)."""
+    @property
+    def page_source(self):
+        raise WebDriverException("session perdue (dummy)")
 
 class DummyDriverOverlayPresent:
     """Simule un overlay qui ne disparaît jamais (find_element ne lève pas)."""
@@ -244,6 +252,29 @@ def test_capture_screenshot_creates_file(tmp_path, dummy_driver, dummy_logger):
     screenshot_path = os.path.join(log_dir, f"screenshot_{step}_{now_str}.png")
     assert os.path.exists(screenshot_path)
     assert dummy_driver.screenshot_taken
+
+def test_capture_page_source_creates_file(tmp_path, dummy_driver, dummy_logger):
+    log_dir = str(tmp_path)
+    now_str = "20250101_120000"
+    step = "echec_saisie_dates"
+    capture_page_source(dummy_driver, dummy_logger, step, log_dir, now_str)
+    source_path = os.path.join(log_dir, f"page_source_{step}_{now_str}.html")
+    assert os.path.exists(source_path)
+    with open(source_path, encoding="utf-8") as fichier:
+        contenu = fichier.read()
+    # Les accents doivent survivre : le DOM Dexcom est francophone.
+    assert contenu == dummy_driver.page_source
+    assert "Aperçu" in contenu
+
+def test_capture_page_source_driver_ko_ne_leve_pas(tmp_path, dummy_logger):
+    """Un diagnostic ne doit jamais masquer l'erreur d'origine en levant lui-meme."""
+    log_dir = str(tmp_path)
+    now_str = "20250101_120000"
+    step = "echec_saisie_dates"
+    capture_page_source(DummyDriverPageSourceKO(), dummy_logger, step, log_dir, now_str)
+    source_path = os.path.join(log_dir, f"page_source_{step}_{now_str}.html")
+    assert not os.path.exists(source_path)
+    assert any(niveau == "warning" for niveau, _ in dummy_logger.messages)
 
 def test_attendre_disparition_overlay_no_overlay(dummy_driver, dummy_logger):
     # Ce test vérifie simplement que la fonction ne lève pas d'exception si aucun overlay n'est présent.

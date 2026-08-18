@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-08-15
-Version       : 0.5.19
+Modifié le    : 2026-08-18
+Version       : 0.5.20
 Copyright     : Pierre Théberge
 
 Description
@@ -139,6 +139,9 @@ Modifications
                                 0.5.18 ne verront pas celle-ci comme une mise à niveau ; leur
                                 entrée orpheline se retrouve sous la clé de désinstallation
                                 A1B2C3D4-E5F6-7890-1234-567890ABCDEF.
+0.5.20 - 2026-08-18   ES-34   : Diagnostic de la saisie des dates : journal ChromeDriver réellement
+                                écrit et capture d'état sur échec (voir GlycoDownload.py et
+                                utils.py).
 
 Paramètres
 ----------
@@ -150,4 +153,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.19"
+__version__ = "0.5.20"

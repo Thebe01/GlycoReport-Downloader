@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-08-15
-Version       : 0.5.19
+Modifié le    : 2026-08-18
+Version       : 0.5.20
 Copyright     : Pierre Théberge
 
 Description
@@ -98,6 +98,10 @@ Modifications
                                resté présent jusqu'à l'échéance) ; message + valeur du timeout.
 0.5.18 - 2026-07-10   [CR]    : Synchronisation de version (aucun changement fonctionnel).
 0.5.19 - 2026-08-15   [CR]    : Synchronisation de version (aucun changement fonctionnel).
+0.5.20 - 2026-08-18   ES-34   : Ajout de capture_page_source : enregistre le DOM courant pour
+                                diagnostiquer un sélecteur introuvable. Le DOM est lu avant
+                                l'ouverture du fichier — en mode "w", un échec de lecture laisserait
+                                un .html vide, indiscernable d'une page réellement vide.
 
 Paramètres
 ----------
@@ -322,6 +326,28 @@ def capture_screenshot(driver: WebDriver, logger, step: str, log_dir: str, now_s
         logger.info(f"Capture d'écran enregistrée : {screenshot_path}")
     except WebDriverException as e:
         logger.warning(f"Impossible de prendre une capture d'écran : {e}")
+
+def capture_page_source(driver: WebDriver, logger, step: str, log_dir: str, now_str: str) -> None:
+    """Enregistre le DOM courant pour le diagnostic d'un sélecteur introuvable.
+
+    Complète capture_screenshot : une capture montre l'état visuel, le DOM montre
+    les attributs réels sur lesquels les XPath et les recherches By.NAME s'appuient.
+    """
+    # Lire le DOM avant d'ouvrir le fichier : en mode "w", un échec de lecture
+    # laisserait un .html vide, indiscernable d'une page réellement vide.
+    try:
+        contenu = driver.page_source
+    except WebDriverException as e:
+        logger.warning(f"Impossible de récupérer le DOM : {e}")
+        return
+
+    try:
+        source_path = os.path.join(log_dir, f"page_source_{step}_{now_str}.html")
+        with open(source_path, "w", encoding="utf-8") as fichier:
+            fichier.write(contenu)
+        logger.info(f"DOM enregistré : {source_path}")
+    except OSError as e:
+        logger.warning(f"Impossible d'écrire le DOM sur disque : {e}")
 
 def normalize_path(path: str) -> str:
     """Normalise un chemin en développant ~ et en le rendant absolu."""

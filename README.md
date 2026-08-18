@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.19-blue)
+![Version](https://img.shields.io/badge/version-0.5.20-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0519--15-août-2026)
+- [Nouveautés](#version--0520--18-août-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,33 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.5.20 — 18 août 2026
+
+### Nouveautés (0.5.20)
+
+**Correction :**
+
+- `GlycoDownload.py` : le journal ChromeDriver n'était jamais écrit. Selenium 4 a
+  retiré le paramètre `log_path`, avalé silencieusement par `**kwargs` — la clé
+  `chromedriver_log` de `config.yaml` était donc inopérante et le mode debug
+  (`--verbose`) restait sans effet. Remplacé par `log_output` — ES-34.
+
+**Ajouts :**
+
+- `GlycoDownload.py` : en cas d'échec de la saisie des dates, l'URL courante, une
+  capture d'écran et un dump du DOM (`page_source_echec_saisie_dates_*.html`) sont
+  désormais enregistrés dans le dossier de logs. Les champs du sélecteur de dates
+  sont fournis par Dexcom et changent sans préavis ; sans le DOM, impossible de
+  distinguer un attribut renommé d'un panneau qui ne s'ouvre pas — ES-34.
+- `utils.py` : `capture_page_source` pour le diagnostic des sélecteurs
+  introuvables — ES-34.
+
+> **En cas d'échec de la saisie des dates** — joindre au diagnostic le fichier
+> `page_source_echec_saisie_dates_*.html` et la capture correspondante, tous deux
+> dans le dossier du `chromedriver_log`.
 
 ---
 
@@ -560,6 +587,13 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.5.20 — 18 août 2026
+
+- Correction : journal ChromeDriver jamais écrit (`log_path` retiré par Selenium 4,
+  remplacé par `log_output`) (ES-34).
+- Ajout : capture d'écran, dump du DOM et URL courante sur échec de la saisie des
+  dates ; nouvel utilitaire `capture_page_source` (ES-34).
 
 ### 0.5.19 — 15 août 2026
 
@@ -1447,6 +1481,29 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.5.20 — August 18, 2026
+
+**Fix:**
+
+- `GlycoDownload.py`: the ChromeDriver log was never written. Selenium 4 removed the
+  `log_path` parameter and `**kwargs` swallowed it silently — so the
+  `chromedriver_log` key in `config.yaml` had no effect, and neither did `--verbose`
+  in debug mode. Replaced with `log_output` — ES-34.
+
+**Additions:**
+
+- `GlycoDownload.py`: when date entry fails, the current URL, a screenshot and a DOM
+  dump (`page_source_echec_saisie_dates_*.html`) are now saved to the log folder. The
+  date-picker fields are supplied by Dexcom and change without notice; without the
+  DOM there is no way to tell a renamed attribute from a panel that never opens —
+  ES-34.
+- `utils.py`: `capture_page_source`, for diagnosing missing selectors — ES-34.
+
+> **If date entry fails** — include `page_source_echec_saisie_dates_*.html` and the
+> matching screenshot in any diagnosis; both land in the `chromedriver_log` folder.
+
+---
+
 ### Version: 0.5.19 — August 15, 2026
 
 **Fix:**
@@ -1897,6 +1954,13 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.5.20 — August 18, 2026
+
+- Fix: ChromeDriver log was never written (`log_path` removed by Selenium 4, replaced
+  with `log_output`) (ES-34).
+- Addition: screenshot, DOM dump and current URL captured when date entry fails; new
+  `capture_page_source` helper (ES-34).
 
 ### 0.5.19 — August 15, 2026
 
