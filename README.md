@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.21-blue)
+![Version](https://img.shields.io/badge/version-0.5.22-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0521--18-août-2026)
+- [Nouveautés](#version--0522--20-août-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,23 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.5.22 — 20 août 2026
+
+### Nouveautés (0.5.22)
+
+**Correction :**
+
+- `CHANGELOG.md` : casse des liens de référence harmonisée
+  (`releases/tag/v0.x.y` → `releases/tag/V0.x.y`). Les tags du dépôt sont en `V`
+  majuscule et GitHub y est sensible ; les 24 liens en minuscule renvoyaient un
+  404 — ES-34.
+
+> **Note** — cette correction ne rend valides que les liens dont le tag existe
+> réellement (`V0.5.19`, `V0.5.14`, `V0.5.3`). Les autres versions n'ont jamais
+> été taguées et leurs liens restent sans cible.
 
 ---
 
@@ -604,6 +621,11 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.5.22 — 20 août 2026
+
+- Correction : casse des liens de référence du `CHANGELOG.md` (`v0.x.y` → `V0.x.y`),
+  les tags du dépôt étant en majuscule (ES-34).
 
 ### 0.5.21 — 18 août 2026
 
@@ -1503,6 +1525,20 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.5.22 — August 20, 2026
+
+**Fix:**
+
+- `CHANGELOG.md`: reference-link casing harmonized (`releases/tag/v0.x.y` →
+  `releases/tag/V0.x.y`). The repository's tags use an uppercase `V` and GitHub is
+  case-sensitive, so all 24 lowercase links returned 404 — ES-34.
+
+> **Note** — this only makes valid the links whose tag actually exists (`V0.5.19`,
+> `V0.5.14`, `V0.5.3`). The other versions were never tagged, so their links still
+> have no target.
+
+---
+
 ### Version: 0.5.21 — August 18, 2026
 
 **Fix:**
@@ -1991,6 +2027,11 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.5.22 — August 20, 2026
+
+- Fix: `CHANGELOG.md` reference-link casing (`v0.x.y` → `V0.x.y`), the repository's
+  tags being uppercase (ES-34).
 
 ### 0.5.21 — August 18, 2026
 

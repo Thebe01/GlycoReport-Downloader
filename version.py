@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-08-18
-Version       : 0.5.21
+Modifié le    : 2026-08-20
+Version       : 0.5.22
 Copyright     : Pierre Théberge
 
 Description
@@ -145,6 +145,9 @@ Modifications
 0.5.21 - 2026-08-18   ES-34   : cleanup_logs purge aussi les dumps DOM (.html) ; correctifs de revue
                                 Copilot (accents dans les docstrings de test, formulation --verbose
                                 dans le README).
+0.5.22 - 2026-08-20   ES-34   : CHANGELOG.md : casse des liens de référence harmonisée (tag/v0.x.y
+                                -> tag/V0.x.y). Les tags du dépôt sont en V majuscule et GitHub y
+                                est sensible : les 24 liens en minuscule renvoyaient un 404.
 
 Paramètres
 ----------
@@ -156,4 +159,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.21"
+__version__ = "0.5.22"
