@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-08-18
-Version       : 0.5.20
+Version       : 0.5.21
 Copyright     : Pierre Théberge
 
 Description
@@ -102,6 +102,10 @@ Modifications
                                 diagnostiquer un sélecteur introuvable. Le DOM est lu avant
                                 l'ouverture du fichier — en mode "w", un échec de lecture laisserait
                                 un .html vide, indiscernable d'une page réellement vide.
+0.5.21 - 2026-08-18   ES-34   : cleanup_logs purge désormais aussi les dumps DOM (.html), en plus
+                                des .log et .png. Ces dumps sont un instantané d'une page Clarity
+                                connectée — ils portent le nom du patient — et s'accumulaient sans
+                                limite, hors de toute rétention.
 
 Paramètres
 ----------
@@ -371,13 +375,14 @@ def pause_on_error() -> None:
 
 def cleanup_logs(log_dir, retention_days, logger=None):
     """
-    Supprime les fichiers logs (.log) et captures d'écran (.png) plus vieux que retention_days dans le dossier log_dir.
+    Supprime les fichiers logs (.log), captures d'écran (.png) et dumps DOM (.html)
+    plus vieux que retention_days dans le dossier log_dir.
     Si retention_days vaut 0, aucun ménage n'est effectué (conservation illimitée).
     Logge les suppressions si un logger est fourni.
     """
  
     if retention_days == 0:
-        msg = "Aucun ménage des logs et captures d'écran n'est effectué (conservation illimitée)."
+        msg = "Aucun ménage des logs, captures d'écran et dumps DOM n'est effectué (conservation illimitée)."
         print(Fore.CYAN + msg)
         if logger:
             logger.info(msg)
@@ -391,12 +396,16 @@ def cleanup_logs(log_dir, retention_days, logger=None):
             logger.warning(msg)
         return
     for filename in os.listdir(log_dir):
-        if filename.endswith(".log") or filename.endswith(".png"):
+        if filename.endswith((".log", ".png", ".html")):
             filepath = os.path.join(log_dir, filename)
             try:
                 if os.stat(filepath).st_mtime < now - retention_seconds:
                     os.remove(filepath)
-                    file_type = "Log" if filename.endswith(".log") else "Capture d'écran"
+                    file_type = {
+                        ".log": "Log",
+                        ".png": "Capture d'écran",
+                        ".html": "Dump DOM",
+                    }[os.path.splitext(filename)[1]]
                     msg = f"{file_type} supprimé(e) : {filepath}"
                     print(Fore.GREEN + msg)
                     if logger:

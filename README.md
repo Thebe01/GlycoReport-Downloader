@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.20-blue)
+![Version](https://img.shields.io/badge/version-0.5.21-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0520--18-août-2026)
+- [Nouveautés](#version--0521--18-août-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -26,6 +26,22 @@ traduction stricte de la version francaise.
 
 ---
 
+## Version : 0.5.21 — 18 août 2026
+
+### Nouveautés (0.5.21)
+
+**Correction :**
+
+- `utils.py` : `cleanup_logs` purge désormais aussi les dumps DOM (`.html`), en plus
+  des `.log` et `.png`. Introduits en 0.5.20, ils échappaient à la rétention et
+  s'accumulaient sans limite — ES-34.
+
+> **Attention** — un dump DOM est un instantané d'une page Clarity connectée. Il
+> contient votre nom et peut contenir des données de glycémie. Il suit désormais
+> `log_retention_days`, mais vérifiez son contenu avant de le transmettre à un tiers.
+
+---
+
 ## Version : 0.5.20 — 18 août 2026
 
 ### Nouveautés (0.5.20)
@@ -34,8 +50,9 @@ traduction stricte de la version francaise.
 
 - `GlycoDownload.py` : le journal ChromeDriver n'était jamais écrit. Selenium 4 a
   retiré le paramètre `log_path`, avalé silencieusement par `**kwargs` — la clé
-  `chromedriver_log` de `config.yaml` était donc inopérante et le mode debug
-  (`--verbose`) restait sans effet. Remplacé par `log_output` — ES-34.
+  `chromedriver_log` de `config.yaml` était donc inopérante, et le `--verbose`
+  transmis à ChromeDriver en mode `--debug` restait sans effet. Remplacé par
+  `log_output` — ES-34.
 
 **Ajouts :**
 
@@ -587,6 +604,11 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.5.21 — 18 août 2026
+
+- Correction : `cleanup_logs` purge aussi les dumps DOM (`.html`), qui échappaient à
+  la rétention (ES-34).
 
 ### 0.5.20 — 18 août 2026
 
@@ -1481,14 +1503,29 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.5.21 — August 18, 2026
+
+**Fix:**
+
+- `utils.py`: `cleanup_logs` now also purges DOM dumps (`.html`) alongside `.log` and
+  `.png`. Introduced in 0.5.20, they escaped retention and accumulated without
+  limit — ES-34.
+
+> **Caution** — a DOM dump is a snapshot of a signed-in Clarity page. It contains your
+> name and may contain glucose data. It now follows `log_retention_days`, but review
+> it before sharing with anyone else.
+
+---
+
 ### Version: 0.5.20 — August 18, 2026
 
 **Fix:**
 
 - `GlycoDownload.py`: the ChromeDriver log was never written. Selenium 4 removed the
   `log_path` parameter and `**kwargs` swallowed it silently — so the
-  `chromedriver_log` key in `config.yaml` had no effect, and neither did `--verbose`
-  in debug mode. Replaced with `log_output` — ES-34.
+  `chromedriver_log` key in `config.yaml` had no effect, and neither did the
+  `--verbose` flag passed through to ChromeDriver under `--debug`. Replaced with
+  `log_output` — ES-34.
 
 **Additions:**
 
@@ -1954,6 +1991,11 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.5.21 — August 18, 2026
+
+- Fix: `cleanup_logs` also purges DOM dumps (`.html`), which escaped retention
+  (ES-34).
 
 ### 0.5.20 — August 18, 2026
 

@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
 Modifié le    : 2026-08-18
-Version       : 0.5.20
+Version       : 0.5.21
 Copyright     : Pierre Théberge
 
 Description
@@ -142,6 +142,9 @@ Modifications
 0.5.20 - 2026-08-18   ES-34   : Diagnostic de la saisie des dates : journal ChromeDriver réellement
                                 écrit et capture d'état sur échec (voir GlycoDownload.py et
                                 utils.py).
+0.5.21 - 2026-08-18   ES-34   : cleanup_logs purge aussi les dumps DOM (.html) ; correctifs de revue
+                                Copilot (accents dans les docstrings de test, formulation --verbose
+                                dans le README).
 
 Paramètres
 ----------
@@ -153,4 +156,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.20"
+__version__ = "0.5.21"

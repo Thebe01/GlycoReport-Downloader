@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-13
-Modifié le    : 2026-07-10
-Version       : 0.5.13
+Modifié le    : 2026-08-18
+Version       : 0.5.21
 Copyright     : Pierre Théberge
 
 Description
@@ -47,6 +47,12 @@ Modifications
                                test_attendre_disparition_overlay_timeout_logs_warning — couvre
                                le passage logger.debug -> logger.warning sur TimeoutException
                                (audit ES-26). DummyLogger.warning accepte désormais exc_info.
+0.5.20 - 2026-08-18   ES-34   : Couverture de capture_page_source : écriture UTF-8 du DOM, et
+                                absence de fichier résiduel quand la lecture du DOM échoue
+                                (DummyDriverPageSourceKO). DummyDriver expose page_source.
+0.5.21 - 2026-08-18   ES-34   : Couverture de la purge des dumps DOM (.html) par cleanup_logs,
+                                incluant la garantie que les extensions non gérées ne sont jamais
+                                supprimées. Accents corrigés dans les docstrings.
 
 Paramètres
 ----------
@@ -98,7 +104,7 @@ class DummyDriver:
         raise NoSuchElementException("aucun élément (dummy)")
 
 class DummyDriverPageSourceKO:
-    """Simule un driver dont la lecture du DOM echoue (session perdue)."""
+    """Simule un driver dont la lecture du DOM échoue (session perdue)."""
     @property
     def page_source(self):
         raise WebDriverException("session perdue (dummy)")
@@ -267,7 +273,7 @@ def test_capture_page_source_creates_file(tmp_path, dummy_driver, dummy_logger):
     assert "Aperçu" in contenu
 
 def test_capture_page_source_driver_ko_ne_leve_pas(tmp_path, dummy_logger):
-    """Un diagnostic ne doit jamais masquer l'erreur d'origine en levant lui-meme."""
+    """Un diagnostic ne doit jamais masquer l'erreur d'origine en levant lui-même."""
     log_dir = str(tmp_path)
     now_str = "20250101_120000"
     step = "echec_saisie_dates"
@@ -357,6 +363,29 @@ def test_compute_backoff_seconds_caps():
     assert _compute_backoff_seconds(2.0, 4, 30.0) == 30.0
     assert _compute_backoff_seconds(0.0, 1, 30.0) == 30.0
     assert _compute_backoff_seconds(-1.0, 1, 30.0) == 30.0
+
+def test_cleanup_logs_removes_old_page_source_dumps(tmp_path):
+    """Les dumps DOM contiennent le nom du patient : ils doivent suivre la rétention."""
+    log_dir = tmp_path
+
+    vieux_dump = log_dir / "page_source_echec_saisie_dates_20230101_120000.html"
+    recent_dump = log_dir / "page_source_echec_saisie_dates_20250101_120000.html"
+    autre_fichier = log_dir / "config.yaml"
+
+    vieux_dump.write_text("<html>vieux</html>", encoding="utf-8")
+    recent_dump.write_text("<html>récent</html>", encoding="utf-8")
+    autre_fichier.write_text("days: 14", encoding="utf-8")
+
+    vieux_temps = time.time() - (2 * 86400)
+    os.utime(vieux_dump, (vieux_temps, vieux_temps))
+    os.utime(autre_fichier, (vieux_temps, vieux_temps))
+
+    cleanup_logs(str(log_dir), retention_days=1)
+
+    assert not vieux_dump.exists()
+    assert recent_dump.exists()
+    # Les extensions non gérées ne sont jamais touchées, même anciennes.
+    assert autre_fichier.exists()
 
 def test_cleanup_logs_removes_only_old_screenshots(tmp_path):
     # Test spécifique pour vérifier que seules les vieilles captures d'écran sont supprimées

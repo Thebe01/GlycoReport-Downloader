@@ -5,6 +5,26 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.5.21] - 2026-08-18 — ES-34
+
+### Corrigé
+- `utils.py` : `cleanup_logs` purge désormais aussi les dumps DOM (`.html`), en plus
+  des `.log` et `.png`. Introduits en `0.5.20`, ils échappaient entièrement à
+  `log_retention_days`. Un dump est un instantané d'une page Clarity connectée — il
+  porte le nom du patient — donc leur accumulation illimitée n'était pas seulement un
+  problème d'espace disque.
+- `tests/test_utils.py` : accents rétablis dans deux docstrings françaises.
+- `README.md` : `--verbose` n'est pas une option CLI de l'application ; c'est
+  l'argument transmis à ChromeDriver via `service_args` sous `--debug`. Formulation
+  des notes 0.5.20 corrigée (FR et EN).
+
+### Ajouté
+- `tests/test_utils.py` : couverture de la purge des `.html` par `cleanup_logs`,
+  incluant la garantie que les extensions non gérées ne sont jamais supprimées —
+  92 tests.
+
+---
+
 ## [0.5.20] - 2026-08-18 — ES-34
 
 ### Corrigé
@@ -310,6 +330,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.5.21]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.21
 [0.5.20]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.20
 [0.5.19]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.19
 [0.5.18]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.18

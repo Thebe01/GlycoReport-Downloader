@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
 Modifié le    : 2026-08-18
-Version       : 0.5.20
+Version       : 0.5.21
 Copyright     : Pierre Théberge
 
 Description
@@ -176,6 +176,7 @@ Modifications
                                  enregistrés — ce chemin ne laissait aucune trace exploitable pour
                                  distinguer un attribut Dexcom renommé d'un panneau qui ne s'ouvre
                                  pas.
+0.5.21  - 2026-08-18   ES-34   : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
