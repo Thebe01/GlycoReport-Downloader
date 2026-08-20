@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.19-blue)
+![Version](https://img.shields.io/badge/version-0.5.22-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0519--15-août-2026)
+- [Nouveautés](#version--0522--20-août-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,67 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.5.22 — 20 août 2026
+
+### Nouveautés (0.5.22)
+
+**Correction :**
+
+- `CHANGELOG.md` : casse des liens de référence harmonisée
+  (`releases/tag/v0.x.y` → `releases/tag/V0.x.y`). Les tags du dépôt sont en `V`
+  majuscule et GitHub y est sensible ; les 24 liens en minuscule renvoyaient un
+  404 — ES-34.
+
+> **Note** — cette correction ne rend valides que les liens dont le tag existe
+> réellement (`V0.5.19`, `V0.5.14`, `V0.5.3`). Les autres versions n'ont jamais
+> été taguées et leurs liens restent sans cible.
+
+---
+
+## Version : 0.5.21 — 18 août 2026
+
+### Nouveautés (0.5.21)
+
+**Correction :**
+
+- `utils.py` : `cleanup_logs` purge désormais aussi les dumps DOM (`.html`), en plus
+  des `.log` et `.png`. Introduits en 0.5.20, ils échappaient à la rétention et
+  s'accumulaient sans limite — ES-34.
+
+> **Attention** — un dump DOM est un instantané d'une page Clarity connectée. Il
+> contient votre nom et peut contenir des données de glycémie. Il suit désormais
+> `log_retention_days`, mais vérifiez son contenu avant de le transmettre à un tiers.
+
+---
+
+## Version : 0.5.20 — 18 août 2026
+
+### Nouveautés (0.5.20)
+
+**Correction :**
+
+- `GlycoDownload.py` : le journal ChromeDriver n'était jamais écrit. Selenium 4 a
+  retiré le paramètre `log_path`, avalé silencieusement par `**kwargs` — la clé
+  `chromedriver_log` de `config.yaml` était donc inopérante, et le `--verbose`
+  transmis à ChromeDriver en mode `--debug` restait sans effet. Remplacé par
+  `log_output` — ES-34.
+
+**Ajouts :**
+
+- `GlycoDownload.py` : en cas d'échec de la saisie des dates, l'URL courante, une
+  capture d'écran et un dump du DOM (`page_source_echec_saisie_dates_*.html`) sont
+  désormais enregistrés dans le dossier de logs. Les champs du sélecteur de dates
+  sont fournis par Dexcom et changent sans préavis ; sans le DOM, impossible de
+  distinguer un attribut renommé d'un panneau qui ne s'ouvre pas — ES-34.
+- `utils.py` : `capture_page_source` pour le diagnostic des sélecteurs
+  introuvables — ES-34.
+
+> **En cas d'échec de la saisie des dates** — joindre au diagnostic le fichier
+> `page_source_echec_saisie_dates_*.html` et la capture correspondante, tous deux
+> dans le dossier du `chromedriver_log`.
 
 ---
 
@@ -560,6 +621,23 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.5.22 — 20 août 2026
+
+- Correction : casse des liens de référence du `CHANGELOG.md` (`v0.x.y` → `V0.x.y`),
+  les tags du dépôt étant en majuscule (ES-34).
+
+### 0.5.21 — 18 août 2026
+
+- Correction : `cleanup_logs` purge aussi les dumps DOM (`.html`), qui échappaient à
+  la rétention (ES-34).
+
+### 0.5.20 — 18 août 2026
+
+- Correction : journal ChromeDriver jamais écrit (`log_path` retiré par Selenium 4,
+  remplacé par `log_output`) (ES-34).
+- Ajout : capture d'écran, dump du DOM et URL courante sur échec de la saisie des
+  dates ; nouvel utilitaire `capture_page_source` (ES-34).
 
 ### 0.5.19 — 15 août 2026
 
@@ -1447,6 +1525,58 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.5.22 — August 20, 2026
+
+**Fix:**
+
+- `CHANGELOG.md`: reference-link casing harmonized (`releases/tag/v0.x.y` →
+  `releases/tag/V0.x.y`). The repository's tags use an uppercase `V` and GitHub is
+  case-sensitive, so all 24 lowercase links returned 404 — ES-34.
+
+> **Note** — this only makes valid the links whose tag actually exists (`V0.5.19`,
+> `V0.5.14`, `V0.5.3`). The other versions were never tagged, so their links still
+> have no target.
+
+---
+
+### Version: 0.5.21 — August 18, 2026
+
+**Fix:**
+
+- `utils.py`: `cleanup_logs` now also purges DOM dumps (`.html`) alongside `.log` and
+  `.png`. Introduced in 0.5.20, they escaped retention and accumulated without
+  limit — ES-34.
+
+> **Caution** — a DOM dump is a snapshot of a signed-in Clarity page. It contains your
+> name and may contain glucose data. It now follows `log_retention_days`, but review
+> it before sharing with anyone else.
+
+---
+
+### Version: 0.5.20 — August 18, 2026
+
+**Fix:**
+
+- `GlycoDownload.py`: the ChromeDriver log was never written. Selenium 4 removed the
+  `log_path` parameter and `**kwargs` swallowed it silently — so the
+  `chromedriver_log` key in `config.yaml` had no effect, and neither did the
+  `--verbose` flag passed through to ChromeDriver under `--debug`. Replaced with
+  `log_output` — ES-34.
+
+**Additions:**
+
+- `GlycoDownload.py`: when date entry fails, the current URL, a screenshot and a DOM
+  dump (`page_source_echec_saisie_dates_*.html`) are now saved to the log folder. The
+  date-picker fields are supplied by Dexcom and change without notice; without the
+  DOM there is no way to tell a renamed attribute from a panel that never opens —
+  ES-34.
+- `utils.py`: `capture_page_source`, for diagnosing missing selectors — ES-34.
+
+> **If date entry fails** — include `page_source_echec_saisie_dates_*.html` and the
+> matching screenshot in any diagnosis; both land in the `chromedriver_log` folder.
+
+---
+
 ### Version: 0.5.19 — August 15, 2026
 
 **Fix:**
@@ -1897,6 +2027,23 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.5.22 — August 20, 2026
+
+- Fix: `CHANGELOG.md` reference-link casing (`v0.x.y` → `V0.x.y`), the repository's
+  tags being uppercase (ES-34).
+
+### 0.5.21 — August 18, 2026
+
+- Fix: `cleanup_logs` also purges DOM dumps (`.html`), which escaped retention
+  (ES-34).
+
+### 0.5.20 — August 18, 2026
+
+- Fix: ChromeDriver log was never written (`log_path` removed by Selenium 4, replaced
+  with `log_output`) (ES-34).
+- Addition: screenshot, DOM dump and current URL captured when date entry fails; new
+  `capture_page_source` helper (ES-34).
 
 ### 0.5.19 — August 15, 2026
 

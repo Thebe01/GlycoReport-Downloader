@@ -5,6 +5,66 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.5.22] - 2026-08-20 — ES-34
+
+### Corrigé
+- `CHANGELOG.md` : casse des liens de référence harmonisée
+  (`releases/tag/v0.x.y` → `releases/tag/V0.x.y`). Les tags du dépôt sont créés en
+  `V` majuscule et GitHub est sensible à la casse sur ce segment d'URL : les 24
+  liens en minuscule renvoyaient un 404 (vérifié : `v0.5.19` → 404,
+  `V0.5.19` → 200).
+
+  **Limite connue** : sur 27 définitions de liens, seules `V0.5.19`, `V0.5.14` et
+  `V0.5.3` correspondent à des tags existants. Les 23 autres désignent des versions
+  qui n'ont jamais été taguées — dont `0.5.20` et `0.5.21`, dont la publication a
+  été abandonnée — et restent sans cible, indépendamment de la casse.
+
+---
+
+## [0.5.21] - 2026-08-18 — ES-34
+
+### Corrigé
+- `utils.py` : `cleanup_logs` purge désormais aussi les dumps DOM (`.html`), en plus
+  des `.log` et `.png`. Introduits en `0.5.20`, ils échappaient entièrement à
+  `log_retention_days`. Un dump est un instantané d'une page Clarity connectée — il
+  porte le nom du patient — donc leur accumulation illimitée n'était pas seulement un
+  problème d'espace disque.
+- `tests/test_utils.py` : accents rétablis dans deux docstrings françaises.
+- `README.md` : `--verbose` n'est pas une option CLI de l'application ; c'est
+  l'argument transmis à ChromeDriver via `service_args` sous `--debug`. Formulation
+  des notes 0.5.20 corrigée (FR et EN).
+
+### Ajouté
+- `tests/test_utils.py` : couverture de la purge des `.html` par `cleanup_logs`,
+  incluant la garantie que les extensions non gérées ne sont jamais supprimées —
+  92 tests.
+
+---
+
+## [0.5.20] - 2026-08-18 — ES-34
+
+### Corrigé
+- `GlycoDownload.py` : `ChromeService(log_path=...)` remplacé par `log_output=...`.
+  Selenium 4 a retiré le paramètre `log_path` ; il était avalé silencieusement par
+  `**kwargs`, sans aucun avertissement. Conséquence : la clé `chromedriver_log` de
+  `config.yaml` était inopérante, le journal ChromeDriver n'était jamais écrit et le
+  `--verbose` de `service_args` restait sans effet. Le dossier de destination est
+  désormais créé avant l'ouverture du journal.
+
+### Ajouté
+- `GlycoDownload.py` : sur échec de la saisie des dates, l'URL courante, une capture
+  d'écran et un dump du DOM sont enregistrés. Ce chemin d'erreur ne laissait aucune
+  trace exploitable, alors que les champs du sélecteur de dates (`start_date` /
+  `end_date`) sont fournis par Dexcom et changent sans préavis : sans DOM, impossible
+  de distinguer un attribut renommé d'un panneau qui ne s'ouvre pas.
+- `utils.py` : `capture_page_source` — enregistre le DOM courant pour le diagnostic.
+  Le DOM est lu **avant** l'ouverture du fichier : en mode `"w"`, un échec de lecture
+  laisserait un `.html` vide, indiscernable d'une page réellement vide.
+- `tests/test_utils.py` : couverture de `capture_page_source` (écriture UTF-8 et
+  absence de fichier résiduel quand la lecture du DOM échoue) — 91 tests.
+
+---
+
 ## [0.5.19] - 2026-08-15 — CR
 
 ### Corrigé
@@ -286,27 +346,30 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
-[0.5.19]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.19
-[0.5.18]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.18
-[0.5.17]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.17
-[0.5.16]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.16
-[0.5.15]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.15
-[0.5.14]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.14
-[0.5.13]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.13
-[0.5.12]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.12
-[0.5.11]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.11
-[0.5.10]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.10
-[0.5.9]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.9
-[0.5.8]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.8
-[0.5.7]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.7
-[0.5.6]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.6
-[0.5.5]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.5
-[0.5.4]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.4
-[0.5.3]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.3
-[0.5.2]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.2
-[0.5.0]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.5.0
-[0.4.0]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.4.0
-[0.3.x]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.3.19
-[0.2.x]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.2.18
-[0.1.x]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.1.7
-[0.0.x]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/v0.0.23
+[0.5.22]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.22
+[0.5.21]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.21
+[0.5.20]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.20
+[0.5.19]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.19
+[0.5.18]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.18
+[0.5.17]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.17
+[0.5.16]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.16
+[0.5.15]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.15
+[0.5.14]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.14
+[0.5.13]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.13
+[0.5.12]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.12
+[0.5.11]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.11
+[0.5.10]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.10
+[0.5.9]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.9
+[0.5.8]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.8
+[0.5.7]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.7
+[0.5.6]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.6
+[0.5.5]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.5
+[0.5.4]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.4
+[0.5.3]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.3
+[0.5.2]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.2
+[0.5.0]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.0
+[0.4.0]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.4.0
+[0.3.x]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.3.19
+[0.2.x]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.2.18
+[0.1.x]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.1.7
+[0.0.x]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.0.23
