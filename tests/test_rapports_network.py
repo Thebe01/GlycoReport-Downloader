@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-03-23
-Modifié le    : 2026-03-25
-Version       : 0.3.19
+Modifié le    : 2026-09-23
+Version       : 0.5.23
 Copyright     : Pierre Théberge
 
 Description
@@ -23,6 +23,9 @@ Modifications
 0.3.17 - 2026-03-23   [ES-14] : Ajout des tests de reconnexion (succès puis échec persistant).
 0.3.19 - 2026-03-25   [ES-14] : Ajout des tests d'intégration de selection_rapport
                                (retry après NetworkRecoveryRetry et propagation de NetworkRecoveryFailedError).
+0.5.23 - 2026-09-23   ES-28   : Ajout des tests de reset TCP distant : _handle_network_loss relance
+                                le rapport quand l'hôte coupe malgré un accès internet fonctionnel,
+                                et telechargement_rapport convertit une ProtocolError en retry.
 
 Paramètres
 ----------
@@ -41,6 +44,10 @@ import types
 import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from requests.exceptions import ChunkedEncodingError  # noqa: E402
+from urllib3.exceptions import ProtocolError  # noqa: E402
+from selenium.common.exceptions import WebDriverException  # noqa: E402
 
 import rapports  # noqa: E402
 
@@ -478,3 +485,68 @@ def test_traitement_rapport_comparer_reapplies_dates_if_removed_before_download(
 
     assert recorded_download_urls
     assert "dates=2026-04-13%2F2026-04-27" in recorded_download_urls[0]
+
+
+# --- ES-28 : reset TCP ferme par l'hote distant (incident du 2026-09-15 14:02:12) ---
+
+def _reset_emballe():
+    """Reproduit la forme exacte du 10054 journalise : reset emballe par urllib3 puis requests."""
+    reset = ConnectionResetError(
+        10054, "Une connexion existante a du etre fermee par l'hote distant", None, 10054, None
+    )
+    return ChunkedEncodingError(ProtocolError(f"Connection broken: {reset!r}", reset))
+
+
+def test_handle_network_loss_relance_le_rapport_sur_reset_distant(monkeypatch, caplog):
+    """L'acces internet repond, mais l'hote a coupe : il faut quand meme reessayer.
+
+    C'est le cas du 2026-09-15 : check_internet renvoyait vrai, donc l'incident
+    n'etait pas traite et le rapport etait abandonne en silence.
+    """
+    monkeypatch.setattr(rapports, "check_internet", lambda *_a, **_k: True)
+    logger = logging.getLogger("tests.rapports.network.reset.distant")
+
+    with caplog.at_level(logging.WARNING, logger=logger.name):
+        with pytest.raises(rapports.NetworkRecoveryRetry):
+            rapports._handle_network_loss(logger, "test reset distant", _reset_emballe())
+
+    assert "hote distant" in caplog.text or "hôte distant" in caplog.text
+
+
+def test_handle_network_loss_ignore_une_erreur_selenium_avec_internet_ok(monkeypatch):
+    """Une vraie erreur Selenium ne doit pas etre transformee en retry reseau."""
+    monkeypatch.setattr(rapports, "check_internet", lambda *_a, **_k: True)
+    logger = logging.getLogger("tests.rapports.network.selenium.ok")
+
+    assert rapports._handle_network_loss(
+        logger, "test erreur selenium", WebDriverException("element introuvable")
+    ) is None
+
+
+def test_telechargement_rapport_convertit_un_reset_en_retry(monkeypatch):
+    """Le reset doit etre rattrape par l'except du site de telechargement, pas s'echapper.
+
+    Avant ES-28, ProtocolError n'etant ni WebDriverException ni OSError, elle traversait
+    tous les except et remontait jusqu'au gestionnaire principal de GlycoDownload.
+    """
+    monkeypatch.setattr(rapports, "_recover_network_or_fail", lambda *_a, **_k: None)
+    monkeypatch.setattr(rapports, "check_internet", lambda *_a, **_k: True)
+    monkeypatch.setattr(rapports.time, "sleep", lambda *_a, **_k: None)
+
+    def overlay_coupe(*_args, **_kwargs):
+        raise _reset_emballe()
+
+    monkeypatch.setattr(rapports, "attendre_disparition_overlay", overlay_coupe)
+
+    logger = logging.getLogger("tests.rapports.network.telechargement.reset")
+    with pytest.raises(rapports.NetworkRecoveryRetry):
+        rapports.telechargement_rapport(
+            "Aperçu",
+            driver=object(),
+            logger=logger,
+            DOWNLOAD_DIR=".",
+            DIR_FINAL_BASE=".",
+            DATE_FIN="2026-09-13",
+            DATE_DEBUT="2026-08-31",
+            args=types.SimpleNamespace(debug=False),
+        )

@@ -5,6 +5,47 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.5.23] - 2026-09-23 — ES-28
+
+### Corrigé
+- Les coupures de connexion par l'hôte distant (`ConnectionResetError` 10054)
+  échappaient entièrement au dispositif de reconnexion. Trois causes cumulées,
+  corrigées ensemble :
+  - `GlycoDownload.py` : `ChromeDriverManager().install()` n'était couvert par aucun
+    retry. Cet appel télécharge le driver via `requests`, avant l'ouverture du
+    navigateur et donc en amont de tout le dispositif réseau de `rapports.py`. Il passe
+    désormais par `retry_on_network_error` (3 essais, backoff exponentiel borné).
+  - `rapports.py` : un reset remonte en `urllib3.exceptions.ProtocolError` brute depuis
+    Selenium (`remote_connection` n'enveloppe pas les erreurs urllib3) ou en
+    `requests.exceptions.RequestException` depuis webdriver-manager. Ni l'une ni l'autre
+    n'est une exception Selenium, et `ProtocolError` n'est même pas une `OSError` : les
+    neuf `except` des sites de perte réseau ne les voyaient pas et l'exception remontait
+    jusqu'au gestionnaire `except Exception` de `main()`. Ils incluent désormais
+    `ERREURS_TRANSPORT_RESEAU`.
+  - `rapports.py` : `_handle_network_loss` ne déclenchait un retry que si
+    `check_internet()` était faux. Lors d'un reset, l'accès internet répond
+    normalement — c'est l'hôte distant qui a fermé la connexion — donc la fonction
+    retournait en silence et le rapport était abandonné sans erreur visible.
+
+### Ajouté
+- `utils.py` : `is_connection_reset` parcourt la chaîne complète d'une exception
+  (`args`, `__cause__`, `__context__`) pour reconnaître un reset, qui n'arrive jamais nu
+  — urllib3 l'emballe, puis requests le réemballe.
+- `utils.py` : `retry_on_network_error`, pour les appels réseau effectués hors de
+  Selenium, où aucune reconnexion n'est câblée.
+- `tests/test_utils.py` et `tests/test_rapports_network.py` : couverture des deux
+  helpers, du reset doublement emballé, des chaînes `__cause__` et cycliques, et de la
+  conversion d'une `ProtocolError` en retry par `telechargement_rapport` — 105 tests.
+
+### Contexte
+- Incident du 2026-09-15 à 14:02:12, resté sans diagnostic : un reset pendant le
+  téléchargement du driver a tué une exécution complète avant tout téléchargement de
+  rapport. Le journal ne contenait que la ligne « Erreur inattendue dans le script
+  principal » — aucune trace de tentative de reconnexion, celle-ci n'ayant jamais été
+  appelée. Le second essai manuel, à 14:17, a réussi sans changement.
+
+---
+
 ## [0.5.22] - 2026-08-20 — ES-34
 
 ### Corrigé
@@ -346,6 +387,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.5.23]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.23
 [0.5.22]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.22
 [0.5.21]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.21
 [0.5.20]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.20

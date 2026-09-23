@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-13
-Modifié le    : 2026-08-18
-Version       : 0.5.21
+Modifié le    : 2026-09-23
+Version       : 0.5.23
 Copyright     : Pierre Théberge
 
 Description
@@ -53,6 +53,10 @@ Modifications
 0.5.21 - 2026-08-18   ES-34   : Couverture de la purge des dumps DOM (.html) par cleanup_logs,
                                 incluant la garantie que les extensions non gérées ne sont jamais
                                 supprimées. Accents corrigés dans les docstrings.
+0.5.23 - 2026-09-23   ES-28   : Couverture de is_connection_reset (reset nu, emballé par urllib3
+                                puis requests, chaîne __cause__, cycles) et de
+                                retry_on_network_error (succès au 2e essai, échec persistant,
+                                exception non réseau relancée sans retry).
 
 Paramètres
 ----------
@@ -69,6 +73,8 @@ import tempfile
 import pytest
 import time
 from typing import cast
+from requests.exceptions import ChunkedEncodingError
+from urllib3.exceptions import ProtocolError
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -87,6 +93,8 @@ from utils import (
     capture_screenshot,
     capture_page_source,
     cleanup_logs,
+    is_connection_reset,
+    retry_on_network_error,
     _compute_backoff_seconds
 )
 
@@ -411,3 +419,101 @@ def test_cleanup_logs_removes_only_old_screenshots(tmp_path):
     assert not old_screenshot1.exists()
     assert not old_screenshot2.exists()
     assert recent_screenshot.exists()
+
+
+# --- ES-28 : detection des resets TCP et retry des appels reseau hors Selenium ---
+
+def _reset_10054():
+    """Fabrique le ConnectionResetError observe le 2026-09-15 a 14:02:12."""
+    return ConnectionResetError(
+        10054, "Une connexion existante a du etre fermee par l'hote distant", None, 10054, None
+    )
+
+
+def test_is_connection_reset_detecte_le_reset_nu():
+    assert is_connection_reset(_reset_10054()) is True
+
+
+def test_is_connection_reset_detecte_le_reset_emballe_par_urllib3():
+    """C'est la forme reellement observee : urllib3 emballe le reset dans ses args."""
+    reset = _reset_10054()
+    emballee = ProtocolError(f"Connection broken: {reset!r}", reset)
+    assert is_connection_reset(emballee) is True
+
+
+def test_is_connection_reset_detecte_le_double_emballage_requests():
+    """webdriver-manager passe par requests, qui reemballe la ProtocolError d'urllib3."""
+    reset = _reset_10054()
+    emballee = ChunkedEncodingError(ProtocolError(f"Connection broken: {reset!r}", reset))
+    assert is_connection_reset(emballee) is True
+
+
+def test_is_connection_reset_suit_la_chaine_cause():
+    reset = _reset_10054()
+    try:
+        try:
+            raise reset
+        except ConnectionResetError as e:
+            raise WebDriverException("session deconnectee") from e
+    except WebDriverException as e:
+        assert is_connection_reset(e) is True
+
+
+def test_is_connection_reset_refuse_les_autres_erreurs():
+    assert is_connection_reset(TimeoutError("trop long")) is False
+    assert is_connection_reset(WebDriverException("element introuvable")) is False
+    assert is_connection_reset(None) is False
+
+
+def test_is_connection_reset_supporte_une_chaine_cyclique():
+    """Une chaine d'exceptions circulaire ne doit pas boucler indefiniment."""
+    a = ValueError("a")
+    b = ValueError("b")
+    a.__cause__ = b
+    b.__cause__ = a
+    assert is_connection_reset(a) is False
+
+
+def test_retry_on_network_error_reussit_au_deuxieme_essai(monkeypatch):
+    monkeypatch.setattr(time, "sleep", lambda _s: None)
+    essais = {"n": 0}
+
+    def operation():
+        essais["n"] += 1
+        if essais["n"] == 1:
+            raise ChunkedEncodingError(ProtocolError("Connection broken", _reset_10054()))
+        return "chromedriver.exe"
+
+    assert retry_on_network_error(operation, None, "test") == "chromedriver.exe"
+    assert essais["n"] == 2
+
+
+def test_retry_on_network_error_relance_apres_echec_persistant(monkeypatch):
+    monkeypatch.setattr(time, "sleep", lambda _s: None)
+    essais = {"n": 0}
+
+    def operation():
+        essais["n"] += 1
+        raise ChunkedEncodingError(ProtocolError("Connection broken", _reset_10054()))
+
+    with pytest.raises(ChunkedEncodingError):
+        retry_on_network_error(operation, None, "test", attempts=3)
+    assert essais["n"] == 3
+
+
+def test_retry_on_network_error_ne_retente_pas_une_erreur_non_reseau(monkeypatch):
+    monkeypatch.setattr(time, "sleep", lambda _s: None)
+    essais = {"n": 0}
+
+    def operation():
+        essais["n"] += 1
+        raise ValueError("driver introuvable pour cette version de Chrome")
+
+    with pytest.raises(ValueError):
+        retry_on_network_error(operation, None, "test")
+    assert essais["n"] == 1
+
+
+def test_retry_on_network_error_refuse_un_nombre_d_essais_invalide():
+    with pytest.raises(ValueError):
+        retry_on_network_error(lambda: None, None, "test", attempts=0)
