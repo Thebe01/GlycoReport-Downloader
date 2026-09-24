@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-09-23
-Version       : 0.5.24
+Version       : 0.5.25
 Copyright     : Pierre Théberge
 
 Description
@@ -111,6 +111,7 @@ Modifications
                                 de l'hôte distant (WinError 10054) remonte en ProtocolError brute, que
                                 ni les except Selenium ni check_internet ne détectaient.
 0.5.24 - 2026-09-23   CR      : Synchronisation de version (aucun changement fonctionnel).
+0.5.25 - 2026-09-23   CR      : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
