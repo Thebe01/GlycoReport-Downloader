@@ -36,6 +36,11 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 - `tests/test_utils.py` et `tests/test_rapports_network.py` : couverture des deux
   helpers, du reset doublement emballé, des chaînes `__cause__` et cycliques, et de la
   conversion d'une `ProtocolError` en retry par `telechargement_rapport` — 105 tests.
+- `requirements.txt` : `requests` et `urllib3` déclarés explicitement. Ils n'étaient
+  que des dépendances transitives (de webdriver-manager et de selenium), mais
+  `utils.py` les importe désormais en direct pour `RequestException` et
+  `ProtocolError` — rien ne garantissait leur présence si ces deux paquets changeaient
+  de pile HTTP.
 
 ### Contexte
 - Incident du 2026-09-15 à 14:02:12, resté sans diagnostic : un reset pendant le

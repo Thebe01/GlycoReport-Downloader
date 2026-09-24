@@ -4,3 +4,7 @@ python-dotenv
 colorama
 cryptography
 webdriver-manager>=4.0.2
+# Importes directement par utils.py (ProtocolError / RequestException) depuis 0.5.23 :
+# dependances transitives de selenium et webdriver-manager, mais desormais utilisees en direct.
+requests>=2.32.0
+urllib3>=2.0.0
