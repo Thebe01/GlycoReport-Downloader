@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-08-20
-Version       : 0.5.22
+Modifié le    : 2026-09-23
+Version       : 0.5.24
 Copyright     : Pierre Théberge
 
 Description
@@ -131,6 +131,13 @@ Modifications
 0.5.20 - 2026-08-18   ES-34   : Synchronisation de version (aucun changement fonctionnel).
 0.5.21 - 2026-08-18   ES-34   : Synchronisation de version (aucun changement fonctionnel).
 0.5.22 - 2026-08-20   ES-34   : Synchronisation de version (aucun changement fonctionnel).
+0.5.23 - 2026-09-23   ES-28   : Les resets TCP de l'hôte distant sont désormais rattrapés : les
+                                except réseau incluent ProtocolError et RequestException, et
+                                _handle_network_loss relance le rapport même quand check_internet
+                                répond vrai (cas d'une coupure côté serveur, pas côté accès).
+0.5.24 - 2026-09-23   CR      : _handle_network_loss relance les erreurs de transport non
+                                reconnues : ni reset, ni perte d'acces, elles etaient avalees
+                                par l'appelant et le rapport abandonne sans erreur visible.
 
 Paramètres
 ----------
@@ -163,6 +170,8 @@ from utils import (
     renomme_prefix,
     check_internet,
     capture_screenshot,
+    is_connection_reset,
+    ERREURS_TRANSPORT_RESEAU,
 )
 
 
@@ -197,12 +206,45 @@ def _recover_network_or_fail(logger, contexte: str, attempts: int = 3, delay_sec
 
 
 def _handle_network_loss(logger, contexte: str, original_exception: Exception) -> None:
-    """Détecte une perte réseau, tente la reconnexion et force un retry du rapport courant."""
+    """Détecte une perte réseau, tente la reconnexion et force un retry du rapport courant.
+
+    Deux cas distincts déclenchent un retry : la perte de l'accès internet (check_internet
+    est faux), et la coupure de la connexion par l'hôte distant alors que l'accès répond
+    toujours. Le second cas est celui du reset 10054 : check_internet renvoyant vrai,
+    l'incident passait inaperçu et le rapport était abandonné en silence.
+
+    Une erreur de transport qui n'entre dans aucun des deux cas est relancée : la fonction
+    ne retourne que pour les erreurs Selenium, dont ses appelants savent quoi faire.
+
+    Raises:
+        NetworkRecoveryRetry: Si un retry du rapport courant est requis.
+        NetworkRecoveryFailedError: Si la reconnexion échoue de façon persistante.
+        Exception: L'exception de transport d'origine, si elle n'est pas reconnue.
+    """
     if not check_internet():
         _recover_network_or_fail(logger, contexte)
         raise NetworkRecoveryRetry(
             f"Connexion internet rétablie après incident durant {contexte}. Retry du rapport en cours."
         ) from original_exception
+
+    if is_connection_reset(original_exception):
+        logger.warning(
+            "Connexion fermée par l'hôte distant (%s) alors que l'accès internet répond : %s",
+            contexte,
+            original_exception,
+        )
+        raise NetworkRecoveryRetry(
+            f"Connexion fermée par l'hôte distant durant {contexte}. Retry du rapport en cours."
+        ) from original_exception
+
+    if isinstance(original_exception, ERREURS_TRANSPORT_RESEAU):
+        # Erreur de transport ni reset, ni accompagnée d'une perte d'accès : la retourner
+        # silencieusement ferait abandonner le rapport sans erreur visible, puisque les
+        # appelants se contentent de journaliser puis de sortir — et l'un d'eux poursuit
+        # même vers le déplacement du fichier. Avant que ces except n'incluent le
+        # transport réseau, une telle exception remontait au gestionnaire principal : on
+        # conserve ce signalement.
+        raise original_exception
 
 
 def _get_log_dir_from_logger(logger) -> str:
@@ -488,7 +530,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
             driver.execute_script("arguments[0].click();", bouton)
         time.sleep(5)
         logger.debug("Le bouton Télécharger a été cliqué avec succès!")
-    except (TimeoutException, WebDriverException) as e:
+    except (TimeoutException, WebDriverException, *ERREURS_TRANSPORT_RESEAU) as e:
         _handle_network_loss(logger, f"clic du bouton Télécharger ({nom_rapport})", e)
         logger.error(f"Une erreur s'est produite lors du clic sur le bouton Télécharger : {e}", exc_info=args.debug)
         return
@@ -504,7 +546,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
             driver.execute_script("arguments[0].click();", radio_mode_couleur)
         time.sleep(5)
         logger.debug("Le mode couleur a été sélectionné avec succès!")
-    except (TimeoutException, WebDriverException) as e:
+    except (TimeoutException, WebDriverException, *ERREURS_TRANSPORT_RESEAU) as e:
         _handle_network_loss(logger, f"sélection du mode couleur ({nom_rapport})", e)
         logger.error(f"Une erreur s'est produite lors de la sélection du mode couleur : {e}")
         return
@@ -558,7 +600,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
             )
             # On tente quand même de continuer, le fichier est peut-être déjà là
 
-    except (TimeoutException, WebDriverException) as e:
+    except (TimeoutException, WebDriverException, *ERREURS_TRANSPORT_RESEAU) as e:
         _handle_network_loss(logger, f"enregistrement du rapport ({nom_rapport})", e)
         logger.error(f"Une erreur s'est produite lors de l'enregistrement du rapport : {e}")
         return
@@ -616,7 +658,7 @@ def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         raise
     except NetworkRecoveryFailedError:
         raise
-    except (TimeoutException, WebDriverException, RuntimeError) as e:
+    except (TimeoutException, WebDriverException, RuntimeError, *ERREURS_TRANSPORT_RESEAU) as e:
         _handle_network_loss(logger, f"traitement du rapport {nom_rapport}", e)
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}", exc_info=args.debug)
         return
@@ -861,7 +903,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         raise
     except NetworkRecoveryFailedError:
         raise
-    except (TimeoutException, WebDriverException, RuntimeError) as e:
+    except (TimeoutException, WebDriverException, RuntimeError, *ERREURS_TRANSPORT_RESEAU) as e:
         _handle_network_loss(logger, f"traitement du rapport {nom_rapport}", e)
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
         if args.debug:
@@ -988,7 +1030,7 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
         raise
     except NetworkRecoveryFailedError:
         raise
-    except (TimeoutException, WebDriverException, RuntimeError) as e:
+    except (TimeoutException, WebDriverException, RuntimeError, *ERREURS_TRANSPORT_RESEAU) as e:
         _handle_network_loss(logger, f"traitement du rapport {nom_rapport}", e)
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
         return
@@ -1028,7 +1070,7 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
             driver.execute_script("arguments[0].click();", bouton_export)
         time.sleep(5)
         logger.debug("Le bouton Exporter a été cliqué avec succès!")
-    except (TimeoutException, WebDriverException) as e:
+    except (TimeoutException, WebDriverException, *ERREURS_TRANSPORT_RESEAU) as e:
         _handle_network_loss(logger, "clic du bouton Exporter", e)
         logger.error(f"Une erreur s'est produite lors du clic sur le bouton Exporter : {e}", exc_info=args.debug)
         return
@@ -1042,7 +1084,7 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
         time.sleep(1)
         bouton_export_modal.click()
         logger.debug("Le bouton Exporter de la fenêtre modale a été cliqué avec succès!")
-    except (TimeoutException, WebDriverException) as e:
+    except (TimeoutException, WebDriverException, *ERREURS_TRANSPORT_RESEAU) as e:
         _handle_network_loss(logger, "clic du bouton Exporter de la modale", e)
         logger.error(f"Impossible de cliquer sur le bouton Exporter de la fenêtre modale : {e}")
         return
@@ -1069,7 +1111,7 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
                 "Le composant export-dialog est toujours présent 10 s après le clic Fermer "
                 "(poursuite — la déconnexion peut être interceptée)."
             )
-    except (TimeoutException, WebDriverException) as e:
+    except (TimeoutException, WebDriverException, *ERREURS_TRANSPORT_RESEAU) as e:
         _handle_network_loss(logger, "fermeture de la fenêtre modale d'export", e)
         logger.warning(f"Bouton Fermer non trouvé ou non cliquable dans la fenêtre modale : {e}")
 

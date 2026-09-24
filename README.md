@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.22-blue)
+![Version](https://img.shields.io/badge/version-0.5.24-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0522--20-août-2026)
+- [Nouveautés](#version--0524--23-septembre-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,48 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.5.24 — 23 septembre 2026
+
+### Nouveautés (0.5.24)
+
+**Correction :**
+
+- Une erreur de transport réseau qui n'est ni une coupure par l'hôte distant ni une
+  perte d'accès internet est désormais signalée au lieu d'être avalée. Depuis 0.5.23,
+  elle tombait dans `_handle_network_loss`, en ressortait sans rien déclencher, puis
+  l'appelant se contentait de journaliser et de sortir : le rapport était abandonné sans
+  erreur visible — CR.
+
+> **Note** — le flux d'export était le plus exposé : son bloc de fermeture de modale
+> journalise sans interrompre le traitement, qui poursuivait donc jusqu'au déplacement du
+> fichier comme si le rapport était valide.
+
+---
+
+## Version : 0.5.23 — 23 septembre 2026
+
+### Nouveautés (0.5.23)
+
+**Correction :**
+
+- Les coupures de connexion par l'hôte distant (`ConnectionResetError` 10054) sont
+  désormais rattrapées et réessayées. Elles échappaient entièrement au dispositif de
+  reconnexion pour trois raisons cumulées — ES-28 :
+  - le téléchargement de ChromeDriver, effectué avant l'ouverture du navigateur, n'était
+    couvert par aucun retry ; il est maintenant réessayé trois fois avec backoff ;
+  - un reset remonte en `ProtocolError` (ou `RequestException`), qui n'est ni une
+    exception Selenium ni une `OSError` : aucun `except` du traitement des rapports ne
+    la voyait. Les neuf sites de perte réseau les incluent désormais ;
+  - `_handle_network_loss` ne réagissait que si `check_internet()` était faux. Or lors
+    d'un reset, l'accès internet répond toujours — c'est le serveur qui a coupé — et le
+    rapport était abandonné en silence.
+
+> **Contexte** — le 15 septembre 2026 à 14:02:12, un reset pendant le téléchargement du
+> driver a interrompu une exécution complète avant tout téléchargement de rapport. Le
+> journal ne contenait qu'une ligne : « Erreur inattendue dans le script principal ».
 
 ---
 
@@ -621,6 +663,16 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.5.24 — 23 septembre 2026
+
+- Correction : les erreurs de transport réseau non reconnues sont signalées au lieu
+  d'être avalées, ce qui abandonnait le rapport en silence (CR).
+
+### 0.5.23 — 23 septembre 2026
+
+- Correction : les resets TCP de l'hôte distant (10054) sont détectés et réessayés, au
+  téléchargement du driver comme pendant le traitement des rapports (ES-28).
 
 ### 0.5.22 — 20 août 2026
 
@@ -1525,6 +1577,43 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.5.24 — September 23, 2026
+
+**Fix:**
+
+- A network transport error that is neither a remote-host reset nor a loss of internet
+  access is now reported instead of swallowed. Since 0.5.23 it landed in
+  `_handle_network_loss`, came back out without triggering anything, and the caller then
+  merely logged and returned: the report was abandoned with no visible error — CR.
+
+> **Note** — the export flow was the most exposed: its modal-close block logs without
+> interrupting the flow, which therefore continued all the way to moving the file as if
+> the report were valid.
+
+---
+
+### Version: 0.5.23 — September 23, 2026
+
+**Fix:**
+
+- Connections closed by the remote host (`ConnectionResetError` 10054) are now caught
+  and retried. They bypassed the reconnection logic entirely for three compounding
+  reasons — ES-28:
+  - the ChromeDriver download, which happens before the browser opens, had no retry at
+    all; it is now retried three times with backoff;
+  - a reset surfaces as `ProtocolError` (or `RequestException`), which is neither a
+    Selenium exception nor an `OSError`, so no `except` in report processing saw it. All
+    nine network-loss sites now include them;
+  - `_handle_network_loss` only reacted when `check_internet()` was false. During a
+    reset, internet access still responds — the server is what hung up — so the report
+    was silently abandoned.
+
+> **Context** — on September 15, 2026 at 14:02:12, a reset during the driver download
+> killed a full run before any report was downloaded. The log held a single line:
+> "Erreur inattendue dans le script principal".
+
+---
+
 ### Version: 0.5.22 — August 20, 2026
 
 **Fix:**
@@ -2027,6 +2116,16 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.5.24 — September 23, 2026
+
+- Fix: unrecognized network transport errors are reported instead of swallowed, which
+  silently abandoned the report (CR).
+
+### 0.5.23 — September 23, 2026
+
+- Fix: remote-host TCP resets (10054) are detected and retried, both for the driver
+  download and during report processing (ES-28).
 
 ### 0.5.22 — August 20, 2026
 

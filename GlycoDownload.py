@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
-Modifié le    : 2026-08-20
-Version       : 0.5.22
+Modifié le    : 2026-09-23
+Version       : 0.5.24
 Copyright     : Pierre Théberge
 
 Description
@@ -178,6 +178,11 @@ Modifications
                                  pas.
 0.5.21  - 2026-08-18   ES-34   : Synchronisation de version (aucun changement fonctionnel).
 0.5.22  - 2026-08-20   ES-34   : Synchronisation de version (aucun changement fonctionnel).
+0.5.23  - 2026-09-23   ES-28   : ChromeDriverManager().install() est désormais réessayé via
+                                 retry_on_network_error : un reset TCP pendant le téléchargement
+                                 du driver tuait l'exécution avant même l'ouverture du navigateur,
+                                 en amont de tout le dispositif de reconnexion.
+0.5.24  - 2026-09-23   CR      : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -228,6 +233,7 @@ from utils import (
     capture_page_source,
     pause_on_error,
     cleanup_logs,
+    retry_on_network_error,
     attendre_verification_humaine_cloudflare
 )
 from rapports import selection_rapport, NetworkRecoveryFailedError
@@ -888,8 +894,16 @@ def main(args, logger, config):
         # sans effet. ChromiumService traduit une chaîne en argument --log-path= passé à
         # chromedriver, qui écrit le fichier lui-même sans créer le dossier parent.
         os.makedirs(log_dir, exist_ok=True)
+        # ChromeDriverManager telecharge le driver via requests : un reset TCP de l'hote
+        # distant remonte ici en RequestException, hors de portee du dispositif de
+        # reconnexion de rapports.py, et tuait l'execution avant l'ouverture du navigateur.
+        chromedriver_path = retry_on_network_error(
+            ChromeDriverManager().install,
+            logger,
+            "telechargement de ChromeDriver",
+        )
         service = ChromeService(
-            ChromeDriverManager().install(),
+            chromedriver_path,
             log_output=chromedriver_log,
             service_args=chromedriver_service_args
         )

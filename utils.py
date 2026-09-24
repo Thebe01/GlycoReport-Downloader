@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-08-20
-Version       : 0.5.22
+Modifié le    : 2026-09-23
+Version       : 0.5.24
 Copyright     : Pierre Théberge
 
 Description
@@ -107,6 +107,10 @@ Modifications
                                 connectée — ils portent le nom du patient — et s'accumulaient sans
                                 limite, hors de toute rétention.
 0.5.22 - 2026-08-20   ES-34   : Synchronisation de version (aucun changement fonctionnel).
+0.5.23 - 2026-09-23   ES-28   : Ajout de is_connection_reset et retry_on_network_error : un reset TCP
+                                de l'hôte distant (WinError 10054) remonte en ProtocolError brute, que
+                                ni les except Selenium ni check_internet ne détectaient.
+0.5.24 - 2026-09-23   CR      : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -126,7 +130,9 @@ import urllib.request
 import urllib.parse
 from urllib.parse import urlparse
 from urllib.error import URLError
-from typing import Optional
+from typing import Callable, Optional, TypeVar
+from requests.exceptions import RequestException
+from urllib3.exceptions import ProtocolError
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
@@ -155,6 +161,107 @@ def _compute_backoff_seconds(base_seconds: float, attempt: int, max_seconds: flo
         return max_seconds
     delay = base_seconds * (2 ** attempt)
     return min(max_seconds, delay)
+
+
+# WinError/errno du reset TCP Windows : « Une connexion existante a dû être fermée par l'hôte distant ».
+WSAECONNRESET = 10054
+
+# Exceptions de transport réseau invisibles pour les except Selenium : un reset remonte en
+# ProtocolError brute depuis Selenium (remote_connection n'enveloppe pas les erreurs urllib3)
+# et en RequestException depuis webdriver-manager, qui passe par requests.
+ERREURS_TRANSPORT_RESEAU = (ProtocolError, RequestException)
+
+# Ce qui mérite un nouvel essai sur un appel réseau hors Selenium.
+ERREURS_RESEAU_TRANSITOIRES = ERREURS_TRANSPORT_RESEAU + (URLError, ConnectionError, TimeoutError)
+
+T = TypeVar("T")
+
+
+def is_connection_reset(exception: Optional[BaseException]) -> bool:
+    """Retourne True si l'exception, ou sa chaîne, est une coupure par l'hôte distant.
+
+    Un reset TCP n'arrive jamais nu : urllib3 l'emballe dans une ProtocolError
+    « Connection broken: ... », que requests réemballe encore. On parcourt donc toute la
+    chaîne (args, __cause__, __context__) au lieu de tester le seul type de surface.
+
+    Args:
+        exception: Exception à inspecter (None accepté).
+    """
+    vus: set[int] = set()
+    a_examiner: list[Optional[BaseException]] = [exception]
+    while a_examiner:
+        courant = a_examiner.pop()
+        if courant is None or id(courant) in vus:
+            continue
+        vus.add(id(courant))
+        if isinstance(courant, ConnectionResetError):
+            return True
+        if WSAECONNRESET in (getattr(courant, "winerror", None), getattr(courant, "errno", None)):
+            return True
+        for arg in getattr(courant, "args", ()):
+            if isinstance(arg, BaseException):
+                a_examiner.append(arg)
+        a_examiner.append(getattr(courant, "__cause__", None))
+        a_examiner.append(getattr(courant, "__context__", None))
+    return False
+
+
+def retry_on_network_error(
+    operation: Callable[[], T],
+    logger=None,
+    contexte: str = "appel réseau",
+    attempts: int = 3,
+    base_delay_seconds: float = 5,
+    max_delay_seconds: float = 30,
+) -> T:
+    """Exécute operation() en réessayant les échecs réseau transitoires, avec backoff.
+
+    Destiné aux appels réseau effectués hors de Selenium — le téléchargement de
+    ChromeDriver, notamment — où le dispositif de reconnexion de rapports.py n'est pas
+    câblé. La dernière exception est relancée telle quelle si tous les essais échouent.
+
+    Args:
+        operation: Appelable sans argument à exécuter.
+        logger: Logger pour les messages (optionnel).
+        contexte: Description de l'opération, pour les messages.
+        attempts: Nombre total d'essais (doit être >= 1).
+        base_delay_seconds: Délai de base du backoff.
+        max_delay_seconds: Délai maximal du backoff.
+
+    Raises:
+        ValueError: Si ``attempts`` est < 1.
+    """
+    if attempts < 1:
+        raise ValueError("attempts must be >= 1")
+
+    derniere_exception: Optional[BaseException] = None
+    for attempt in range(attempts):
+        try:
+            return operation()
+        except ERREURS_RESEAU_TRANSITOIRES as e:
+            derniere_exception = e
+            if attempt == attempts - 1:
+                break
+            delai = _compute_backoff_seconds(base_delay_seconds, attempt, max_delay_seconds)
+            if logger:
+                logger.warning(
+                    "Échec réseau (%s) : %s. Nouvel essai %d/%d dans %.0fs.",
+                    contexte,
+                    e,
+                    attempt + 2,
+                    attempts,
+                    delai,
+                )
+            time.sleep(delai)
+
+    if logger:
+        logger.error(
+            "Échec réseau persistant (%s) après %d essais : %s",
+            contexte,
+            attempts,
+            derniere_exception,
+        )
+    raise derniere_exception
 
 
 def _normalize_hostname(hostname: Optional[str]) -> Optional[str]:
