@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-03-23
 Modifié le    : 2026-09-23
-Version       : 0.5.23
+Version       : 0.5.24
 Copyright     : Pierre Théberge
 
 Description
@@ -26,6 +26,8 @@ Modifications
 0.5.23 - 2026-09-23   ES-28   : Ajout des tests de reset TCP distant : _handle_network_loss relance
                                 le rapport quand l'hôte coupe malgré un accès internet fonctionnel,
                                 et telechargement_rapport convertit une ProtocolError en retry.
+0.5.24 - 2026-09-23   CR      : Ajout des tests de relance des erreurs de transport non reconnues
+                                et de non-deplacement de fichier dans le flux d'export.
 
 Paramètres
 ----------
@@ -550,3 +552,61 @@ def test_telechargement_rapport_convertit_un_reset_en_retry(monkeypatch):
             DATE_DEBUT="2026-08-31",
             args=types.SimpleNamespace(debug=False),
         )
+
+
+# --- CR : une erreur de transport non reconnue ne doit pas etre avalee ---
+
+def test_handle_network_loss_relance_une_erreur_de_transport_non_reset(monkeypatch):
+    """Ni reset, ni perte d'acces : l'exception doit remonter, pas disparaitre.
+
+    Sans cette relance, _handle_network_loss retournait None et l'appelant se contentait
+    de journaliser puis de sortir : le rapport etait abandonne sans erreur visible.
+    """
+    monkeypatch.setattr(rapports, "check_internet", lambda *_a, **_k: True)
+    logger = logging.getLogger("tests.rapports.network.transport.inconnu")
+    transport = ChunkedEncodingError("reponse tronquee sans reset")
+
+    with pytest.raises(ChunkedEncodingError):
+        rapports._handle_network_loss(logger, "test transport inconnu", transport)
+
+
+def test_export_csv_ne_poursuit_pas_apres_une_erreur_de_transport(monkeypatch):
+    """Une erreur de transport dans le flux d'export ne doit pas mener au deplacement.
+
+    Le flux d'export est le plus expose : son bloc de fermeture de modale journalise en
+    warning sans return, donc il poursuit vers wait_for_csv_download puis le deplacement
+    du fichier. Tant que _handle_network_loss avalait l'exception, le traitement se
+    terminait comme si le rapport etait valide. Ce test verrouille l'invariant du flux :
+    une erreur de transport remonte, et aucun fichier n'est deplace.
+    """
+    monkeypatch.setattr(rapports, "_recover_network_or_fail", lambda *_a, **_k: None)
+    monkeypatch.setattr(rapports, "check_internet", lambda *_a, **_k: True)
+    monkeypatch.setattr(rapports.time, "sleep", lambda *_a, **_k: None)
+
+    deplacements = []
+    monkeypatch.setattr(
+        rapports,
+        "deplace_et_renomme_rapport",
+        lambda *_a, **_k: deplacements.append(True),
+    )
+    monkeypatch.setattr(rapports, "wait_for_csv_download", lambda *_a, **_k: True)
+
+    def clic_qui_coupe(*_args, **_kwargs):
+        raise ChunkedEncodingError("reponse tronquee sans reset")
+
+    monkeypatch.setattr(rapports, "attendre_disparition_overlay", clic_qui_coupe)
+
+    logger = logging.getLogger("tests.rapports.network.export.transport")
+    with pytest.raises(ChunkedEncodingError):
+        rapports.traitement_export_csv(
+            "Export",
+            driver=object(),
+            logger=logger,
+            DOWNLOAD_DIR=".",
+            DIR_FINAL_BASE=".",
+            DATE_FIN="2026-09-13",
+            DATE_DEBUT="2026-08-31",
+            args=types.SimpleNamespace(debug=False),
+        )
+
+    assert deplacements == [], "aucun fichier ne doit etre deplace apres une erreur de transport"

@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-09-23
-Version       : 0.5.23
+Version       : 0.5.24
 Copyright     : Pierre Théberge
 
 Description
@@ -110,6 +110,7 @@ Modifications
 0.5.23 - 2026-09-23   ES-28   : Ajout de is_connection_reset et retry_on_network_error : un reset TCP
                                 de l'hôte distant (WinError 10054) remonte en ProtocolError brute, que
                                 ni les except Selenium ni check_internet ne détectaient.
+0.5.24 - 2026-09-23   CR      : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------

@@ -5,6 +5,35 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.5.24] - 2026-09-23 — CR
+
+### Corrigé
+- `rapports.py` : `_handle_network_loss` relance désormais les erreurs de transport
+  qu'elle ne reconnaît pas, au lieu de retourner sans rien faire. Depuis que les neuf
+  `except` des sites de perte réseau incluent `ProtocolError` et `RequestException`
+  (0.5.23), une erreur de transport qui n'est ni un reset ni accompagnée d'une perte
+  d'accès tombait dans cette fonction, en ressortait silencieusement, puis était avalée
+  par l'appelant — qui journalise et sort. Le rapport était abandonné sans erreur
+  visible, alors qu'avant 0.5.23 l'exception remontait au gestionnaire principal.
+
+  Le flux d'export était le plus exposé : son bloc de fermeture de modale journalise en
+  warning **sans `return`**, donc le traitement poursuivait vers `wait_for_csv_download`
+  et le déplacement du fichier comme si le rapport était valide.
+
+### Ajouté
+- `tests/test_rapports_network.py` : relance d'une erreur de transport non reconnue par
+  `_handle_network_loss`, et garantie qu'aucun fichier n'est déplacé quand une telle
+  erreur survient dans le flux d'export — 107 tests.
+
+### Contexte
+- Les deux constats d'une revue Copilot sur la PR de 0.5.23 se ramenaient à ce seul
+  défaut. La revue situait par ailleurs le premier au mauvais endroit : elle visait un
+  `except` qui appelle bien `_handle_network_loss`, et non le bloc best-effort de
+  fermeture de modale laissé volontairement inchangé, qui journalise en DEBUG et reste
+  limité aux exceptions Selenium.
+
+---
+
 ## [0.5.23] - 2026-09-23 — ES-28
 
 ### Corrigé
@@ -392,6 +421,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.5.24]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.24
 [0.5.23]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.23
 [0.5.22]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.22
 [0.5.21]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.21

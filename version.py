@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
 Modifié le    : 2026-09-23
-Version       : 0.5.23
+Version       : 0.5.24
 Copyright     : Pierre Théberge
 
 Description
@@ -151,6 +151,8 @@ Modifications
 0.5.23 - 2026-09-23   ES-28   : Robustesse réseau : les resets TCP de l'hôte distant (WinError
                                 10054) sont détectés et réessayés, au téléchargement du driver
                                 comme pendant le traitement des rapports.
+0.5.24 - 2026-09-23   CR      : _handle_network_loss relance les erreurs de transport qu'elle ne
+                                reconnait pas, au lieu de les avaler silencieusement.
 
 Paramètres
 ----------
@@ -162,4 +164,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.23"
+__version__ = "0.5.24"

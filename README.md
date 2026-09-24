@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.23-blue)
+![Version](https://img.shields.io/badge/version-0.5.24-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0523--23-septembre-2026)
+- [Nouveautés](#version--0524--23-septembre-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,24 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.5.24 — 23 septembre 2026
+
+### Nouveautés (0.5.24)
+
+**Correction :**
+
+- Une erreur de transport réseau qui n'est ni une coupure par l'hôte distant ni une
+  perte d'accès internet est désormais signalée au lieu d'être avalée. Depuis 0.5.23,
+  elle tombait dans `_handle_network_loss`, en ressortait sans rien déclencher, puis
+  l'appelant se contentait de journaliser et de sortir : le rapport était abandonné sans
+  erreur visible — CR.
+
+> **Note** — le flux d'export était le plus exposé : son bloc de fermeture de modale
+> journalise sans interrompre le traitement, qui poursuivait donc jusqu'au déplacement du
+> fichier comme si le rapport était valide.
 
 ---
 
@@ -645,6 +663,11 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.5.24 — 23 septembre 2026
+
+- Correction : les erreurs de transport réseau non reconnues sont signalées au lieu
+  d'être avalées, ce qui abandonnait le rapport en silence (CR).
 
 ### 0.5.23 — 23 septembre 2026
 
@@ -1554,6 +1577,21 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.5.24 — September 23, 2026
+
+**Fix:**
+
+- A network transport error that is neither a remote-host reset nor a loss of internet
+  access is now reported instead of swallowed. Since 0.5.23 it landed in
+  `_handle_network_loss`, came back out without triggering anything, and the caller then
+  merely logged and returned: the report was abandoned with no visible error — CR.
+
+> **Note** — the export flow was the most exposed: its modal-close block logs without
+> interrupting the flow, which therefore continued all the way to moving the file as if
+> the report were valid.
+
+---
+
 ### Version: 0.5.23 — September 23, 2026
 
 **Fix:**
@@ -2078,6 +2116,11 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.5.24 — September 23, 2026
+
+- Fix: unrecognized network transport errors are reported instead of swallowed, which
+  silently abandoned the report (CR).
 
 ### 0.5.23 — September 23, 2026
 

@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-09-23
-Version       : 0.5.23
+Version       : 0.5.24
 Copyright     : Pierre Théberge
 
 Description
@@ -135,6 +135,9 @@ Modifications
                                 except réseau incluent ProtocolError et RequestException, et
                                 _handle_network_loss relance le rapport même quand check_internet
                                 répond vrai (cas d'une coupure côté serveur, pas côté accès).
+0.5.24 - 2026-09-23   CR      : _handle_network_loss relance les erreurs de transport non
+                                reconnues : ni reset, ni perte d'acces, elles etaient avalees
+                                par l'appelant et le rapport abandonne sans erreur visible.
 
 Paramètres
 ----------
@@ -209,6 +212,14 @@ def _handle_network_loss(logger, contexte: str, original_exception: Exception) -
     est faux), et la coupure de la connexion par l'hôte distant alors que l'accès répond
     toujours. Le second cas est celui du reset 10054 : check_internet renvoyant vrai,
     l'incident passait inaperçu et le rapport était abandonné en silence.
+
+    Une erreur de transport qui n'entre dans aucun des deux cas est relancée : la fonction
+    ne retourne que pour les erreurs Selenium, dont ses appelants savent quoi faire.
+
+    Raises:
+        NetworkRecoveryRetry: Si un retry du rapport courant est requis.
+        NetworkRecoveryFailedError: Si la reconnexion échoue de façon persistante.
+        Exception: L'exception de transport d'origine, si elle n'est pas reconnue.
     """
     if not check_internet():
         _recover_network_or_fail(logger, contexte)
@@ -225,6 +236,15 @@ def _handle_network_loss(logger, contexte: str, original_exception: Exception) -
         raise NetworkRecoveryRetry(
             f"Connexion fermée par l'hôte distant durant {contexte}. Retry du rapport en cours."
         ) from original_exception
+
+    if isinstance(original_exception, ERREURS_TRANSPORT_RESEAU):
+        # Erreur de transport ni reset, ni accompagnée d'une perte d'accès : la retourner
+        # silencieusement ferait abandonner le rapport sans erreur visible, puisque les
+        # appelants se contentent de journaliser puis de sortir — et l'un d'eux poursuit
+        # même vers le déplacement du fichier. Avant que ces except n'incluent le
+        # transport réseau, une telle exception remontait au gestionnaire principal : on
+        # conserve ce signalement.
+        raise original_exception
 
 
 def _get_log_dir_from_logger(logger) -> str:
