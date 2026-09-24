@@ -5,6 +5,24 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.5.25] - 2026-09-23 — CR
+
+### Ajouté
+- `tests/test_rapports_network.py` : test ciblant spécifiquement le bloc de fermeture de
+  la modale d'export. C'est le seul des neuf sites réseau qui journalise **sans
+  `return`** : le traitement y poursuivait jusqu'au déplacement du fichier, donc une
+  erreur de transport produisait un rapport d'apparence valide. Les deux clics précédents
+  réussissent, la coupure survient sur la fermeture, et une assertion vérifie le contexte
+  réellement atteint — 108 tests.
+
+### Contexte
+- Le test de 0.5.24 couvrait le mécanisme dans `_handle_network_loss`, mais son test de
+  flux passait par le site « clic du bouton Exporter » et non par la fermeture de modale.
+  Vérifié : sans la relance de 0.5.24, ce nouveau test échoue sur ses deux assertions —
+  aucune exception ne remonte et le fichier est déplacé.
+
+---
+
 ## [0.5.24] - 2026-09-23 — CR
 
 ### Corrigé
@@ -421,6 +439,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.5.25]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.25
 [0.5.24]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.24
 [0.5.23]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.23
 [0.5.22]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.22

@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
 Modifié le    : 2026-09-23
-Version       : 0.5.24
+Version       : 0.5.25
 Copyright     : Pierre Théberge
 
 Description
@@ -183,6 +183,7 @@ Modifications
                                  du driver tuait l'exécution avant même l'ouverture du navigateur,
                                  en amont de tout le dispositif de reconnexion.
 0.5.24  - 2026-09-23   CR      : Synchronisation de version (aucun changement fonctionnel).
+0.5.25  - 2026-09-23   CR      : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------

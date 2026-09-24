@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-03-23
 Modifié le    : 2026-09-23
-Version       : 0.5.24
+Version       : 0.5.25
 Copyright     : Pierre Théberge
 
 Description
@@ -28,6 +28,9 @@ Modifications
                                 et telechargement_rapport convertit une ProtocolError en retry.
 0.5.24 - 2026-09-23   CR      : Ajout des tests de relance des erreurs de transport non reconnues
                                 et de non-deplacement de fichier dans le flux d'export.
+0.5.25 - 2026-09-23   CR      : Ajout du test ciblant le bloc de fermeture de modale d'export :
+                                les deux clics precedents reussissent, la coupure survient sur la
+                                fermeture, et l'assertion verifie le contexte atteint.
 
 Paramètres
 ----------
@@ -610,3 +613,79 @@ def test_export_csv_ne_poursuit_pas_apres_une_erreur_de_transport(monkeypatch):
         )
 
     assert deplacements == [], "aucun fichier ne doit etre deplace apres une erreur de transport"
+
+
+def test_export_csv_ne_deplace_rien_si_la_fermeture_de_modale_coupe(monkeypatch):
+    """Cible le bloc de fermeture de modale, le seul sans return apres le handler.
+
+    Les deux clics precedents reussissent, la coupure survient sur la fermeture. C'est le
+    chemin le plus dangereux : sans return, le traitement poursuivait jusqu'au deplacement
+    du fichier, donc une erreur de transport y produisait un rapport d'apparence valide.
+    """
+
+    class DummyElement:
+        def click(self):
+            return None
+
+    class DummyDriver:
+        def execute_script(self, *_args, **_kwargs):
+            return None
+
+    class DummyWait:
+        """Laisse passer les deux premiers until, coupe sur le troisieme."""
+
+        appels = {"n": 0}
+
+        def __init__(self, _driver, _timeout):
+            pass
+
+        def until(self, _condition):
+            DummyWait.appels["n"] += 1
+            if DummyWait.appels["n"] >= 3:
+                raise ChunkedEncodingError("reponse tronquee sans reset")
+            return DummyElement()
+
+    monkeypatch.setattr(rapports, "_recover_network_or_fail", lambda *_a, **_k: None)
+    monkeypatch.setattr(rapports, "check_internet", lambda *_a, **_k: True)
+    monkeypatch.setattr(rapports.time, "sleep", lambda *_a, **_k: None)
+    monkeypatch.setattr(rapports, "attendre_disparition_overlay", lambda *_a, **_k: None)
+    monkeypatch.setattr(rapports, "WebDriverWait", DummyWait)
+    monkeypatch.setattr(
+        rapports.EC, "element_to_be_clickable", lambda locator: ("clickable", locator)
+    )
+
+    contextes = []
+    vrai_handler = rapports._handle_network_loss
+    monkeypatch.setattr(
+        rapports,
+        "_handle_network_loss",
+        lambda logger, contexte, exc: (
+            contextes.append(contexte), vrai_handler(logger, contexte, exc)
+        )[1],
+    )
+
+    deplacements = []
+    monkeypatch.setattr(rapports, "wait_for_csv_download", lambda *_a, **_k: True)
+    monkeypatch.setattr(
+        rapports,
+        "deplace_et_renomme_rapport",
+        lambda *_a, **_k: deplacements.append(True),
+    )
+
+    logger = logging.getLogger("tests.rapports.network.export.fermeture")
+    with pytest.raises(ChunkedEncodingError):
+        rapports.traitement_export_csv(
+            "Export",
+            driver=DummyDriver(),
+            logger=logger,
+            DOWNLOAD_DIR=".",
+            DIR_FINAL_BASE=".",
+            DATE_FIN="2026-09-13",
+            DATE_DEBUT="2026-08-31",
+            args=types.SimpleNamespace(debug=False),
+        )
+
+    assert contextes == ["fermeture de la fenêtre modale d'export"], (
+        f"le test doit atteindre le bloc de fermeture de modale, pas {contextes}"
+    )
+    assert deplacements == [], "aucun fichier ne doit etre deplace"

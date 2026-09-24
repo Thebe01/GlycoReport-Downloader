@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.24-blue)
+![Version](https://img.shields.io/badge/version-0.5.25-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0524--23-septembre-2026)
+- [Nouveautés](#version--0525--23-septembre-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,18 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.5.25 — 23 septembre 2026
+
+### Nouveautés (0.5.25)
+
+**Ajout :**
+
+- Couverture de test du bloc de fermeture de la modale d'export, le seul des neuf sites
+  réseau qui journalise sans interrompre le traitement. Une erreur de transport y menait
+  jusqu'au déplacement du fichier, donc à un rapport d'apparence valide — CR.
 
 ---
 
@@ -663,6 +675,11 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.5.25 — 23 septembre 2026
+
+- Ajout : couverture de test du bloc de fermeture de la modale d'export, seul site réseau
+  sans interruption du traitement après le handler (CR).
 
 ### 0.5.24 — 23 septembre 2026
 
@@ -1577,6 +1594,16 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.5.25 — September 23, 2026
+
+**Addition:**
+
+- Test coverage for the export modal-close block, the only one of the nine network sites
+  that logs without interrupting the flow. A transport error there led all the way to
+  moving the file, hence to a report that looked valid — CR.
+
+---
+
 ### Version: 0.5.24 — September 23, 2026
 
 **Fix:**
@@ -2116,6 +2143,11 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.5.25 — September 23, 2026
+
+- Addition: test coverage for the export modal-close block, the only network site that
+  does not interrupt the flow after the handler (CR).
 
 ### 0.5.24 — September 23, 2026
 

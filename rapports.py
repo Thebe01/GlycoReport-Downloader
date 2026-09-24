@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-09-23
-Version       : 0.5.24
+Version       : 0.5.25
 Copyright     : Pierre Théberge
 
 Description
@@ -138,6 +138,7 @@ Modifications
 0.5.24 - 2026-09-23   CR      : _handle_network_loss relance les erreurs de transport non
                                 reconnues : ni reset, ni perte d'acces, elles etaient avalees
                                 par l'appelant et le rapport abandonne sans erreur visible.
+0.5.25 - 2026-09-23   CR      : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------

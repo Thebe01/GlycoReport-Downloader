@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
 Modifié le    : 2026-09-23
-Version       : 0.5.24
+Version       : 0.5.25
 Copyright     : Pierre Théberge
 
 Description
@@ -153,6 +153,8 @@ Modifications
                                 comme pendant le traitement des rapports.
 0.5.24 - 2026-09-23   CR      : _handle_network_loss relance les erreurs de transport qu'elle ne
                                 reconnait pas, au lieu de les avaler silencieusement.
+0.5.25 - 2026-09-23   CR      : Couverture du bloc de fermeture de modale d'export, seul site
+                                reseau sans return apres le handler.
 
 Paramètres
 ----------
@@ -164,4 +166,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.5.24"
+__version__ = "0.5.25"
