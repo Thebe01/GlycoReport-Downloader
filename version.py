@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
 Modifié le    : 2026-09-24
-Version       : 0.6.0
+Version       : 0.6.1
 Copyright     : Pierre Théberge
 
 Description
@@ -157,6 +157,8 @@ Modifications
                                 reseau sans return apres le handler.
 0.6.0  - 2026-09-24   ES-28   : Renommage résistant au verrou antivirus, bilan de fin d'exécution,
                                 journal encadré Début/Fin, journal ChromeDriver par exécution.
+0.6.1  - 2026-09-24   ES-28   : Arrêt explicite du service ChromeDriver à la fermeture (WinError 6
+                                à la sortie de Python).
 
 Paramètres
 ----------
@@ -168,4 +170,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"

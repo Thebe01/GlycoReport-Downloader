@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-09-24
-Version       : 0.6.0
+Version       : 0.6.1
 Copyright     : Pierre Théberge
 
 Description
@@ -142,6 +142,7 @@ Modifications
 0.6.0  - 2026-09-24   ES-28   : Renommage relancé 120 s tant que WinError 32 ; seuls les fichiers
                                 créés après le clic sont retenus ; bilan de fin de traitement ;
                                 erreurs JS du navigateur en DEBUG.
+0.6.1  - 2026-09-24   ES-28   : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
