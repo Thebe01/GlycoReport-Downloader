@@ -11,8 +11,8 @@
     Auteur         : Pierre Théberge
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2025-09-03
-    Modifié le     : 2026-07-10
-    Version        : 2.0.10
+    Modifié le     : 2026-09-24
+    Version        : 2.0.11
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
@@ -52,6 +52,8 @@
                                   empiriquement — un rebuild sans changement laisse le fichier
                                   intact). Seul le code de sortie de PyInstaller ($LASTEXITCODE)
                                   est désormais vérifié pour détecter un échec de build.
+    2.0.11 - 2026-09-24 - ES-28 : Exécutable compilé en --console au lieu de --windowed : la
+                                  console reste ouverte jusqu'à la fin de l'exécution.
 
 .EXAMPLE
     PS> .\DIST-GlycoReport-Downloader.ps1
@@ -166,7 +168,7 @@ function Assert-PyInstallerOutput {
 }
 
 Write-Host "Génération de l'exécutable principal ($appName)..."
-& $pythonCmd -m PyInstaller --noconfirm --onefile --windowed --hidden-import=yaml --hidden-import=selenium.webdriver.chrome.webdriver --hidden-import=selenium.webdriver.chrome.service --hidden-import=selenium.webdriver.remote.webdriver --collect-submodules selenium --name "$appName" --distpath $distDir --workpath build --specpath . GlycoDownload.py
+& $pythonCmd -m PyInstaller --noconfirm --onefile --console --hidden-import=yaml --hidden-import=selenium.webdriver.chrome.webdriver --hidden-import=selenium.webdriver.chrome.service --hidden-import=selenium.webdriver.remote.webdriver --collect-submodules selenium --name "$appName" --distpath $distDir --workpath build --specpath . GlycoDownload.py
 Assert-PyInstallerOutput -ExePath "$distDir\$appName.exe" -Label "l'exécutable principal ($appName)"
 
 Write-Host "Génération de l'exécutable de migration (migrate)..."

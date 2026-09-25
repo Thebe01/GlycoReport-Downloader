@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-09-23
-Version       : 0.5.25
+Modifié le    : 2026-09-24
+Version       : 0.6.0
 Copyright     : Pierre Théberge
 
 Description
@@ -139,6 +139,9 @@ Modifications
                                 reconnues : ni reset, ni perte d'acces, elles etaient avalees
                                 par l'appelant et le rapport abandonne sans erreur visible.
 0.5.25 - 2026-09-23   CR      : Synchronisation de version (aucun changement fonctionnel).
+0.6.0  - 2026-09-24   ES-28   : Renommage relancé 120 s tant que WinError 32 ; seuls les fichiers
+                                créés après le clic sont retenus ; bilan de fin de traitement ;
+                                erreurs JS du navigateur en DEBUG.
 
 Paramètres
 ----------
@@ -420,7 +423,72 @@ def get_period_suffix(date_debut, date_fin, args, logger=None):
     return f"{jours}{unite}"
 
 
-def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT=None, args=None, driver=None, log_dir=None, now_str=None):
+# Bilan de l'exécution : rapports tentés, classés, et sautés volontairement.
+_BILAN = {"tentes": [], "reussis": set(), "sautes": []}
+
+
+def _bilan_reinitialiser() -> None:
+    _BILAN["tentes"].clear()
+    _BILAN["reussis"].clear()
+    _BILAN["sautes"].clear()
+
+
+def _bilan_tente(nom_rapport: str) -> None:
+    if nom_rapport not in _BILAN["tentes"]:
+        _BILAN["tentes"].append(nom_rapport)
+
+
+def calculer_rapports_manquants(demandes, tentes, reussis) -> list[str]:
+    """Retourne les rapports manquants, dans l'ordre de traitement.
+
+    Manquant = tenté sans être classé, ou demandé sans aucune tentative.
+    Un rapport demandé (ex. "Statistiques") couvre ses sous-rapports
+    ("Statistiques-Quotidiennes", ...).
+    """
+    manquants = [nom for nom in tentes if nom not in reussis]
+    for demande in demandes:
+        if not any(nom == demande or nom.startswith(f"{demande}-") for nom in tentes):
+            manquants.append(demande)
+    return manquants
+
+
+def ecrire_bilan(logger, demandes) -> list[str]:
+    """Écrit le bilan de fin de traitement et retourne la liste des rapports manquants."""
+    reussis = [nom for nom in _BILAN["tentes"] if nom in _BILAN["reussis"]]
+    manquants = calculer_rapports_manquants(demandes, _BILAN["tentes"], _BILAN["reussis"])
+    logger.info("Bilan : %d rapport(s) classé(s) : %s", len(reussis), ", ".join(reussis) or "aucun")
+    if _BILAN["sautes"]:
+        logger.warning("Bilan : non téléchargés (problème Dexcom connu) : %s", ", ".join(_BILAN["sautes"]))
+    if manquants:
+        logger.error("Bilan : %d rapport(s) manquant(s) : %s", len(manquants), ", ".join(manquants))
+    return manquants
+
+
+def _remplacer_avec_relance(source, destination, logger, delai_max=120, intervalle=2) -> bool:
+    """os.replace relancé tant qu'il échoue avec WinError 32, pendant delai_max secondes.
+
+    Le délai inclut la durée des appels eux-mêmes : un os.replace peut rester bloqué
+    10 à 40 s pendant l'analyse antivirus avant d'échouer.
+    """
+    echeance = time.monotonic() + delai_max
+    tentative = 1
+    while True:
+        try:
+            os.replace(source, destination)
+            if tentative > 1:
+                logger.info("Renommage réussi à la tentative %d.", tentative)
+            return True
+        except OSError as e:
+            # Avast garde le fichier ouvert pendant son analyse (ES-28) : ne pas retirer la relance.
+            if getattr(e, "winerror", None) != 32 or time.monotonic() >= echeance:
+                logger.error(f"Erreur lors du renommage du fichier (tentative {tentative}) : {e}")
+                return False
+            logger.debug("Fichier verrouillé (tentative %d), nouvel essai dans %d s : %s", tentative, intervalle, e)
+            time.sleep(intervalle)
+            tentative += 1
+
+
+def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT=None, args=None, driver=None, log_dir=None, now_str=None, depuis=None):
     """
     Déplace et renomme le rapport téléchargé dans le dossier final.
 
@@ -430,7 +498,12 @@ def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE
         DOWNLOAD_DIR (str): Dossier de téléchargement.
         DIR_FINAL_BASE (str): Dossier final de destination.
         DATE_FIN (str): Date de fin pour le nommage.
+        depuis (float): Horodatage du clic de téléchargement ; les fichiers créés avant sont ignorés.
+
+    Returns:
+        bool: True si le rapport a été classé.
     """
+    classe = False
     logger.info(f"Deplacement et renommage du rapport {nom_rapport}")
     annee = DATE_FIN[:4]
     dir_final = os.path.join(DIR_FINAL_BASE, annee)
@@ -443,6 +516,7 @@ def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE
         DOWNLOAD_DIR,
         allowed_extensions=allowed_exts,
         logger=logger,
+        depuis=depuis,
     )
     if chemin_fichier_telecharge:
         nom_fichier_telecharge = os.path.basename(chemin_fichier_telecharge)
@@ -455,37 +529,35 @@ def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE
             nouveau_nom_fichier = f"Clarity_Exporter_Théberge_Pierre_{DATE_FIN}{suffix_periode}.csv"
             destination = os.path.join(dir_final, nouveau_nom_fichier)
             logger.debug(f"Renommage Export : {chemin_fichier_telecharge} -> {destination}")
-            try:
-                os.replace(chemin_fichier_telecharge, destination)
+            classe = _remplacer_avec_relance(chemin_fichier_telecharge, destination, logger)
+            if classe:
                 logger.info(f"Le fichier Export {chemin_fichier_telecharge} a été renommé en {destination}")
-            except OSError as e:
-                logger.error(f"Erreur lors du renommage du fichier Export : {e}")
         else:
             nouveau_prefix = renomme_prefix(prefix, DATE_FIN, logger=logger)
             nouveau_nom_fichier = nouveau_prefix + "_" + nom_rapport + suffix_periode + "." + suffix
             destination = os.path.join(dir_final, nouveau_nom_fichier)
             logger.debug(f"Renommage du fichier : {chemin_fichier_telecharge} -> {destination}")
-            try:
-                os.replace(chemin_fichier_telecharge, destination)
+            classe = _remplacer_avec_relance(chemin_fichier_telecharge, destination, logger)
+            if classe:
                 logger.info(f"Le fichier {chemin_fichier_telecharge} a été renommé en {destination}")
-            except OSError as e:
-                logger.error(f"Erreur lors du renommage du fichier : {e}")
     else:
         logger.error("Aucun fichier téléchargé trouvé (pdf/csv).")
         if driver is not None and log_dir is not None and now_str is not None:
             time.sleep(2)
             capture_screenshot(driver, logger, "deplace_et_renomme_rapport_error", log_dir, now_str)
 
-    # Log des erreurs JS du navigateur si driver est fourni
+    # Journal JS du navigateur, en DEBUG : les SEVERE viennent du site Dexcom ou des
+    # extensions (en-tête "date", LastPass), jamais du traitement lui-même.
     if driver is not None:
         try:
             for entry in driver.get_log('browser'):
-                if entry.get('level') == 'SEVERE':
-                    logger.error(f"JS Browser Error: {entry}")
-                else:
-                    logger.debug(f"JS Browser Log: {entry}")
+                logger.debug(f"JS Browser Log: {entry}")
         except WebDriverException as e:
             logger.warning(f"Impossible de récupérer les logs du navigateur : {e}")
+
+    if classe:
+        _BILAN["reussis"].add(nom_rapport)
+    return classe
 
 def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
     """
@@ -501,6 +573,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
         args (Namespace): Arguments de la ligne de commande.
     """
     logger.info(f"Telechargement du rapport {nom_rapport}")
+    _bilan_tente(nom_rapport)
     debug_enabled = bool(getattr(args, "debug", False) or logger.isEnabledFor(logging.DEBUG))
     _recover_network_or_fail(logger, f"telechargement du rapport {nom_rapport}")
     try:
@@ -569,6 +642,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
             capture_screenshot(driver, logger, "avant_enregistrer_rapport", log_dir, now_str)
             logger.debug("Capture debug avant 'Enregistrer le rapport' terminée")
             logger.debug("Bouton 'Enregistrer le rapport' trouvé et cliqué")
+        depuis = time.time()
         enregistrer_rapport_button.click()
         time.sleep(5)
         logger.debug("Le bouton Enregistrer le rapport a été cliqué avec succès!")
@@ -605,7 +679,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
         _handle_network_loss(logger, f"enregistrement du rapport ({nom_rapport})", e)
         logger.error(f"Une erreur s'est produite lors de l'enregistrement du rapport : {e}")
         return
-    deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args, driver)
+    deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args, driver, depuis=depuis)
 
 def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
     """
@@ -884,6 +958,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         logger.warning(
             "Comparer: probleme connu cote Dexcom, Superposition et Quotidien non telecharges."
         )
+        _BILAN["sautes"].extend(["Comparer-Superposition", "Comparer-Quotidien"])
 
         # NOTE: Bug Dexcom - les sous-rapports Comparer suivants generent le meme PDF.
         # TODO: Re-activer quand le site Dexcom sera corrige.
@@ -1056,6 +1131,7 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
         args (Namespace): Arguments de la ligne de commande.
     """
     logger.info(f"Traitement de l'export csv ")
+    _bilan_tente(nom_rapport)
     _recover_network_or_fail(logger, "traitement de l'export CSV")
     try:
         attendre_disparition_overlay(driver, 60, logger=logger, debug=args.debug)
@@ -1083,6 +1159,7 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
         )
         driver.execute_script("arguments[0].scrollIntoView(true);", bouton_export_modal)
         time.sleep(1)
+        depuis = time.time()
         bouton_export_modal.click()
         logger.debug("Le bouton Exporter de la fenêtre modale a été cliqué avec succès!")
     except (TimeoutException, WebDriverException, *ERREURS_TRANSPORT_RESEAU) as e:
@@ -1118,7 +1195,7 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
 
     if wait_for_csv_download(DOWNLOAD_DIR):
         logger.info("Fichier CSV exporté détecté et téléchargement terminé.")
-        deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args, driver)
+        deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args, driver, depuis=depuis)
     else:
         logger.error("Le téléchargement du fichier CSV n'a pas été détecté ou n'est pas terminé après 2 minutes.")
 
@@ -1134,53 +1211,62 @@ def selection_rapport(RAPPORTS, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DA
         DIR_FINAL_BASE (str): Dossier final de destination.
         DATE_FIN (str): Date de fin pour le nommage.
         args (Namespace): Arguments de la ligne de commande.
+
+    Returns:
+        list[str]: Rapports manquants (vide si tout est classé). Le bilan est
+        écrit même quand une perte réseau interrompt le traitement.
     """
-    for rapport in RAPPORTS:
-        _recover_network_or_fail(logger, f"avant le traitement du rapport {rapport}")
+    _bilan_reinitialiser()
+    try:
+        for rapport in RAPPORTS:
+            _recover_network_or_fail(logger, f"avant le traitement du rapport {rapport}")
 
-        def _execute_rapport_once() -> None:
-            if rapport == "Aperçu":
-                traitement_rapport_apercu(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-            elif rapport == "Modèles":
-                traitement_rapports_modeles(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-            elif rapport == "Superposition":
-                traitement_rapport_superposition(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-            elif rapport == "Quotidien":
-                traitement_rapport_quotidien(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-            elif rapport == "Comparer":
-                traitement_rapport_comparer(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-            elif rapport == "Statistiques":
-                traitement_rapport_statistiques(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-            elif rapport == "AGP":
-                traitement_rapport_agp(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-            elif rapport == "Export":
-                traitement_export_csv(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-            else:
-                logger.error(f"Rapport inconnu : {rapport}. Veuillez vérifier la liste des rapports.")
+            def _execute_rapport_once() -> None:
+                if rapport == "Aperçu":
+                    traitement_rapport_apercu(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+                elif rapport == "Modèles":
+                    traitement_rapports_modeles(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+                elif rapport == "Superposition":
+                    traitement_rapport_superposition(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+                elif rapport == "Quotidien":
+                    traitement_rapport_quotidien(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+                elif rapport == "Comparer":
+                    traitement_rapport_comparer(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+                elif rapport == "Statistiques":
+                    traitement_rapport_statistiques(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+                elif rapport == "AGP":
+                    traitement_rapport_agp(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+                elif rapport == "Export":
+                    traitement_export_csv(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
+                else:
+                    logger.error(f"Rapport inconnu : {rapport}. Veuillez vérifier la liste des rapports.")
 
-        max_network_retries = 2
-        retry_count = 0
+            max_network_retries = 2
+            retry_count = 0
 
-        while True:
-            try:
-                _execute_rapport_once()
-                break
-            except NetworkRecoveryRetry as retry_error:
-                if retry_count >= max_network_retries:
-                    logger.error(
-                        "Abandon du rapport '%s' après %d retries réseau.",
+            while True:
+                try:
+                    _execute_rapport_once()
+                    break
+                except NetworkRecoveryRetry as retry_error:
+                    if retry_count >= max_network_retries:
+                        logger.error(
+                            "Abandon du rapport '%s' après %d retries réseau.",
+                            rapport,
+                            max_network_retries,
+                        )
+                        raise NetworkRecoveryFailedError(
+                            f"Retries réseau dépassés pendant le traitement du rapport {rapport}."
+                        ) from retry_error
+
+                    retry_count += 1
+                    logger.warning(
+                        "Reconnexion détectée. Nouvel essai du rapport '%s' (%d/%d).",
                         rapport,
+                        retry_count,
                         max_network_retries,
                     )
-                    raise NetworkRecoveryFailedError(
-                        f"Retries réseau dépassés pendant le traitement du rapport {rapport}."
-                    ) from retry_error
-
-                retry_count += 1
-                logger.warning(
-                    "Reconnexion détectée. Nouvel essai du rapport '%s' (%d/%d).",
-                    rapport,
-                    retry_count,
-                    max_network_retries,
-                )
-                _recover_network_or_fail(logger, f"retry {retry_count} du rapport {rapport}")
+                    _recover_network_or_fail(logger, f"retry {retry_count} du rapport {rapport}")
+    finally:
+        manquants = ecrire_bilan(logger, RAPPORTS)
+    return manquants

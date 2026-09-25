@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.5.25-blue)
+![Version](https://img.shields.io/badge/version-0.6.0-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--0525--23-septembre-2026)
+- [Nouveautés](#version--060--24-septembre-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -25,6 +25,37 @@ traduction stricte de la version francaise.
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
 
 ---
+
+## Version : 0.6.0 — 24 septembre 2026
+
+### Nouveautés (0.6.0)
+
+**Correction :**
+
+- Le renommage d'un rapport est relancé pendant 120 s tant que Windows signale le fichier
+  verrouillé (WinError 32). L'antivirus analyse le PDF dès que Chrome lui donne son nom
+  final ; le rapport restait à la racine du dossier de téléchargement — ES-28.
+- Seuls les fichiers créés après le clic de téléchargement sont renommés : un PDF resté à
+  la racine ne peut plus être classé sous le nom d'un autre rapport — ES-28.
+
+**Ajout :**
+
+- Bilan en fin d'exécution : rapports classés, et une ligne ERROR qui nomme les
+  manquants — ES-28.
+- La console reste ouverte jusqu'à la fin de l'exécution : exécutable compilé en mode
+  console et lancé dans la console de `Launch-Dexcom-And-Run.ps1`. Elle attend Entrée s'il
+  manque un rapport ou si une erreur est survenue, en session interactive seulement — ES-28.
+- Journal encadré par `Début GlycoReport-Downloader vX.Y.Z` et `Fin GlycoReport-Downloader
+  vX.Y.Z` — ES-28.
+
+**Modification :**
+
+- Journal ChromeDriver propre à chaque exécution (`clarity_chromedriver_<horodatage>.log`),
+  soumis à `log_retention_days`. L'ancien fichier unique grossissait sans fin — ES-28.
+- Erreurs JS du navigateur écrites en DEBUG ; liste des boutons de la page retirée — ES-28.
+
+---
+
 
 ## Version : 0.5.25 — 23 septembre 2026
 
@@ -675,6 +706,15 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.6.0 — 24 septembre 2026
+
+- Correction : renommage relancé 120 s sur fichier verrouillé ; seuls les fichiers créés
+  après le clic de téléchargement sont retenus (ES-28).
+- Ajout : bilan de fin d'exécution, console ouverte jusqu'à la fin, journal encadré
+  Début/Fin (ES-28).
+- Modification : journal ChromeDriver par exécution ; journal allégé (ES-28).
+
 
 ### 0.5.25 — 23 septembre 2026
 
@@ -1594,6 +1634,34 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.6.0 — September 24, 2026
+
+**Fix:**
+
+- Renaming a report is retried for 120 s while Windows reports the file as locked
+  (WinError 32). The antivirus scans the PDF as soon as Chrome gives it its final name;
+  the report stayed at the root of the download folder — ES-28.
+- Only files created after the download click are renamed: a PDF left at the root can
+  no longer be filed under another report's name — ES-28.
+
+**Addition:**
+
+- End-of-run summary: filed reports, and an ERROR line naming the missing ones — ES-28.
+- The console stays open until the run ends: the executable is built in console mode
+  and runs inside the `Launch-Dexcom-And-Run.ps1` console. It waits for Enter if a report
+  is missing or an error occurred, in an interactive session only — ES-28.
+- Log framed by `Début GlycoReport-Downloader vX.Y.Z` and `Fin GlycoReport-Downloader
+  vX.Y.Z` — ES-28.
+
+**Change:**
+
+- One ChromeDriver log per run (`clarity_chromedriver_<timestamp>.log`), subject to
+  `log_retention_days`. The former single file grew without limit — ES-28.
+- Browser JS errors logged at DEBUG; the page button dump is removed — ES-28.
+
+---
+
+
 ### Version: 0.5.25 — September 23, 2026
 
 **Addition:**
@@ -2143,6 +2211,15 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.6.0 — September 24, 2026
+
+- Fix: renaming retried for 120 s on a locked file; only files created after the
+  download click are used (ES-28).
+- Addition: end-of-run summary, console open until the end, log framed by Début/Fin
+  (ES-28).
+- Change: one ChromeDriver log per run; quieter log (ES-28).
+
 
 ### 0.5.25 — September 23, 2026
 
