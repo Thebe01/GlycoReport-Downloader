@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
 Modifié le    : 2026-09-24
-Version       : 0.6.0
+Version       : 0.6.1
 Copyright     : Pierre Théberge
 
 Description
@@ -187,6 +187,8 @@ Modifications
 0.6.0   - 2026-09-24   ES-28   : Journal encadré Début/Fin, journal ChromeDriver par exécution, bilan
                                  en console ; copie locale de pause_on_error et liste des boutons
                                  retirées.
+0.6.1   - 2026-09-24   ES-28   : close_browser_session arrête le service ChromeDriver : son arrêt à
+                                 la sortie de Python échouait (WinError 6).
 
 Paramètres
 ----------
@@ -834,6 +836,16 @@ def close_browser_session(driver, logger, debug=False):
                 driver.quit()
     except WebDriverException as e:
         logger.warning(f"Erreur lors de la fermeture du navigateur : {e}", exc_info=debug)
+
+    # Arrêt explicite du service ChromeDriver : Browser.close (CDP) et close() le laissent
+    # tourner, et son arrêt par Service.__del__ à la sortie de Python échoue (WinError 6,
+    # descripteur déjà invalide). Une fois arrêté ici, __del__ n'a plus rien à faire.
+    service = getattr(driver, "service", None)
+    if service is not None:
+        try:
+            service.stop()
+        except (OSError, WebDriverException) as e:
+            logger.debug("Arrêt du service ChromeDriver impossible : %s", e)
 
 
 def main(args, logger, config):

@@ -5,6 +5,18 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.6.1] - 2026-09-24 — ES-28
+
+### Corrigé
+- `GlycoDownload.py` : `close_browser_session` arrête le service ChromeDriver. `Browser.close`
+  (CDP) et `close()` le laissaient tourner ; `Service.__del__` tentait de l'arrêter à la sortie
+  de Python, sur un descripteur déjà invalide (WinError 6). La trace, invisible en `--windowed`,
+  apparaît depuis la compilation en `--console` (0.6.0).
+- `tests/test_glycodownload_shutdown.py` : arrêt du service dans les deux branches, erreur
+  absorbée, pilote sans service.
+
+---
+
 ## [0.6.0] - 2026-09-24 — ES-28
 
 ### Corrigé
@@ -474,6 +486,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.6.1]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.1
 [0.6.0]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.0
 [0.5.25]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.25
 [0.5.24]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.24

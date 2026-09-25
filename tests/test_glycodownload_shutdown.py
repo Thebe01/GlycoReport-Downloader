@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-03-23
-Modifié le    : 2026-04-21
-Version       : 0.5.12
+Modifié le    : 2026-09-24
+Version       : 0.6.1
 Copyright     : Pierre Théberge
 
 Description
@@ -23,6 +23,8 @@ Modifications
 0.3.17 - 2026-03-23   [ES-14] : Ajout des tests unitaires de fermeture onglet/navigateur (single-tab vs multi-tab).
 0.5.12 - 2026-04-21   [ES-28] : Mocks cdp_raises/close_raises : RuntimeError → WebDriverException
                                 (alignement avec le narrowing except dans close_browser_session).
+0.6.1  - 2026-09-24   ES-28   : Tests de l'arrêt explicite du service ChromeDriver (deux branches,
+                                OSError absorbée, pilote sans service).
 
 Paramètres
 ----------
@@ -57,6 +59,17 @@ class DummyLogger:
         self.messages.append(("warning", msg % args if args else msg))
 
 
+class DummyService:
+    def __init__(self, raises=False):
+        self.raises = raises
+        self.stop_called = 0
+
+    def stop(self):
+        self.stop_called += 1
+        if self.raises:
+            raise OSError(6, "Descripteur non valide")
+
+
 class DummyDriver:
     def __init__(self, handles, cdp_raises=False, close_raises=False):
         self.window_handles = handles
@@ -65,6 +78,7 @@ class DummyDriver:
         self.cdp_calls = []
         self.close_called = 0
         self.quit_called = 0
+        self.service = DummyService()
 
     def execute_cdp_cmd(self, cmd, payload):
         self.cdp_calls.append((cmd, payload))
@@ -120,3 +134,32 @@ def test_close_browser_session_multi_tab_fallbacks_to_quit_if_close_fails():
 
     assert driver.close_called == 1
     assert driver.quit_called == 1
+
+
+
+def test_close_browser_session_stops_service_single_tab():
+    driver = DummyDriver(handles=["tab-1"])
+    close_browser_session(driver, DummyLogger(), debug=True)
+    assert driver.service.stop_called == 1
+
+
+def test_close_browser_session_stops_service_multi_tab():
+    driver = DummyDriver(handles=["tab-1", "tab-2"])
+    close_browser_session(driver, DummyLogger(), debug=True)
+    assert driver.service.stop_called == 1
+
+
+def test_close_browser_session_service_stop_error_is_absorbed():
+    logger = DummyLogger()
+    driver = DummyDriver(handles=["tab-1"])
+    driver.service = DummyService(raises=True)
+    close_browser_session(driver, logger, debug=True)
+    assert driver.service.stop_called == 1
+    assert any(level == "debug" and "service ChromeDriver" in msg for level, msg in logger.messages)
+
+
+def test_close_browser_session_without_service_attribute():
+    driver = DummyDriver(handles=["tab-1"])
+    del driver.service
+    close_browser_session(driver, DummyLogger(), debug=True)
+    assert driver.cdp_calls == [("Browser.close", {})]

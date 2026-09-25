@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.6.0-blue)
+![Version](https://img.shields.io/badge/version-0.6.1-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--060--24-septembre-2026)
+- [Nouveautés](#version--061--24-septembre-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,18 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.6.1 — 24 septembre 2026
+
+### Nouveautés (0.6.1)
+
+**Correction :**
+
+- Le service ChromeDriver est arrêté explicitement à la fermeture du navigateur. Son arrêt
+  automatique à la sortie de Python échouait (WinError 6) et affichait une trace Selenium
+  dans la console — ES-28.
 
 ---
 
@@ -706,6 +718,10 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.6.1 — 24 septembre 2026
+
+- Correction : arrêt explicite du service ChromeDriver à la fermeture (ES-28).
 
 ### 0.6.0 — 24 septembre 2026
 
@@ -1634,6 +1650,16 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.6.1 — September 24, 2026
+
+**Fix:**
+
+- The ChromeDriver service is stopped explicitly when the browser closes. Its automatic
+  shutdown at Python exit failed (WinError 6) and printed a Selenium traceback to the
+  console — ES-28.
+
+---
+
 ### Version: 0.6.0 — September 24, 2026
 
 **Fix:**
@@ -2211,6 +2237,10 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.6.1 — September 24, 2026
+
+- Fix: explicit ChromeDriver service shutdown when closing (ES-28).
 
 ### 0.6.0 — September 24, 2026
 
