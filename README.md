@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.6.3-blue)
+![Version](https://img.shields.io/badge/version-0.6.4-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--063--24-septembre-2026)
+- [Nouveautés](#version--064--24-septembre-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,18 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.6.4 — 24 septembre 2026
+
+### Nouveautés (0.6.4)
+
+**Correction :**
+
+- Sélecteur de dates : un clic intercepté (couche de chargement sur le bouton) passe par
+  JavaScript au lieu d'interrompre les tentatives. Pas de nouveau clic si le panneau est
+  déjà présent : le bouton est une bascule et le refermerait — CR.
 
 ---
 
@@ -745,6 +757,11 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.6.4 — 24 septembre 2026
+
+- Correction : repli JavaScript si le clic du sélecteur de dates est intercepté ; pas de
+  nouveau clic si le panneau est déjà présent (CR).
 
 ### 0.6.3 — 24 septembre 2026
 
@@ -1685,6 +1702,16 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.6.4 — September 24, 2026
+
+**Fix:**
+
+- Date picker: an intercepted click (loading layer over the button) falls back to
+  JavaScript instead of aborting the attempts. No new click if the panel is already
+  present: the button is a toggle and would close it — CR.
+
+---
+
 ### Version: 0.6.3 — September 24, 2026
 
 **Fix:**
@@ -2294,6 +2321,11 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.6.4 — September 24, 2026
+
+- Fix: JavaScript fallback when the date picker click is intercepted; no new click if the
+  panel is already present (CR).
 
 ### 0.6.3 — September 24, 2026
 

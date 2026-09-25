@@ -5,6 +5,19 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.6.4] - 2026-09-24 — CR
+
+### Corrigé
+- `GlycoDownload.py` : `ouvrir_selecteur_dates` rattrape `ElementClickInterceptedException` et
+  clique par JavaScript, comme les autres clics du projet. L'exception sortait de la boucle et
+  les 3 tentatives n'étaient pas garanties (revue Copilot).
+- `GlycoDownload.py` : pas de nouveau clic si `start_date` est déjà dans le DOM. Le bouton
+  est une bascule : un panneau lent à s'activer aurait été refermé (revue Copilot).
+- `tests/test_glycodownload_selecteur_dates.py` : repli JavaScript, panneau présent sans
+  nouveau clic — 132 tests.
+
+---
+
 ## [0.6.3] - 2026-09-24 — ES-28
 
 ### Corrigé
@@ -513,6 +526,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.6.4]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.4
 [0.6.3]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.3
 [0.6.2]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.2
 [0.6.1]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.1

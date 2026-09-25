@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
 Modifié le    : 2026-09-24
-Version       : 0.6.3
+Version       : 0.6.4
 Copyright     : Pierre Théberge
 
 Description
@@ -161,6 +161,8 @@ Modifications
                                 à la sortie de Python).
 0.6.2  - 2026-09-24   ES-28   : Documentation du journal ChromeDriver par exécution corrigée.
 0.6.3  - 2026-09-24   ES-28   : Sélecteur de dates : nouveau clic si le panneau ne s'ouvre pas.
+0.6.4  - 2026-09-24   CR      : Sélecteur de dates : clic JavaScript si intercepté ; pas de nouveau
+                                clic si le panneau est déjà présent.
 
 Paramètres
 ----------
@@ -172,4 +174,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.6.3"
+__version__ = "0.6.4"

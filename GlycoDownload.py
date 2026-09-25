@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
 Modifié le    : 2026-09-24
-Version       : 0.6.3
+Version       : 0.6.4
 Copyright     : Pierre Théberge
 
 Description
@@ -193,6 +193,8 @@ Modifications
                                  journal à chaque lancement, il ne grossissait pas.
 0.6.3   - 2026-09-24   ES-28   : Sélecteur de dates : nouveau clic (3 tentatives) si le panneau ne
                                  s'ouvre pas dans les 10 s ; WARNING et capture à chaque échec.
+0.6.4   - 2026-09-24   CR      : ouvrir_selecteur_dates : clic JavaScript si le clic est intercepté ;
+                                 pas de nouveau clic si le panneau est déjà présent (bascule).
 
 Paramètres
 ----------
@@ -807,11 +809,19 @@ def ouvrir_selecteur_dates(driver, logger, log_dir, now_str, tentatives=3, atten
     """
     xpath_bouton = "//div[@data-test-date-range-picker-toggle]"
     for tentative in range(1, tentatives + 1):
-        bouton = WebDriverWait(driver, attente_bouton).until(
-            EC.element_to_be_clickable((By.XPATH, xpath_bouton))
-        )
-        bouton.click()
-        logger.debug("Bouton du sélecteur de dates cliqué (tentative %d/%d).", tentative, tentatives)
+        # Le bouton est une bascule : si le panneau est déjà là (champ présent mais pas
+        # encore cliquable), un nouveau clic le refermerait. On attend sans cliquer.
+        if tentative > 1 and driver.find_elements(By.NAME, "start_date"):
+            logger.debug("Panneau du sélecteur de dates présent, attente sans nouveau clic (tentative %d/%d).", tentative, tentatives)
+        else:
+            bouton = WebDriverWait(driver, attente_bouton).until(
+                EC.element_to_be_clickable((By.XPATH, xpath_bouton))
+            )
+            try:
+                bouton.click()
+            except ElementClickInterceptedException:
+                driver.execute_script("arguments[0].click();", bouton)
+            logger.debug("Bouton du sélecteur de dates cliqué (tentative %d/%d).", tentative, tentatives)
         try:
             WebDriverWait(driver, attente_panneau).until(
                 EC.element_to_be_clickable((By.NAME, "start_date"))
