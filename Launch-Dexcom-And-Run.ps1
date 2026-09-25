@@ -12,7 +12,7 @@
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2026-01-29
     Modifié le     : 2026-09-24
-    Version        : 0.2.0
+    Version        : 0.2.1
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
@@ -32,6 +32,8 @@
                                   via -StartAtDateSelection:$false / -AttachDebugger:$false.
     0.2.0 - 2026-09-24 - ES-28 : Exécutable lancé dans la console courante (&) au lieu de
                                   Start-Process : la console reste ouverte jusqu'à la fin.
+    0.2.1 - 2026-09-24 - CR    : Lignes Debut/Fin (nom et version) dans un try/finally, selon le
+                                  gabarit.
 
 .PARAMETER ChromePath
     Chemin vers l'exécutable Chrome (par défaut: chrome.exe).
@@ -136,6 +138,8 @@ Set-StrictMode -Version Latest
 $Script:ComputerName = $env:COMPUTERNAME
 $Script:TimeStamp = (Get-Date).ToString("yyyy-MM-dd_HH-mm-ss", [System.Globalization.CultureInfo]::InvariantCulture)
 $Script:StartTime = Get-Date
+$Script:NomScript = [System.IO.Path]::GetFileName($PSCommandPath)
+$Script:Version   = "0.2.1"
 
 function Get-YamlValue {
     [CmdletBinding()]
@@ -203,6 +207,8 @@ function Get-ExecutablePath {
 }
 
 try {
+    Write-Host "$((Get-Date).ToString('yyyy-MM-dd HH:mm:ss', [System.Globalization.CultureInfo]::InvariantCulture)) Debut $($Script:NomScript) $($Script:Version)" -ForegroundColor Green
+
     $ConfigPath = ConvertTo-AbsolutePath -Path $ConfigPath
     $chromeUserDataDir = Get-YamlValue -Path $ConfigPath -Key "chrome_user_data_dir"
     if (-not $chromeUserDataDir) {
@@ -273,4 +279,10 @@ try {
 catch {
     Write-Error $_.Exception.Message
     exit 1
+}
+finally {
+    # Pas de pause finale, par exception au gabarit : GlycoReport-Downloader fait déjà
+    # sa propre pause (erreur ou rapport manquant, session interactive), et la console
+    # doit se fermer seule après une exécution réussie.
+    Write-Host "$((Get-Date).ToString('yyyy-MM-dd HH:mm:ss', [System.Globalization.CultureInfo]::InvariantCulture)) Fin $($Script:NomScript) $($Script:Version)" -ForegroundColor Green
 }
