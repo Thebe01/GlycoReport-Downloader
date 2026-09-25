@@ -5,6 +5,17 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.6.7] - 2026-09-25 — CR
+
+### Corrigé
+- `GlycoDownload.py` : l'exception finale d'`ouvrir_selecteur_dates` dit « non utilisable après
+  N tentatives », comme le WARNING corrigé en 0.6.5. « non ouvert » était faux quand le panneau
+  était présent mais jamais cliquable (revue Copilot). Aucune autre occurrence dans le code.
+- `tests/test_glycodownload_selecteur_dates.py` (0.1.4) : message de l'exception vérifié ;
+  panneau présent jamais cliquable (un seul clic) — 134 tests.
+
+---
+
 ## [0.6.6] - 2026-09-25 — CR
 
 ### Corrigé
@@ -549,6 +560,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.6.7]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.7
 [0.6.6]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.6
 [0.6.5]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.5
 [0.6.4]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.4

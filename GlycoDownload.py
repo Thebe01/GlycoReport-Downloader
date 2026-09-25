@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
 Modifié le    : 2026-09-25
-Version       : 0.6.6
+Version       : 0.6.7
 Copyright     : Pierre Théberge
 
 Description
@@ -197,6 +197,7 @@ Modifications
                                  pas de nouveau clic si le panneau est déjà présent (bascule).
 0.6.5   - 2026-09-25   CR      : Message d'échec du sélecteur de dates juste même sans clic.
 0.6.6   - 2026-09-25   CR      : Présence du panneau vérifiée avant chaque clic, y compris le premier.
+0.6.7   - 2026-09-25   CR      : Message de l'exception finale aligné sur le WARNING (non utilisable).
 
 Paramètres
 ----------
@@ -807,7 +808,8 @@ def ouvrir_selecteur_dates(driver, logger, log_dir, now_str, tentatives=3, atten
     pas dans attente_panneau secondes, avec WARNING et capture à chaque échec.
 
     Raises:
-        TimeoutException: si le panneau ne s'ouvre pas après toutes les tentatives.
+        TimeoutException: si le panneau n'est pas utilisable (absent, ou présent mais
+            jamais cliquable) après toutes les tentatives.
     """
     xpath_bouton = "//div[@data-test-date-range-picker-toggle]"
     for tentative in range(1, tentatives + 1):
@@ -838,7 +840,7 @@ def ouvrir_selecteur_dates(driver, logger, log_dir, now_str, tentatives=3, atten
                 attente_panneau, tentative, tentatives,
             )
             capture_screenshot(driver, logger, f"selecteur_dates_tentative_{tentative}", log_dir, now_str)
-    raise TimeoutException(f"Panneau du sélecteur de dates non ouvert après {tentatives} tentatives.")
+    raise TimeoutException(f"Panneau du sélecteur de dates non utilisable après {tentatives} tentatives.")
 
 
 def setup_logger(debug, log_dir, now_str):

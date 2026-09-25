@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-09-24
 Modifié le    : 2026-09-25
-Version       : 0.1.3
+Version       : 0.1.4
 Copyright     : Pierre Théberge
 
 Description
@@ -27,6 +27,7 @@ Modifications
 0.1.2 - 2026-09-25   CR    : Panneau lent rendu déterministe : actif après le constat de la
                              protection, et non selon le nombre de vérifications de WebDriverWait.
 0.1.3 - 2026-09-25   CR    : Texte du WARNING vérifié ; panneau déjà ouvert avant le 1er clic.
+0.1.4 - 2026-09-25   CR    : Message de l'exception finale vérifié ; panneau présent jamais cliquable.
 
 Paramètres
 ----------
@@ -82,10 +83,11 @@ class _Driver:
     l'a pas constaté ; indépendant du nombre de vérifications de WebDriverWait.
     """
 
-    def __init__(self, ouvre_au_clic, intercepte=False, lent=False):
+    def __init__(self, ouvre_au_clic, intercepte=False, lent=False, inactif=False):
         self.ouvre_au_clic = ouvre_au_clic
         self.clics = 0
         self.lent = lent
+        self.inactif = inactif
         self.constats = 0
         self.clics_js = 0
         self._bouton = _Element(on_click=self._clic, intercepte=intercepte)
@@ -112,7 +114,7 @@ class _Driver:
             return self._bouton
         if by == By.NAME and value == "start_date":
             if self._panneau_ouvert():
-                return _Element(actif=lambda: not self.lent or self.constats > 0)
+                return _Element(actif=lambda: not self.inactif and (not self.lent or self.constats > 0))
             raise NoSuchElementException("start_date absent")
         raise NoSuchElementException(value)
 
@@ -150,7 +152,7 @@ def test_ouvert_au_deuxieme_clic(captures, caplog):
 
 def test_jamais_ouvert_leve_timeout(captures):
     driver = _Driver(ouvre_au_clic=None)
-    with pytest.raises(TimeoutException):
+    with pytest.raises(TimeoutException, match="non utilisable après 3 tentatives"):
         _ouvrir(driver)
     assert driver.clics == 3
     assert captures == [f"selecteur_dates_tentative_{i}" for i in (1, 2, 3)]
@@ -182,3 +184,13 @@ def test_panneau_deja_ouvert_avant_le_premier_clic(captures):
     _ouvrir(driver)
     assert driver.clics == 0
     assert captures == []
+
+
+def test_panneau_present_jamais_cliquable(captures):
+    # Panneau présent mais inutilisable : un seul clic, puis attente sans clic ;
+    # le message final ne doit pas prétendre que le panneau est fermé.
+    driver = _Driver(ouvre_au_clic=1, inactif=True)
+    with pytest.raises(TimeoutException, match="non utilisable après 3 tentatives"):
+        _ouvrir(driver)
+    assert driver.clics == 1
+    assert captures == [f"selecteur_dates_tentative_{i}" for i in (1, 2, 3)]

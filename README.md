@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.6.6-blue)
+![Version](https://img.shields.io/badge/version-0.6.7-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--066--25-septembre-2026)
+- [Nouveautés](#version--067--25-septembre-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,18 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.6.7 — 25 septembre 2026
+
+### Nouveautés (0.6.7)
+
+**Correction :**
+
+- Sélecteur de dates : le message final d'échec dit « non utilisable après 3 tentatives »,
+  comme le WARNING. Il annonçait un panneau fermé même quand le panneau était présent
+  mais jamais cliquable — CR.
 
 ---
 
@@ -780,6 +792,10 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.6.7 — 25 septembre 2026
+
+- Correction : message final d'échec du sélecteur de dates (CR).
 
 ### 0.6.6 — 25 septembre 2026
 
@@ -1733,6 +1749,16 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.6.7 — September 25, 2026
+
+**Fix:**
+
+- Date picker: the final failure message says "non utilisable après 3 tentatives", like
+  the WARNING. It reported a closed panel even when the panel was present but never
+  clickable — CR.
+
+---
+
 ### Version: 0.6.6 — September 25, 2026
 
 **Fix:**
@@ -2371,6 +2397,10 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.6.7 — September 25, 2026
+
+- Fix: date picker final failure message (CR).
 
 ### 0.6.6 — September 25, 2026
 

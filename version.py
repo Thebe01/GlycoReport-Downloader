@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
 Modifié le    : 2026-09-25
-Version       : 0.6.6
+Version       : 0.6.7
 Copyright     : Pierre Théberge
 
 Description
@@ -165,6 +165,7 @@ Modifications
                                 clic si le panneau est déjà présent.
 0.6.5  - 2026-09-25   CR      : Message d'échec du sélecteur de dates juste même sans clic.
 0.6.6  - 2026-09-25   CR      : Présence du panneau vérifiée avant chaque clic, y compris le premier.
+0.6.7  - 2026-09-25   CR      : Message de l'exception finale du sélecteur de dates : non utilisable.
 
 Paramètres
 ----------
@@ -176,4 +177,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.6.6"
+__version__ = "0.6.7"
