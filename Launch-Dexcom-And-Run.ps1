@@ -11,8 +11,8 @@
     Auteur         : Pierre Théberge
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2026-01-29
-    Modifié le     : 2026-04-13
-    Version        : 0.1.2
+    Modifié le     : 2026-09-24
+    Version        : 0.2.0
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
@@ -30,6 +30,8 @@
     0.1.2 - 2026-04-13 - ES-20 : -StartAtDateSelection et -AttachDebugger rendus conditionnels via
                                   $PSBoundParameters; actifs par défaut, désactivables explicitement
                                   via -StartAtDateSelection:$false / -AttachDebugger:$false.
+    0.2.0 - 2026-09-24 - ES-28 : Exécutable lancé dans la console courante (&) au lieu de
+                                  Start-Process : la console reste ouverte jusqu'à la fin.
 
 .PARAMETER ChromePath
     Chemin vers l'exécutable Chrome (par défaut: chrome.exe).
@@ -263,7 +265,10 @@ try {
     if ($DateFin) { $glycoArgs.Add("--date_fin"); $glycoArgs.Add($DateFin) }
     if ($Rapports) { $glycoArgs.Add("--rapports"); $Rapports | ForEach-Object { $glycoArgs.Add($_) } }
 
-    Start-Process -FilePath $exePath -WorkingDirectory (Get-Location) -ArgumentList $glycoArgs
+    # Appel direct (et non Start-Process) : l'exécutable partage cette console et le script
+    # attend sa fin. Sinon la console se ferme dès le lancement et le bilan est perdu.
+    & $exePath @glycoArgs
+    exit $LASTEXITCODE
 }
 catch {
     Write-Error $_.Exception.Message

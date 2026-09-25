@@ -5,6 +5,41 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.6.0] - 2026-09-24 — ES-28
+
+### Corrigé
+- `rapports.py` : `os.replace` relancé toutes les 2 s pendant 120 s au plus tant qu'il
+  échoue avec WinError 32, pour le PDF comme pour l'Export. L'antivirus (Avast) analyse
+  le fichier dès que Chrome lui donne son nom final et le garde ouvert : Statistiques-
+  Horaires était resté à la racine le 2026-09-24.
+- `utils.py` / `rapports.py` : `get_last_downloaded_report_file(depuis=...)` écarte les
+  fichiers créés avant le clic de téléchargement. Un PDF orphelin ne peut plus être
+  renommé sous le nom du rapport suivant.
+
+### Ajouté
+- Bilan de fin de traitement (`selection_rapport`) : rapports classés en INFO, sous-rapports
+  Comparer sautés en WARNING, rapports manquants en ERROR. Écrit même après une perte réseau.
+- Journal encadré par `Début GlycoReport-Downloader vX.Y.Z` et `Fin GlycoReport-Downloader vX.Y.Z`.
+- Console ouverte jusqu'à la fin : exécutable compilé en `--console`
+  (`DIST-GlycoReport-Downloader.ps1` 2.0.11) et lancé par appel direct dans
+  `Launch-Dexcom-And-Run.ps1` (0.2.0), qui renvoie le code de sortie.
+- Pause finale s'il manque un rapport ou si une ligne ERROR a été écrite. `pause_on_error`
+  n'attend que si stdin est un terminal et la session interactive (WSF_VISIBLE) : une tâche
+  planifiée hors session n'est jamais bloquée.
+- `tests/test_rapports_renommage.py` : relance du renommage, filtre `depuis`, bilan,
+  conditions de pause — 123 tests.
+
+### Modifié
+- Journal ChromeDriver propre à chaque exécution (`clarity_chromedriver_<horodatage>.log`),
+  donc soumis à `log_retention_days` ; le fichier unique atteignait 22 Mo.
+- Erreurs JS du navigateur écrites en DEBUG au lieu d'ERROR.
+
+### Retiré
+- Liste des boutons de la page écrite avant la déconnexion (reste de débogage).
+- Copie locale de `pause_on_error` dans `GlycoDownload.py` : celle d'`utils.py` fait foi.
+
+---
+
 ## [0.5.25] - 2026-09-23 — CR
 
 ### Ajouté
@@ -439,6 +474,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.6.0]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.0
 [0.5.25]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.25
 [0.5.24]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.24
 [0.5.23]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.23

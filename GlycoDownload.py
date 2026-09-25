@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
-Modifié le    : 2026-09-23
-Version       : 0.5.25
+Modifié le    : 2026-09-24
+Version       : 0.6.0
 Copyright     : Pierre Théberge
 
 Description
@@ -184,6 +184,9 @@ Modifications
                                  en amont de tout le dispositif de reconnexion.
 0.5.24  - 2026-09-23   CR      : Synchronisation de version (aucun changement fonctionnel).
 0.5.25  - 2026-09-23   CR      : Synchronisation de version (aucun changement fonctionnel).
+0.6.0   - 2026-09-24   ES-28   : Journal encadré Début/Fin, journal ChromeDriver par exécution, bilan
+                                 en console ; copie locale de pause_on_error et liste des boutons
+                                 retirées.
 
 Paramètres
 ----------
@@ -239,6 +242,8 @@ from utils import (
 )
 from rapports import selection_rapport, NetworkRecoveryFailedError
 from version import __version__
+
+NOM_APPLICATION = "GlycoReport-Downloader"
 
 # --- Gestion des arguments CLI et du help ---
 def parse_args():
@@ -838,6 +843,7 @@ def main(args, logger, config):
     """
     driver = None
     download_dir = None
+    manquants = []
     try:
         # Préparation des variables locales
         debug_mode = bool(args.debug or config.get("DEBUG", False))
@@ -845,9 +851,12 @@ def main(args, logger, config):
         download_dir = config['DOWNLOAD_DIR']
         dir_final_base = config['DIR_FINAL_BASE']
         dexcom_url = config['DEXCOM_URL']
-        chromedriver_log = config['CHROMEDRIVER_LOG']
         now_str = config['NOW_STR']
-        log_dir = os.path.dirname(chromedriver_log) or "."
+        log_dir = os.path.dirname(config['CHROMEDRIVER_LOG']) or "."
+        # Un journal ChromeDriver par exécution : chromedriver écrit à la suite du même
+        # fichier, dont la date restait récente et échappait à log_retention_days.
+        base_log, ext_log = os.path.splitext(config['CHROMEDRIVER_LOG'])
+        chromedriver_log = f"{base_log}_{now_str}{ext_log or '.log'}"
 
         # Gestion intelligente des dates — priorité : CLI > config.yaml > défaut
         date_debut_str, date_fin_str = resolve_effective_date_range(
@@ -1106,7 +1115,7 @@ def main(args, logger, config):
             ) from e
 
         try:
-            selection_rapport(
+            manquants = selection_rapport(
                 rapports,
                 driver,
                 logger,
@@ -1121,12 +1130,6 @@ def main(args, logger, config):
             raise SystemExit(1)
 
         time.sleep(60)
-
-        if debug_mode:
-            boutons = driver.find_elements(By.XPATH, "//button")
-            logger.info(f"{len(boutons)} boutons trouvés sur la page")
-            for b in boutons:
-                logger.debug(b.get_attribute("outerHTML"))
 
         try:
             # Attendre que tout overlay disparaisse avant de tenter la déconnexion
@@ -1161,13 +1164,14 @@ def main(args, logger, config):
     except Exception as e:
         logger.error(f"Erreur inattendue dans le script principal : {e}")
         traceback.print_exc()
-        pause_on_error()
     finally:
         close_browser_session(driver, logger, debug=bool(args.debug or config.get("DEBUG", False)))
 
         if download_dir:
             files = glob.glob(os.path.join(download_dir, '*'))
             logger.info(f"Fichiers présents dans le dossier de téléchargement après la demande : {files}")
+
+    return manquants
 
 def get_user_menu_button(driver, logger, args, timeout=10):
     """
@@ -1195,16 +1199,16 @@ def get_user_menu_button(driver, logger, args, timeout=10):
         logger.error(f"Bouton utilisateur introuvable : {e}", exc_info=args.debug)
         raise
 
-def pause_on_error():
-    """
-    Affiche un message et attend que l'utilisateur appuie sur Entrée avant de fermer la fenêtre du terminal.
-    """
-    try:
-        stdin = getattr(sys, "stdin", None)
-        if stdin is not None and getattr(stdin, "isatty", lambda: False)():
-            input("\nAppuyez sur Entrée pour fermer...")
-    except (EOFError, OSError):
-        pass
+class CompteurErreurs(logging.Handler):
+    """Compte les lignes ERROR et plus graves écrites dans le journal."""
+
+    def __init__(self):
+        super().__init__(level=logging.ERROR)
+        self.nombre = 0
+
+    def emit(self, record):
+        self.nombre += 1
+
 
 # --- Point d'entrée du script ---
 if __name__ == "__main__":
@@ -1334,4 +1338,14 @@ if __name__ == "__main__":
     # ÉTAPE 7 : Exécution de la fonction principale
     # ============================================
     
-    main(args, logger, config.__dict__)  # ← Correction : config.__dict__ au lieu de config
+    logger.info(f"Début {NOM_APPLICATION} v{__version__}")
+    compteur_erreurs = CompteurErreurs()
+    logger.addHandler(compteur_erreurs)
+    manquants = []
+    try:
+        manquants = main(args, logger, config.__dict__)  # ← Correction : config.__dict__ au lieu de config
+    finally:
+        logger.info(f"Fin {NOM_APPLICATION} v{__version__}")
+        # Console gardée ouverte pour lire le bilan, seulement en mode interactif.
+        if manquants or compteur_erreurs.nombre:
+            pause_on_error()

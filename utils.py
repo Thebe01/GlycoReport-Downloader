@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-09-23
-Version       : 0.5.25
+Modifié le    : 2026-09-24
+Version       : 0.6.0
 Copyright     : Pierre Théberge
 
 Description
@@ -112,6 +112,8 @@ Modifications
                                 ni les except Selenium ni check_internet ne détectaient.
 0.5.24 - 2026-09-23   CR      : Synchronisation de version (aucun changement fonctionnel).
 0.5.25 - 2026-09-23   CR      : Synchronisation de version (aucun changement fonctionnel).
+0.6.0  - 2026-09-24   ES-28   : get_last_downloaded_report_file : paramètre depuis ; pause_on_error
+                                n'attend que si stdin est un terminal et la session interactive.
 
 Paramètres
 ----------
@@ -363,10 +365,16 @@ def get_last_downloaded_nonlog_file(download_dir: str, logger=None) -> Optional[
         logger.debug(f"[get_last_downloaded_nonlog_file] Dernier fichier valide trouvé : {last_file}")
     return last_file
 
+def _date_creation(path: str) -> float:
+    """Date de création du fichier (st_birthtime sous Windows, st_ctime sinon)."""
+    st = os.stat(path)
+    return getattr(st, "st_birthtime", st.st_ctime)
+
 def get_last_downloaded_report_file(
     download_dir: str,
     allowed_extensions: Optional[set[str]] = None,
     logger=None,
+    depuis: Optional[float] = None,
 ) -> Optional[str]:
     """Retourne le dernier fichier téléchargé correspondant aux extensions attendues.
 
@@ -374,6 +382,9 @@ def get_last_downloaded_report_file(
         download_dir: Dossier de téléchargement.
         allowed_extensions: Extensions autorisées (ex: {".pdf", ".csv"}).
         logger: Logger optionnel.
+        depuis: Horodatage (time.time()) du clic de téléchargement. Les fichiers
+            créés avant sont écartés : un fichier resté à la racine après un
+            échec ne doit pas être pris pour le rapport suivant.
     """
     if allowed_extensions is None:
         allowed_extensions = {".pdf", ".csv"}
@@ -391,11 +402,14 @@ def get_last_downloaded_report_file(
         and not f.lower().endswith(".crdownload")
         and os.path.splitext(f)[1].lower() in normalized_exts
     ]
+    if depuis is not None:
+        files = [f for f in files if _date_creation(f) >= depuis]
     if not files:
         if logger:
             logger.warning(
-                "Aucun fichier téléchargé trouvé avec extensions attendues: %s",
+                "Aucun fichier téléchargé trouvé avec extensions attendues: %s%s",
                 ", ".join(sorted(normalized_exts)),
+                " (créé après le clic de téléchargement)" if depuis is not None else "",
             )
         return None
 
@@ -474,10 +488,59 @@ def resource_path(relative_path: str) -> str:
     # Exécution normale : chemin relatif depuis le dossier courant
     return os.path.join(os.path.abspath("."), relative_path)
 
-def pause_on_error() -> None:
-    """Affiche un message et attend que l'utilisateur appuie sur Entrée avant de fermer la fenêtre du terminal."""
+def session_interactive() -> bool:
+    """Indique si le processus tourne dans une session où un utilisateur voit la fenêtre.
+
+    Même test que Environment.UserInteractive de .NET : l'indicateur WSF_VISIBLE de
+    la station de fenêtres. Une tâche planifiée « exécuter même si l'utilisateur n'est
+    pas connecté » tourne en session 0, station invisible -> False.
+    En cas d'échec de l'appel Win32, répond True, comme .NET.
+    """
+    if os.name != "nt":
+        return True
     try:
-        if sys.stdin.isatty():
+        import ctypes
+        from ctypes import wintypes
+
+        class _UserObjectFlags(ctypes.Structure):
+            _fields_ = [
+                ("fInherit", wintypes.BOOL),
+                ("fReserved", wintypes.BOOL),
+                ("dwFlags", wintypes.DWORD),
+            ]
+
+        UOI_FLAGS = 1
+        WSF_VISIBLE = 0x0001
+        user32 = ctypes.WinDLL("user32", use_last_error=True)
+        user32.GetProcessWindowStation.restype = wintypes.HANDLE
+        user32.GetUserObjectInformationW.argtypes = [
+            wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD, ctypes.POINTER(wintypes.DWORD),
+        ]
+        user32.GetUserObjectInformationW.restype = wintypes.BOOL
+
+        hwinsta = user32.GetProcessWindowStation()
+        if not hwinsta:
+            return True
+        flags = _UserObjectFlags()
+        needed = wintypes.DWORD()
+        if not user32.GetUserObjectInformationW(
+            hwinsta, UOI_FLAGS, ctypes.byref(flags), ctypes.sizeof(flags), ctypes.byref(needed)
+        ):
+            return True
+        return bool(flags.dwFlags & WSF_VISIBLE)
+    except (OSError, AttributeError):
+        return True
+
+def pause_on_error() -> None:
+    """Attend Entrée avant de fermer la console, seulement en mode interactif.
+
+    Deux conditions : stdin est un terminal ET la session est interactive.
+    isatty() seul ne suffit pas : une tâche planifiée reçoit aussi une console, et
+    la pause la bloquerait indéfiniment.
+    """
+    try:
+        stdin = getattr(sys, "stdin", None)
+        if stdin is not None and stdin.isatty() and session_interactive():
             input("\nAppuyez sur Entrée pour fermer...")
     except (EOFError, OSError):
         pass
