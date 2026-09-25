@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-09-24
 Modifié le    : 2026-09-25
-Version       : 0.1.2
+Version       : 0.1.3
 Copyright     : Pierre Théberge
 
 Description
@@ -26,6 +26,7 @@ Modifications
                              nouveau clic quand le panneau est déjà présent.
 0.1.2 - 2026-09-25   CR    : Panneau lent rendu déterministe : actif après le constat de la
                              protection, et non selon le nombre de vérifications de WebDriverWait.
+0.1.3 - 2026-09-25   CR    : Texte du WARNING vérifié ; panneau déjà ouvert avant le 1er clic.
 
 Paramètres
 ----------
@@ -162,11 +163,22 @@ def test_clic_intercepte_repli_javascript(captures):
     assert captures == []
 
 
-def test_panneau_present_pas_de_nouveau_clic(captures):
+def test_panneau_present_pas_de_nouveau_clic(captures, caplog):
     # Le panneau s'ouvre au 1er clic mais start_date reste inactif un moment :
     # un 2e clic le refermerait (bascule).
     driver = _Driver(ouvre_au_clic=1, lent=True)
-    _ouvrir(driver)
+    with caplog.at_level(logging.WARNING, logger="test_selecteur"):
+        _ouvrir(driver)
     assert driver.clics == 1
     assert driver.constats == 1
     assert captures == ["selecteur_dates_tentative_1"]
+    avertissements = [r.getMessage() for r in caplog.records if r.levelname == "WARNING"]
+    assert avertissements == ["Panneau du sélecteur de dates non utilisable 0.01 s après la tentative 1/3."]
+
+
+def test_panneau_deja_ouvert_avant_le_premier_clic(captures):
+    # Panneau laissé ouvert avant le lancement : aucun clic, sinon la bascule le refermerait.
+    driver = _Driver(ouvre_au_clic=0)
+    _ouvrir(driver)
+    assert driver.clics == 0
+    assert captures == []

@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
 Modifié le    : 2026-09-25
-Version       : 0.6.5
+Version       : 0.6.6
 Copyright     : Pierre Théberge
 
 Description
@@ -196,6 +196,7 @@ Modifications
 0.6.4   - 2026-09-24   CR      : ouvrir_selecteur_dates : clic JavaScript si le clic est intercepté ;
                                  pas de nouveau clic si le panneau est déjà présent (bascule).
 0.6.5   - 2026-09-25   CR      : Message d'échec du sélecteur de dates juste même sans clic.
+0.6.6   - 2026-09-25   CR      : Présence du panneau vérifiée avant chaque clic, y compris le premier.
 
 Paramètres
 ----------
@@ -810,9 +811,10 @@ def ouvrir_selecteur_dates(driver, logger, log_dir, now_str, tentatives=3, atten
     """
     xpath_bouton = "//div[@data-test-date-range-picker-toggle]"
     for tentative in range(1, tentatives + 1):
-        # Le bouton est une bascule : si le panneau est déjà là (champ présent mais pas
-        # encore cliquable), un nouveau clic le refermerait. On attend sans cliquer.
-        if tentative > 1 and driver.find_elements(By.NAME, "start_date"):
+        # Le bouton est une bascule : si le panneau est déjà là (laissé ouvert avant le
+        # lancement, ou lent à s'activer), un clic le refermerait. On attend sans cliquer,
+        # dès la première tentative.
+        if driver.find_elements(By.NAME, "start_date"):
             logger.debug("Panneau du sélecteur de dates présent, attente sans nouveau clic (tentative %d/%d).", tentative, tentatives)
         else:
             bouton = WebDriverWait(driver, attente_bouton).until(

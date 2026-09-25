@@ -5,6 +5,17 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.6.6] - 2026-09-25 — CR
+
+### Corrigé
+- `GlycoDownload.py` : `ouvrir_selecteur_dates` vérifie la présence de `start_date` avant chaque
+  clic, y compris le premier. Un panneau laissé ouvert avant le lancement (connexion manuelle
+  dans Launch) était refermé par la bascule (revue Copilot).
+- `tests/test_glycodownload_selecteur_dates.py` (0.1.3) : texte exact du WARNING vérifié ;
+  panneau déjà ouvert avant le 1er clic — 133 tests (revue Copilot).
+
+---
+
 ## [0.6.5] - 2026-09-25 — CR
 
 ### Corrigé
@@ -538,6 +549,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.6.6]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.6
 [0.6.5]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.5
 [0.6.4]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.4
 [0.6.3]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.3

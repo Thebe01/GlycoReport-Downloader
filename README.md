@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.6.5-blue)
+![Version](https://img.shields.io/badge/version-0.6.6-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--065--25-septembre-2026)
+- [Nouveautés](#version--066--25-septembre-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,17 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.6.6 — 25 septembre 2026
+
+### Nouveautés (0.6.6)
+
+**Correction :**
+
+- Sélecteur de dates : la présence du panneau est vérifiée avant chaque clic, y compris le
+  premier. Un panneau laissé ouvert avant le lancement était refermé par le clic — CR.
 
 ---
 
@@ -769,6 +780,10 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.6.6 — 25 septembre 2026
+
+- Correction : présence du panneau des dates vérifiée avant chaque clic (CR).
 
 ### 0.6.5 — 25 septembre 2026
 
@@ -1718,6 +1733,15 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.6.6 — September 25, 2026
+
+**Fix:**
+
+- Date picker: the panel's presence is checked before every click, including the first.
+  A panel left open before launch was closed by the click — CR.
+
+---
+
 ### Version: 0.6.5 — September 25, 2026
 
 **Fix:**
@@ -2347,6 +2371,10 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.6.6 — September 25, 2026
+
+- Fix: date panel presence checked before every click (CR).
 
 ### 0.6.5 — September 25, 2026
 
