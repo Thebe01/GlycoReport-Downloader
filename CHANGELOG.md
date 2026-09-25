@@ -5,6 +5,20 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.6.2] - 2026-09-24 — ES-28
+
+### Corrigé
+- Justification du journal ChromeDriver par exécution (0.6.0) : l'ancien fichier unique ne
+  grossissait pas. ChromeDriver l'écrase à chaque lancement (`--log-path` sans
+  `--append-log`) ; ses 22 Mo venaient d'une seule exécution en debug (`--verbose`).
+  Commentaire de `GlycoDownload.py`, README et entrée 0.6.0 corrigés.
+
+### Contexte
+- Le journal par exécution est conservé : il garde celui d'une exécution en échec après sa
+  relance. Coût en debug : environ 20 Mo par exécution, bornés par `log_retention_days`.
+
+---
+
 ## [0.6.1] - 2026-09-24 — ES-28
 
 ### Corrigé
@@ -43,7 +57,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ### Modifié
 - Journal ChromeDriver propre à chaque exécution (`clarity_chromedriver_<horodatage>.log`),
-  donc soumis à `log_retention_days` ; le fichier unique atteignait 22 Mo.
+  soumis à `log_retention_days`. L'ancien fichier unique était écrasé à chaque lancement.
 - Erreurs JS du navigateur écrites en DEBUG au lieu d'ERROR.
 
 ### Retiré
@@ -486,6 +500,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.6.2]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.2
 [0.6.1]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.1
 [0.6.0]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.0
 [0.5.25]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.5.25

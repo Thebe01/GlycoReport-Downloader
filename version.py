@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
 Modifié le    : 2026-09-24
-Version       : 0.6.1
+Version       : 0.6.2
 Copyright     : Pierre Théberge
 
 Description
@@ -159,6 +159,7 @@ Modifications
                                 journal encadré Début/Fin, journal ChromeDriver par exécution.
 0.6.1  - 2026-09-24   ES-28   : Arrêt explicite du service ChromeDriver à la fermeture (WinError 6
                                 à la sortie de Python).
+0.6.2  - 2026-09-24   ES-28   : Documentation du journal ChromeDriver par exécution corrigée.
 
 Paramètres
 ----------
@@ -170,4 +171,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.6.1"
+__version__ = "0.6.2"
