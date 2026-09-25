@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-09-24
-Version       : 0.6.4
+Modifié le    : 2026-09-25
+Version       : 0.6.5
 Copyright     : Pierre Théberge
 
 Description
@@ -163,6 +163,7 @@ Modifications
 0.6.3  - 2026-09-24   ES-28   : Sélecteur de dates : nouveau clic si le panneau ne s'ouvre pas.
 0.6.4  - 2026-09-24   CR      : Sélecteur de dates : clic JavaScript si intercepté ; pas de nouveau
                                 clic si le panneau est déjà présent.
+0.6.5  - 2026-09-25   CR      : Message d'échec du sélecteur de dates juste même sans clic.
 
 Paramètres
 ----------
@@ -174,4 +175,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.6.4"
+__version__ = "0.6.5"

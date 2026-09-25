@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
-Modifié le    : 2026-09-24
-Version       : 0.6.4
+Modifié le    : 2026-09-25
+Version       : 0.6.5
 Copyright     : Pierre Théberge
 
 Description
@@ -195,6 +195,7 @@ Modifications
                                  s'ouvre pas dans les 10 s ; WARNING et capture à chaque échec.
 0.6.4   - 2026-09-24   CR      : ouvrir_selecteur_dates : clic JavaScript si le clic est intercepté ;
                                  pas de nouveau clic si le panneau est déjà présent (bascule).
+0.6.5   - 2026-09-25   CR      : Message d'échec du sélecteur de dates juste même sans clic.
 
 Paramètres
 ----------
@@ -831,7 +832,7 @@ def ouvrir_selecteur_dates(driver, logger, log_dir, now_str, tentatives=3, atten
             return
         except TimeoutException:
             logger.warning(
-                "Panneau du sélecteur de dates non ouvert %d s après le clic (tentative %d/%d).",
+                "Panneau du sélecteur de dates non utilisable %s s après la tentative %d/%d.",
                 attente_panneau, tentative, tentatives,
             )
             capture_screenshot(driver, logger, f"selecteur_dates_tentative_{tentative}", log_dir, now_str)

@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-09-24
-Modifié le    : 2026-09-24
-Version       : 0.1.1
+Modifié le    : 2026-09-25
+Version       : 0.1.2
 Copyright     : Pierre Théberge
 
 Description
@@ -24,6 +24,8 @@ Modifications
 0.1.0 - 2026-09-24   ES-28 : Version initiale.
 0.1.1 - 2026-09-24   CR    : Tests du repli JavaScript (clic intercepté) et de l'attente sans
                              nouveau clic quand le panneau est déjà présent.
+0.1.2 - 2026-09-25   CR    : Panneau lent rendu déterministe : actif après le constat de la
+                             protection, et non selon le nombre de vérifications de WebDriverWait.
 
 Paramètres
 ----------
@@ -75,15 +77,15 @@ class _Element:
 class _Driver:
     """Le panneau s'ouvre au clic numéro ouvre_au_clic (None : jamais).
 
-    cliquable_apres : nombre de vérifications avant que start_date devienne cliquable
-    (panneau présent mais lent à s'activer).
+    lent : start_date présent mais inactif tant que la protection (find_elements) ne
+    l'a pas constaté ; indépendant du nombre de vérifications de WebDriverWait.
     """
 
-    def __init__(self, ouvre_au_clic, intercepte=False, cliquable_apres=0):
+    def __init__(self, ouvre_au_clic, intercepte=False, lent=False):
         self.ouvre_au_clic = ouvre_au_clic
         self.clics = 0
-        self.cliquable_apres = cliquable_apres
-        self.verifs = 0
+        self.lent = lent
+        self.constats = 0
         self.clics_js = 0
         self._bouton = _Element(on_click=self._clic, intercepte=intercepte)
 
@@ -100,6 +102,7 @@ class _Driver:
 
     def find_elements(self, by, value):
         if by == By.NAME and value == "start_date" and self._panneau_ouvert():
+            self.constats += 1
             return [_Element()]
         return []
 
@@ -108,8 +111,7 @@ class _Driver:
             return self._bouton
         if by == By.NAME and value == "start_date":
             if self._panneau_ouvert():
-                self.verifs += 1
-                return _Element(actif=lambda: self.verifs > self.cliquable_apres)
+                return _Element(actif=lambda: not self.lent or self.constats > 0)
             raise NoSuchElementException("start_date absent")
         raise NoSuchElementException(value)
 
@@ -163,6 +165,8 @@ def test_clic_intercepte_repli_javascript(captures):
 def test_panneau_present_pas_de_nouveau_clic(captures):
     # Le panneau s'ouvre au 1er clic mais start_date reste inactif un moment :
     # un 2e clic le refermerait (bascule).
-    driver = _Driver(ouvre_au_clic=1, cliquable_apres=3)
+    driver = _Driver(ouvre_au_clic=1, lent=True)
     _ouvrir(driver)
     assert driver.clics == 1
+    assert driver.constats == 1
+    assert captures == ["selecteur_dates_tentative_1"]

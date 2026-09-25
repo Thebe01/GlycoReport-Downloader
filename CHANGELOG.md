@@ -5,6 +5,18 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.6.5] - 2026-09-25 — CR
+
+### Corrigé
+- `GlycoDownload.py` : le WARNING d'échec du sélecteur de dates dit « non utilisable N s après
+  la tentative X/3 ». Il annonçait « non ouvert … après le clic » même quand la protection
+  de 0.6.4 avait sauté le clic parce que le panneau était présent.
+- `tests/test_glycodownload_selecteur_dates.py` (0.1.2) : le test du panneau lent passait selon
+  le nombre de vérifications internes de `WebDriverWait` (deux par attente). Il dépend
+  désormais du constat de la protection : 1 clic, 1 capture, succès (revue Copilot).
+
+---
+
 ## [0.6.4] - 2026-09-24 — CR
 
 ### Corrigé
@@ -526,6 +538,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.6.5]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.5
 [0.6.4]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.4
 [0.6.3]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.3
 [0.6.2]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.2
