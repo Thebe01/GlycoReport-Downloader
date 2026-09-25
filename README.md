@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.6.7-blue)
+![Version](https://img.shields.io/badge/version-0.7.0-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--067--25-septembre-2026)
+- [Nouveautés](#version--070--25-septembre-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,22 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.7.0 — 25 septembre 2026
+
+### Nouveautés (0.7.0)
+
+**Maintenabilité (aucun changement de comportement) :**
+
+- Les rapports sont répartis par un dictionnaire (`TRAITEMENTS_RAPPORTS`) au lieu d'une
+  suite de conditions ; cinq fonctions qui ne faisaient qu'appeler le traitement standard
+  sont retirées — ES-29.
+- La connexion à Dexcom Clarity (`saisir_identifiants`) est déplacée dans le nouveau
+  module `auth.py` — ES-29.
+- Les délais d'attente et les pauses sont regroupés et nommés dans le nouveau module
+  `constants.py` ; aucune valeur n'a changé — ES-29.
 
 ---
 
@@ -793,6 +809,11 @@ pour la distribution.
 
 ## Historique des versions
 
+### 0.7.0 — 25 septembre 2026
+
+- Maintenabilité : dispatch des rapports par dictionnaire, module `auth.py`, module
+  `constants.py` (ES-29).
+
 ### 0.6.7 — 25 septembre 2026
 
 - Correction : message final d'échec du sélecteur de dates (CR).
@@ -1262,7 +1283,9 @@ pour la distribution.
 ## Architecture
 
 - `GlycoDownload.py` : script principal, gestion CLI, help, logique métier.
+- `auth.py` : connexion à Dexcom Clarity (saisie des identifiants).
 - `config.py` : centralise la configuration et les credentials.
+- `constants.py` : délais d'attente et pauses Selenium, en secondes.
 - `utils.py` : fonctions utilitaires.
 - `rapports.py` : traitement des rapports.
 - `tests/` : tests unitaires.
@@ -1748,6 +1771,20 @@ translation of the French version.
 ---
 
 ## What's New (English)
+
+### Version: 0.7.0 — September 25, 2026
+
+**Maintainability (no behavior change):**
+
+- Reports are dispatched through a dictionary (`TRAITEMENTS_RAPPORTS`) instead of a chain
+  of conditions; five functions that only called the standard processing are removed —
+  ES-29.
+- The Dexcom Clarity login (`saisir_identifiants`) moves to the new `auth.py` module —
+  ES-29.
+- Wait timeouts and pauses are grouped and named in the new `constants.py` module; no
+  value changed — ES-29.
+
+---
 
 ### Version: 0.6.7 — September 25, 2026
 
@@ -2398,6 +2435,11 @@ distribution.
 
 ## Version History (English)
 
+### 0.7.0 — September 25, 2026
+
+- Maintainability: report dispatch by dictionary, `auth.py` module, `constants.py`
+  module (ES-29).
+
 ### 0.6.7 — September 25, 2026
 
 - Fix: date picker final failure message (CR).
@@ -2850,7 +2892,9 @@ distribution.
 ## Architecture (English)
 
 - `GlycoDownload.py`: main script, CLI handling, help, business logic.
+- `auth.py`: Dexcom Clarity login (credential entry).
 - `config.py`: centralizes configuration and credentials.
+- `constants.py`: Selenium wait timeouts and pauses, in seconds.
 - `utils.py`: utility functions.
 - `rapports.py`: report processing.
 - `tests/`: unit tests.

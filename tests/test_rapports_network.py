@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-03-23
-Modifié le    : 2026-09-23
-Version       : 0.5.25
+Modifié le    : 2026-09-25
+Version       : 0.7.0
 Copyright     : Pierre Théberge
 
 Description
@@ -28,6 +28,9 @@ Modifications
                                 et telechargement_rapport convertit une ProtocolError en retry.
 0.5.24 - 2026-09-23   CR      : Ajout des tests de relance des erreurs de transport non reconnues
                                 et de non-deplacement de fichier dans le flux d'export.
+0.7.0  - 2026-09-25   ES-29   : Les tests de retry remplacent l'entrée « Aperçu » de
+                                TRAITEMENTS_RAPPORTS ; ajout des tests de couverture du dispatch
+                                et du rapport inconnu.
 0.5.25 - 2026-09-23   CR      : Ajout du test ciblant le bloc de fermeture de modale d'export :
                                 les deux clics precedents reussissent, la coupure survient sur la
                                 fermeture, et l'assertion verifie le contexte atteint.
@@ -120,7 +123,7 @@ def test_selection_rapport_retries_report_once_after_network_recovery(monkeypatc
             raise rapports.NetworkRecoveryRetry("retry demandé")
 
     monkeypatch.setattr(rapports, "_recover_network_or_fail", fake_recover)
-    monkeypatch.setattr(rapports, "traitement_rapport_apercu", fake_apercu_handler)
+    monkeypatch.setitem(rapports.TRAITEMENTS_RAPPORTS, "Aperçu", fake_apercu_handler)
 
     logger = logging.getLogger("tests.rapports.network.selection.retry")
     rapports.selection_rapport(
@@ -151,7 +154,7 @@ def test_selection_rapport_retries_report_multiple_times_then_succeeds(monkeypat
             raise rapports.NetworkRecoveryRetry("retry demandé")
 
     monkeypatch.setattr(rapports, "_recover_network_or_fail", fake_recover)
-    monkeypatch.setattr(rapports, "traitement_rapport_apercu", fake_apercu_handler)
+    monkeypatch.setitem(rapports.TRAITEMENTS_RAPPORTS, "Aperçu", fake_apercu_handler)
 
     logger = logging.getLogger("tests.rapports.network.selection.multi-retry")
     rapports.selection_rapport(
@@ -181,7 +184,7 @@ def test_selection_rapport_raises_after_max_network_retries(monkeypatch):
         raise rapports.NetworkRecoveryRetry("retry demandé")
 
     monkeypatch.setattr(rapports, "_recover_network_or_fail", fake_recover)
-    monkeypatch.setattr(rapports, "traitement_rapport_apercu", fake_apercu_handler)
+    monkeypatch.setitem(rapports.TRAITEMENTS_RAPPORTS, "Aperçu", fake_apercu_handler)
 
     logger = logging.getLogger("tests.rapports.network.selection.max-retries")
     with pytest.raises(rapports.NetworkRecoveryFailedError):
@@ -211,7 +214,7 @@ def test_selection_rapport_propagates_network_recovery_failed(monkeypatch):
         calls["handler"] += 1
 
     monkeypatch.setattr(rapports, "_recover_network_or_fail", fake_recover)
-    monkeypatch.setattr(rapports, "traitement_rapport_apercu", fake_apercu_handler)
+    monkeypatch.setitem(rapports.TRAITEMENTS_RAPPORTS, "Aperçu", fake_apercu_handler)
 
     logger = logging.getLogger("tests.rapports.network.selection.failed")
     with pytest.raises(rapports.NetworkRecoveryFailedError):
@@ -689,3 +692,31 @@ def test_export_csv_ne_deplace_rien_si_la_fermeture_de_modale_coupe(monkeypatch)
         f"le test doit atteindre le bloc de fermeture de modale, pas {contextes}"
     )
     assert deplacements == [], "aucun fichier ne doit etre deplace"
+
+
+def test_traitements_rapports_couvre_tous_les_rapports():
+    """Chaque rapport de --list-rapports a un traitement dans le dispatch."""
+    assert set(rapports.TRAITEMENTS_RAPPORTS) == {
+        "Aperçu", "Modèles", "Superposition", "Quotidien",
+        "Comparer", "Statistiques", "AGP", "Export",
+    }
+
+
+def test_selection_rapport_rapport_inconnu_journalise_sans_planter(monkeypatch, caplog):
+    """Un nom de rapport absent du dispatch est journalisé en erreur, sans exception."""
+    monkeypatch.setattr(rapports, "_recover_network_or_fail", lambda _logger, _contexte: None)
+
+    logger = logging.getLogger("tests.rapports.network.selection.inconnu")
+    with caplog.at_level(logging.ERROR, logger=logger.name):
+        rapports.selection_rapport(
+            ["Inexistant"],
+            driver=object(),
+            logger=logger,
+            DOWNLOAD_DIR=".",
+            DIR_FINAL_BASE=".",
+            DATE_FIN="2026-03-25",
+            DATE_DEBUT="2026-03-01",
+            args=object(),
+        )
+
+    assert "Rapport inconnu : Inexistant" in caplog.text

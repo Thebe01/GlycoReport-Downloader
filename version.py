@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
 Modifié le    : 2026-09-25
-Version       : 0.6.7
+Version       : 0.7.0
 Copyright     : Pierre Théberge
 
 Description
@@ -166,6 +166,8 @@ Modifications
 0.6.5  - 2026-09-25   CR      : Message d'échec du sélecteur de dates juste même sans clic.
 0.6.6  - 2026-09-25   CR      : Présence du panneau vérifiée avant chaque clic, y compris le premier.
 0.6.7  - 2026-09-25   CR      : Message de l'exception finale du sélecteur de dates : non utilisable.
+0.7.0  - 2026-09-25   ES-29   : Maintenabilité : dispatch des rapports par dictionnaire, connexion
+                                dans auth.py, délais et pauses dans constants.py.
 
 Paramètres
 ----------
@@ -177,4 +179,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.6.7"
+__version__ = "0.7.0"
