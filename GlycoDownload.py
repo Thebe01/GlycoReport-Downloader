@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
 Modifié le    : 2026-09-24
-Version       : 0.6.1
+Version       : 0.6.2
 Copyright     : Pierre Théberge
 
 Description
@@ -189,6 +189,8 @@ Modifications
                                  retirées.
 0.6.1   - 2026-09-24   ES-28   : close_browser_session arrête le service ChromeDriver : son arrêt à
                                  la sortie de Python échouait (WinError 6).
+0.6.2   - 2026-09-24   ES-28   : Commentaire du journal ChromeDriver corrigé : chromedriver écrase son
+                                 journal à chaque lancement, il ne grossissait pas.
 
 Paramètres
 ----------
@@ -865,8 +867,10 @@ def main(args, logger, config):
         dexcom_url = config['DEXCOM_URL']
         now_str = config['NOW_STR']
         log_dir = os.path.dirname(config['CHROMEDRIVER_LOG']) or "."
-        # Un journal ChromeDriver par exécution : chromedriver écrit à la suite du même
-        # fichier, dont la date restait récente et échappait à log_retention_days.
+        # Un journal ChromeDriver par exécution : chromedriver écrase son journal à chaque
+        # lancement (--log-path sans --append-log). Un fichier par exécution garde celui
+        # d'une exécution en échec après sa relance ; log_retention_days en borne le nombre.
+        # En debug (--verbose), compter environ 20 Mo par exécution.
         base_log, ext_log = os.path.splitext(config['CHROMEDRIVER_LOG'])
         chromedriver_log = f"{base_log}_{now_str}{ext_log or '.log'}"
 

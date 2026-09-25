@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.6.1-blue)
+![Version](https://img.shields.io/badge/version-0.6.2-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--061--24-septembre-2026)
+- [Nouveautés](#version--062--24-septembre-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,19 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.6.2 — 24 septembre 2026
+
+### Nouveautés (0.6.2)
+
+**Correction :**
+
+- Documentation du journal ChromeDriver par exécution corrigée : l'ancien fichier unique
+  était écrasé à chaque lancement, il ne grossissait pas. Le fichier par exécution garde
+  le journal d'une exécution en échec après sa relance ; en debug, compter environ 20 Mo
+  par exécution, conservés selon `log_retention_days` — ES-28.
 
 ---
 
@@ -63,7 +76,8 @@ traduction stricte de la version francaise.
 **Modification :**
 
 - Journal ChromeDriver propre à chaque exécution (`clarity_chromedriver_<horodatage>.log`),
-  soumis à `log_retention_days`. L'ancien fichier unique grossissait sans fin — ES-28.
+  soumis à `log_retention_days`. L'ancien fichier unique était écrasé à chaque lancement —
+  ES-28.
 - Erreurs JS du navigateur écrites en DEBUG ; liste des boutons de la page retirée — ES-28.
 
 ---
@@ -718,6 +732,10 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.6.2 — 24 septembre 2026
+
+- Correction : documentation du journal ChromeDriver par exécution (ES-28).
 
 ### 0.6.1 — 24 septembre 2026
 
@@ -1650,6 +1668,17 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.6.2 — September 24, 2026
+
+**Fix:**
+
+- ChromeDriver per-run log documentation corrected: the former single file was
+  overwritten on each launch, it did not grow. The per-run file keeps the log of a failed
+  run after it is rerun; in debug mode, expect about 20 MB per run, kept according to
+  `log_retention_days` — ES-28.
+
+---
+
 ### Version: 0.6.1 — September 24, 2026
 
 **Fix:**
@@ -1682,7 +1711,7 @@ translation of the French version.
 **Change:**
 
 - One ChromeDriver log per run (`clarity_chromedriver_<timestamp>.log`), subject to
-  `log_retention_days`. The former single file grew without limit — ES-28.
+  `log_retention_days`. The former single file was overwritten on each launch — ES-28.
 - Browser JS errors logged at DEBUG; the page button dump is removed — ES-28.
 
 ---
@@ -2237,6 +2266,10 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.6.2 — September 24, 2026
+
+- Fix: ChromeDriver per-run log documentation (ES-28).
 
 ### 0.6.1 — September 24, 2026
 
