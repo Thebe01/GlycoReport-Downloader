@@ -5,6 +5,19 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.6.3] - 2026-09-24 — ES-28
+
+### Corrigé
+- `GlycoDownload.py` : `ouvrir_selecteur_dates` clique de nouveau sur le bouton du sélecteur
+  si le champ `start_date` n'apparaît pas dans les 10 s, jusqu'à 3 tentatives, avec WARNING
+  et capture à chaque échec. Mitigation : le panneau restait fermé malgré un `ClickElement`
+  réussi (21:34 et 23:09 le 2026-09-24). Les délais de chargement ne distinguent pas les
+  échecs des réussites ; la cause reste inconnue.
+- `tests/test_glycodownload_selecteur_dates.py` : ouverture au 1er clic, au 2e, jamais —
+  130 tests.
+
+---
+
 ## [0.6.2] - 2026-09-24 — ES-28
 
 ### Corrigé
@@ -500,6 +513,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.6.3]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.3
 [0.6.2]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.2
 [0.6.1]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.1
 [0.6.0]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.0

@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
 Modifié le    : 2026-09-24
-Version       : 0.6.2
+Version       : 0.6.3
 Copyright     : Pierre Théberge
 
 Description
@@ -191,6 +191,8 @@ Modifications
                                  la sortie de Python échouait (WinError 6).
 0.6.2   - 2026-09-24   ES-28   : Commentaire du journal ChromeDriver corrigé : chromedriver écrase son
                                  journal à chaque lancement, il ne grossissait pas.
+0.6.3   - 2026-09-24   ES-28   : Sélecteur de dates : nouveau clic (3 tentatives) si le panneau ne
+                                 s'ouvre pas dans les 10 s ; WARNING et capture à chaque échec.
 
 Paramètres
 ----------
@@ -793,6 +795,39 @@ def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=10, require
         )
         return False
 
+def ouvrir_selecteur_dates(driver, logger, log_dir, now_str, tentatives=3, attente_panneau=10, attente_bouton=60):
+    """Clique le bouton du sélecteur de dates jusqu'à ce que le panneau s'ouvre.
+
+    Le panneau ne s'ouvre parfois pas malgré un clic réussi (2 exécutions sur 4 le
+    2026-09-24, cause inconnue, ES-28) : nouveau clic si le champ start_date n'apparaît
+    pas dans attente_panneau secondes, avec WARNING et capture à chaque échec.
+
+    Raises:
+        TimeoutException: si le panneau ne s'ouvre pas après toutes les tentatives.
+    """
+    xpath_bouton = "//div[@data-test-date-range-picker-toggle]"
+    for tentative in range(1, tentatives + 1):
+        bouton = WebDriverWait(driver, attente_bouton).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_bouton))
+        )
+        bouton.click()
+        logger.debug("Bouton du sélecteur de dates cliqué (tentative %d/%d).", tentative, tentatives)
+        try:
+            WebDriverWait(driver, attente_panneau).until(
+                EC.element_to_be_clickable((By.NAME, "start_date"))
+            )
+            if tentative > 1:
+                logger.info("Panneau du sélecteur de dates ouvert à la tentative %d.", tentative)
+            return
+        except TimeoutException:
+            logger.warning(
+                "Panneau du sélecteur de dates non ouvert %d s après le clic (tentative %d/%d).",
+                attente_panneau, tentative, tentatives,
+            )
+            capture_screenshot(driver, logger, f"selecteur_dates_tentative_{tentative}", log_dir, now_str)
+    raise TimeoutException(f"Panneau du sélecteur de dates non ouvert après {tentatives} tentatives.")
+
+
 def setup_logger(debug, log_dir, now_str):
     # Créer le répertoire de logs s'il n'existe pas
     os.makedirs(log_dir, exist_ok=True)
@@ -1076,12 +1111,7 @@ def main(args, logger, config):
             )
             time.sleep(2)
 
-            date_picker_button = WebDriverWait(driver, 60).until(
-                EC.element_to_be_clickable((By.XPATH, "//div[@data-test-date-range-picker-toggle]"))
-            )
-            date_picker_button.click()
-            logger.debug("Bouton du sélecteur de dates trouvé et cliqué.")
-            time.sleep(5)
+            ouvrir_selecteur_dates(driver, logger, log_dir, now_str)
 
             if date_debut_str is None or date_fin_str is None:
                 raise ValueError("Les variables DATE_DEBUT et DATE_FIN ne peuvent pas être None. Elles doivent être définies.")
