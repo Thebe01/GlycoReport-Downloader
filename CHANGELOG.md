@@ -5,6 +5,66 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.6.7] - 2026-09-25 — CR
+
+### Corrigé
+- `GlycoDownload.py` : l'exception finale d'`ouvrir_selecteur_dates` dit « non utilisable après
+  N tentatives », comme le WARNING corrigé en 0.6.5. « non ouvert » était faux quand le panneau
+  était présent mais jamais cliquable (revue Copilot). Aucune autre occurrence dans le code.
+- `tests/test_glycodownload_selecteur_dates.py` (0.1.4) : message de l'exception vérifié ;
+  panneau présent jamais cliquable (un seul clic) — 134 tests.
+
+---
+
+## [0.6.6] - 2026-09-25 — CR
+
+### Corrigé
+- `GlycoDownload.py` : `ouvrir_selecteur_dates` vérifie la présence de `start_date` avant chaque
+  clic, y compris le premier. Un panneau laissé ouvert avant le lancement (connexion manuelle
+  dans Launch) était refermé par la bascule (revue Copilot).
+- `tests/test_glycodownload_selecteur_dates.py` (0.1.3) : texte exact du WARNING vérifié ;
+  panneau déjà ouvert avant le 1er clic — 133 tests (revue Copilot).
+
+---
+
+## [0.6.5] - 2026-09-25 — CR
+
+### Corrigé
+- `GlycoDownload.py` : le WARNING d'échec du sélecteur de dates dit « non utilisable N s après
+  la tentative X/3 ». Il annonçait « non ouvert … après le clic » même quand la protection
+  de 0.6.4 avait sauté le clic parce que le panneau était présent.
+- `tests/test_glycodownload_selecteur_dates.py` (0.1.2) : le test du panneau lent passait selon
+  le nombre de vérifications internes de `WebDriverWait` (deux par attente). Il dépend
+  désormais du constat de la protection : 1 clic, 1 capture, succès (revue Copilot).
+
+---
+
+## [0.6.4] - 2026-09-24 — CR
+
+### Corrigé
+- `GlycoDownload.py` : `ouvrir_selecteur_dates` rattrape `ElementClickInterceptedException` et
+  clique par JavaScript, comme les autres clics du projet. L'exception sortait de la boucle et
+  les 3 tentatives n'étaient pas garanties (revue Copilot).
+- `GlycoDownload.py` : pas de nouveau clic si `start_date` est déjà dans le DOM. Le bouton
+  est une bascule : un panneau lent à s'activer aurait été refermé (revue Copilot).
+- `tests/test_glycodownload_selecteur_dates.py` : repli JavaScript, panneau présent sans
+  nouveau clic — 132 tests.
+
+---
+
+## [0.6.3] - 2026-09-24 — ES-28
+
+### Corrigé
+- `GlycoDownload.py` : `ouvrir_selecteur_dates` clique de nouveau sur le bouton du sélecteur
+  si le champ `start_date` n'apparaît pas dans les 10 s, jusqu'à 3 tentatives, avec WARNING
+  et capture à chaque échec. Mitigation : le panneau restait fermé malgré un `ClickElement`
+  réussi (21:34 et 23:09 le 2026-09-24). Les délais de chargement ne distinguent pas les
+  échecs des réussites ; la cause reste inconnue.
+- `tests/test_glycodownload_selecteur_dates.py` : ouverture au 1er clic, au 2e, jamais —
+  130 tests.
+
+---
+
 ## [0.6.2] - 2026-09-24 — ES-28
 
 ### Corrigé
@@ -500,6 +560,11 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.6.7]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.7
+[0.6.6]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.6
+[0.6.5]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.5
+[0.6.4]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.4
+[0.6.3]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.3
 [0.6.2]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.2
 [0.6.1]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.1
 [0.6.0]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.0

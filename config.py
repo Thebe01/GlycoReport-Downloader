@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-09-24
-Version       : 0.6.2
+Modifié le    : 2026-09-25
+Version       : 0.6.7
 Copyright     : Pierre Théberge
 
 Description
@@ -119,6 +119,11 @@ Modifications
 0.6.0  - 2026-09-24   ES-28   : Synchronisation de version (aucun changement fonctionnel).
 0.6.1  - 2026-09-24   ES-28   : Synchronisation de version (aucun changement fonctionnel).
 0.6.2  - 2026-09-24   ES-28   : Synchronisation de version (aucun changement fonctionnel).
+0.6.3  - 2026-09-24   ES-28   : Synchronisation de version (aucun changement fonctionnel).
+0.6.4  - 2026-09-24   CR      : Synchronisation de version (aucun changement fonctionnel).
+0.6.5  - 2026-09-25   CR      : Synchronisation de version (aucun changement fonctionnel).
+0.6.6  - 2026-09-25   CR      : Synchronisation de version (aucun changement fonctionnel).
+0.6.7  - 2026-09-25   CR      : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------

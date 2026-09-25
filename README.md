@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.6.2-blue)
+![Version](https://img.shields.io/badge/version-0.6.7-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--062--24-septembre-2026)
+- [Nouveautés](#version--067--25-septembre-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,66 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.6.7 — 25 septembre 2026
+
+### Nouveautés (0.6.7)
+
+**Correction :**
+
+- Sélecteur de dates : le message final d'échec dit « non utilisable après 3 tentatives »,
+  comme le WARNING. Il annonçait un panneau fermé même quand le panneau était présent
+  mais jamais cliquable — CR.
+
+---
+
+## Version : 0.6.6 — 25 septembre 2026
+
+### Nouveautés (0.6.6)
+
+**Correction :**
+
+- Sélecteur de dates : la présence du panneau est vérifiée avant chaque clic, y compris le
+  premier. Un panneau laissé ouvert avant le lancement était refermé par le clic — CR.
+
+---
+
+## Version : 0.6.5 — 25 septembre 2026
+
+### Nouveautés (0.6.5)
+
+**Correction :**
+
+- Message d'échec du sélecteur de dates : « non utilisable N s après la tentative X/3 ».
+  L'ancien message annonçait un clic et un panneau fermé même quand le panneau était
+  présent et qu'aucun clic n'avait eu lieu — CR.
+
+---
+
+## Version : 0.6.4 — 24 septembre 2026
+
+### Nouveautés (0.6.4)
+
+**Correction :**
+
+- Sélecteur de dates : un clic intercepté (couche de chargement sur le bouton) passe par
+  JavaScript au lieu d'interrompre les tentatives. Pas de nouveau clic si le panneau est
+  déjà présent : le bouton est une bascule et le refermerait — CR.
+
+---
+
+## Version : 0.6.3 — 24 septembre 2026
+
+### Nouveautés (0.6.3)
+
+**Correction :**
+
+- Sélecteur de dates : si le panneau ne s'ouvre pas dans les 10 s suivant le clic, le
+  programme clique de nouveau, jusqu'à 3 tentatives, avec un WARNING et une capture à
+  chaque échec. Le panneau restait fermé malgré un clic réussi (2 exécutions sur 4, cause
+  inconnue) et l'exécution s'arrêtait — ES-28.
 
 ---
 
@@ -732,6 +792,27 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.6.7 — 25 septembre 2026
+
+- Correction : message final d'échec du sélecteur de dates (CR).
+
+### 0.6.6 — 25 septembre 2026
+
+- Correction : présence du panneau des dates vérifiée avant chaque clic (CR).
+
+### 0.6.5 — 25 septembre 2026
+
+- Correction : message d'échec du sélecteur de dates (CR).
+
+### 0.6.4 — 24 septembre 2026
+
+- Correction : repli JavaScript si le clic du sélecteur de dates est intercepté ; pas de
+  nouveau clic si le panneau est déjà présent (CR).
+
+### 0.6.3 — 24 septembre 2026
+
+- Correction : nouveau clic sur le sélecteur de dates si le panneau ne s'ouvre pas (ES-28).
 
 ### 0.6.2 — 24 septembre 2026
 
@@ -1668,6 +1749,56 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.6.7 — September 25, 2026
+
+**Fix:**
+
+- Date picker: the final failure message says "non utilisable après 3 tentatives", like
+  the WARNING. It reported a closed panel even when the panel was present but never
+  clickable — CR.
+
+---
+
+### Version: 0.6.6 — September 25, 2026
+
+**Fix:**
+
+- Date picker: the panel's presence is checked before every click, including the first.
+  A panel left open before launch was closed by the click — CR.
+
+---
+
+### Version: 0.6.5 — September 25, 2026
+
+**Fix:**
+
+- Date picker failure message: "non utilisable N s après la tentative X/3". The former
+  message reported a click and a closed panel even when the panel was present and no
+  click had occurred — CR.
+
+---
+
+### Version: 0.6.4 — September 24, 2026
+
+**Fix:**
+
+- Date picker: an intercepted click (loading layer over the button) falls back to
+  JavaScript instead of aborting the attempts. No new click if the panel is already
+  present: the button is a toggle and would close it — CR.
+
+---
+
+### Version: 0.6.3 — September 24, 2026
+
+**Fix:**
+
+- Date picker: if the panel does not open within 10 s of the click, the program clicks
+  again, up to 3 attempts, with a WARNING and a screenshot on each failure. The panel
+  stayed closed despite a successful click (2 runs out of 4, cause unknown) and the run
+  stopped — ES-28.
+
+---
+
 ### Version: 0.6.2 — September 24, 2026
 
 **Fix:**
@@ -2266,6 +2397,27 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.6.7 — September 25, 2026
+
+- Fix: date picker final failure message (CR).
+
+### 0.6.6 — September 25, 2026
+
+- Fix: date panel presence checked before every click (CR).
+
+### 0.6.5 — September 25, 2026
+
+- Fix: date picker failure message (CR).
+
+### 0.6.4 — September 24, 2026
+
+- Fix: JavaScript fallback when the date picker click is intercepted; no new click if the
+  panel is already present (CR).
+
+### 0.6.3 — September 24, 2026
+
+- Fix: date picker clicked again if the panel does not open (ES-28).
 
 ### 0.6.2 — September 24, 2026
 
