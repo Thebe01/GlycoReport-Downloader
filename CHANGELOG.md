@@ -5,6 +5,31 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.7.0] - 2026-09-25 — ES-29
+
+### Modifié
+- `rapports.py` : `traitement_rapport_apercu`, `traitement_rapports_modeles`,
+  `traitement_rapport_superposition`, `traitement_rapport_quotidien` et `traitement_rapport_agp`
+  ne faisaient qu'appeler `traitement_rapport_standard` ; elles sont retirées.
+  `selection_rapport` passe par le dictionnaire `TRAITEMENTS_RAPPORTS` au lieu d'une suite de
+  `if/elif`. Un rapport inconnu est toujours journalisé en erreur.
+- `GlycoDownload.py` : `saisir_identifiants` (≈ 250 lignes) déplacée dans le nouveau module
+  `auth.py`. `config` y est importé dans la fonction : un import en tête de module validerait
+  `.env` et `config.yaml` avant `--help` et `--list-rapports`.
+- Nouveau module `constants.py` : les délais `WebDriverWait` (`ATTENTE_*`) et les pauses
+  `time.sleep` (`PAUSE_*`) de `GlycoDownload.py`, `auth.py`, `rapports.py` et `utils.py` y sont
+  nommés. Aucune valeur n'a changé. Les messages qui citaient une durée (45 s, 10 min, 2 min)
+  la calculent depuis la constante.
+- Règle de version : `auth.py` et `constants.py` s'ajoutent aux fichiers synchronisés (7).
+- `tests/test_rapports_network.py` (0.7.0) : les tests de retry remplacent l'entrée « Aperçu »
+  du dictionnaire ; ajout des tests de couverture du dispatch et du rapport inconnu.
+- `tests/test_auth_import.py` (0.7.0, nouveau) : `GlycoDownload` appelle bien `auth.saisir_identifiants`,
+  et importer `auth` ne charge pas `config`. La connexion n'est pas testable en exécution réelle :
+  Cloudflare bloque la saisie automatisée, l'application démarre après une connexion manuelle
+  (mode reprise) — 138 tests.
+
+---
+
 ## [0.6.7] - 2026-09-25 — CR
 
 ### Corrigé
@@ -560,6 +585,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.7.0]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.7.0
 [0.6.7]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.7
 [0.6.6]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.6
 [0.6.5]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.5

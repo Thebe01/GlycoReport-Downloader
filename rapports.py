@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-09-25
-Version       : 0.6.7
+Version       : 0.7.0
 Copyright     : Pierre Théberge
 
 Description
@@ -149,6 +149,10 @@ Modifications
 0.6.5  - 2026-09-25   CR      : Synchronisation de version (aucun changement fonctionnel).
 0.6.6  - 2026-09-25   CR      : Synchronisation de version (aucun changement fonctionnel).
 0.6.7  - 2026-09-25   CR      : Synchronisation de version (aucun changement fonctionnel).
+0.7.0  - 2026-09-25   ES-29   : Les cinq traitements qui ne faisaient qu'appeler
+                                traitement_rapport_standard sont retirés ; selection_rapport passe
+                                par le dictionnaire TRAITEMENTS_RAPPORTS. Délais et pauses lus dans
+                                constants.py.
 
 Paramètres
 ----------
@@ -175,6 +179,19 @@ from selenium.common.exceptions import (
 )
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from constants import (
+    ATTENTE_CHARGEMENT,
+    ATTENTE_ELEMENT,
+    ATTENTE_ETAT_RAPPORT,
+    ATTENTE_PAGE,
+    ATTENTE_REPLI,
+    ATTENTE_TELECHARGEMENT,
+    PAUSE_ACTION,
+    PAUSE_COURTE,
+    PAUSE_FINALISATION_TELECHARGEMENT,
+    PAUSE_RENDU_GRAPHIQUE,
+    PAUSE_UI,
+)
 from utils import (
     attendre_disparition_overlay,
     get_last_downloaded_report_file,
@@ -309,7 +326,7 @@ def _get_report_xpath_candidates(nom_rapport: str) -> list[str]:
     return candidates
 
 
-def _find_clickable_with_xpath_candidates(driver, xpath_candidates: list[str], timeout: int = 30):
+def _find_clickable_with_xpath_candidates(driver, xpath_candidates: list[str], timeout: int = ATTENTE_PAGE):
     """Cherche un élément cliquable via plusieurs XPath candidats."""
     last_error = None
     nb_candidates = max(1, len(xpath_candidates))
@@ -332,7 +349,7 @@ def _find_clickable_with_xpath_candidates(driver, xpath_candidates: list[str], t
     raise RuntimeError("Aucun XPath candidat fourni.")
 
 
-def _is_report_active(driver, nom_rapport: str, timeout: int = 8) -> bool:
+def _is_report_active(driver, nom_rapport: str, timeout: int = ATTENTE_ETAT_RAPPORT) -> bool:
     """Vérifie que l'onglet du rapport ciblé est actif dans la barre des rapports."""
     active_xpath = (
         "//button[@data-testid='mdc-list-button' and @tabindex='0' "
@@ -346,7 +363,7 @@ def _is_report_active(driver, nom_rapport: str, timeout: int = 8) -> bool:
     except TimeoutException:
         return False
 
-def wait_for_csv_download(DOWNLOAD_DIR, timeout=120):
+def wait_for_csv_download(DOWNLOAD_DIR, timeout=ATTENTE_TELECHARGEMENT):
     """
     Attend qu'un fichier .csv apparaisse dans le dossier et qu'il n'y ait plus de .crdownload.
 
@@ -364,7 +381,7 @@ def wait_for_csv_download(DOWNLOAD_DIR, timeout=120):
             crdownloads = [f for f in os.listdir(DOWNLOAD_DIR) if f.endswith('.crdownload')]
             if not crdownloads:
                 return True
-        time.sleep(1)
+        time.sleep(PAUSE_COURTE)
     return False
 
 def get_period_suffix(date_debut, date_fin, args, logger=None):
@@ -471,7 +488,7 @@ def ecrire_bilan(logger, demandes) -> list[str]:
     return manquants
 
 
-def _remplacer_avec_relance(source, destination, logger, delai_max=120, intervalle=2) -> bool:
+def _remplacer_avec_relance(source, destination, logger, delai_max=ATTENTE_TELECHARGEMENT, intervalle=PAUSE_UI) -> bool:
     """os.replace relancé tant qu'il échoue avec WinError 32, pendant delai_max secondes.
 
     Le délai inclut la durée des appels eux-mêmes : un os.replace peut rester bloqué
@@ -550,7 +567,7 @@ def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE
     else:
         logger.error("Aucun fichier téléchargé trouvé (pdf/csv).")
         if driver is not None and log_dir is not None and now_str is not None:
-            time.sleep(2)
+            time.sleep(PAUSE_UI)
             capture_screenshot(driver, logger, "deplace_et_renomme_rapport_error", log_dir, now_str)
 
     # Journal JS du navigateur, en DEBUG : les SEVERE viennent du site Dexcom ou des
@@ -584,7 +601,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
     debug_enabled = bool(getattr(args, "debug", False) or logger.isEnabledFor(logging.DEBUG))
     _recover_network_or_fail(logger, f"telechargement du rapport {nom_rapport}")
     try:
-        attendre_disparition_overlay(driver, 60, logger=logger, debug=args.debug)
+        attendre_disparition_overlay(driver, ATTENTE_CHARGEMENT, logger=logger, debug=args.debug)
         try:
             current_url = driver.current_url
         except WebDriverException:
@@ -600,32 +617,32 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
             current_title,
         )
         xpath_bouton = "//button[.//img[contains(@src, 'download')]]"
-        bouton = WebDriverWait(driver, 60).until(
+        bouton = WebDriverWait(driver, ATTENTE_CHARGEMENT).until(
             EC.element_to_be_clickable((By.XPATH, xpath_bouton))
         )
         driver.execute_script("arguments[0].scrollIntoView(true);", bouton)
-        time.sleep(2)
+        time.sleep(PAUSE_UI)
         try:
             bouton.click()
         except ElementClickInterceptedException:
             driver.execute_script("arguments[0].click();", bouton)
-        time.sleep(5)
+        time.sleep(PAUSE_ACTION)
         logger.debug("Le bouton Télécharger a été cliqué avec succès!")
     except (TimeoutException, WebDriverException, *ERREURS_TRANSPORT_RESEAU) as e:
         _handle_network_loss(logger, f"clic du bouton Télécharger ({nom_rapport})", e)
         logger.error(f"Une erreur s'est produite lors du clic sur le bouton Télécharger : {e}", exc_info=args.debug)
         return
     try:
-        radio_mode_couleur = WebDriverWait(driver, 60).until(
+        radio_mode_couleur = WebDriverWait(driver, ATTENTE_CHARGEMENT).until(
             EC.presence_of_element_located((By.XPATH, "//input[@data-test-color-mode-picker-color-input]"))
         )
         driver.execute_script("arguments[0].scrollIntoView(true);", radio_mode_couleur)
-        time.sleep(1)
+        time.sleep(PAUSE_COURTE)
         try:
             radio_mode_couleur.click()
         except ElementClickInterceptedException:
             driver.execute_script("arguments[0].click();", radio_mode_couleur)
-        time.sleep(5)
+        time.sleep(PAUSE_ACTION)
         logger.debug("Le mode couleur a été sélectionné avec succès!")
     except (TimeoutException, WebDriverException, *ERREURS_TRANSPORT_RESEAU) as e:
         _handle_network_loss(logger, f"sélection du mode couleur ({nom_rapport})", e)
@@ -639,7 +656,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
             "(contains(normalize-space(), 'Enregistrer le rapport') "
             "or contains(normalize-space(), 'Save Report')))]"
         )
-        enregistrer_rapport_button = WebDriverWait(driver, 60).until(
+        enregistrer_rapport_button = WebDriverWait(driver, ATTENTE_CHARGEMENT).until(
             EC.element_to_be_clickable((By.XPATH, xpath_enregistrer))
         )
         if debug_enabled:
@@ -651,13 +668,13 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
             logger.debug("Bouton 'Enregistrer le rapport' trouvé et cliqué")
         depuis = time.time()
         enregistrer_rapport_button.click()
-        time.sleep(5)
+        time.sleep(PAUSE_ACTION)
         logger.debug("Le bouton Enregistrer le rapport a été cliqué avec succès!")
         try:
             close_xpath = "//button[@data-test-download-dialog-close-button or @data-testid='download-dialog-close-button' or contains(normalize-space(), 'Fermer') or contains(normalize-space(), 'Close')]"
 
             # Ce bouton peut ne pas apparaître selon le rapport / timing UI: traitement non bloquant.
-            close_button = WebDriverWait(driver, 30).until(
+            close_button = WebDriverWait(driver, ATTENTE_PAGE).until(
                 EC.element_to_be_clickable((By.XPATH, close_xpath))
             )
             try:
@@ -666,7 +683,7 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
                 driver.execute_script("arguments[0].click();", close_button)
 
             # Pause pour laisser le temps au téléchargement de se finaliser complètement
-            time.sleep(10)
+            time.sleep(PAUSE_FINALISATION_TELECHARGEMENT)
             logger.debug("La fenêtre de téléchargement a été fermée.")
         except TimeoutException:
             logger.warning(
@@ -705,22 +722,22 @@ def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
     _recover_network_or_fail(logger, f"traitement du rapport {nom_rapport}")
     try:
         xpath_candidates = _get_report_xpath_candidates(nom_rapport)
-        selection_rapport_button = _find_clickable_with_xpath_candidates(driver, xpath_candidates, timeout=30)
+        selection_rapport_button = _find_clickable_with_xpath_candidates(driver, xpath_candidates, timeout=ATTENTE_PAGE)
         driver.execute_script("arguments[0].scrollIntoView(true);", selection_rapport_button)
-        time.sleep(1)
+        time.sleep(PAUSE_COURTE)
         try:
             selection_rapport_button.click()
         except ElementClickInterceptedException:
             driver.execute_script("arguments[0].click();", selection_rapport_button)
-        time.sleep(2)
+        time.sleep(PAUSE_UI)
 
-        if not _is_report_active(driver, nom_rapport, timeout=8):
+        if not _is_report_active(driver, nom_rapport, timeout=ATTENTE_ETAT_RAPPORT):
             logger.warning(
                 "Le rapport '%s' ne semble pas actif après le premier clic. Tentative fallback par texte.",
                 nom_rapport,
             )
             fallback_xpath = f"//button[@data-testid='mdc-list-button' and .//span[normalize-space()='{nom_rapport}']]"
-            fallback_btn = WebDriverWait(driver, 20).until(
+            fallback_btn = WebDriverWait(driver, ATTENTE_REPLI).until(
                 EC.element_to_be_clickable((By.XPATH, fallback_xpath))
             )
             driver.execute_script("arguments[0].scrollIntoView(true);", fallback_btn)
@@ -728,9 +745,9 @@ def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
                 fallback_btn.click()
             except ElementClickInterceptedException:
                 driver.execute_script("arguments[0].click();", fallback_btn)
-            time.sleep(2)
+            time.sleep(PAUSE_UI)
 
-        if not _is_report_active(driver, nom_rapport, timeout=8):
+        if not _is_report_active(driver, nom_rapport, timeout=ATTENTE_ETAT_RAPPORT):
             raise RuntimeError(
                 f"Le rapport '{nom_rapport}' n'a pas pu être activé avant téléchargement."
             )
@@ -744,30 +761,6 @@ def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         _handle_network_loss(logger, f"traitement du rapport {nom_rapport}", e)
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}", exc_info=args.debug)
         return
-
-def traitement_rapport_apercu(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
-    """
-    Traite le rapport Aperçu.
-    """
-    traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-
-def traitement_rapports_modeles(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
-    """
-    Traite le rapport Modèles.
-    """
-    traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-
-def traitement_rapport_superposition(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
-    """
-    Traite le rapport Superposition.
-    """
-    traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-
-def traitement_rapport_quotidien(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
-    """
-    Traite le rapport Quotidien.
-    """
-    traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
 
 def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
     """
@@ -863,7 +856,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
                 target_with_dates,
             )
             driver.get(target_with_dates)
-            WebDriverWait(driver, 60).until(
+            WebDriverWait(driver, ATTENTE_CHARGEMENT).until(
                 lambda d: url_fragment in (d.current_url or "") and "dates=" in (d.current_url or "")
             )
 
@@ -874,11 +867,11 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
             last_exc = None
             for _ in range(attempts):
                 try:
-                    element = WebDriverWait(driver, 30).until(
+                    element = WebDriverWait(driver, ATTENTE_PAGE).until(
                         EC.element_to_be_clickable((By.XPATH, xpath))
                     )
                     driver.execute_script("arguments[0].scrollIntoView(true);", element)
-                    time.sleep(1)
+                    time.sleep(PAUSE_COURTE)
                     try:
                         element.click()
                     except ElementClickInterceptedException:
@@ -886,22 +879,22 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
                     return
                 except (StaleElementReferenceException, WebDriverException) as exc:
                     last_exc = exc
-                    time.sleep(1)
+                    time.sleep(PAUSE_COURTE)
             if last_exc is not None:
                 raise last_exc
 
         def ouvrir_modale_comparer():
             """Ouvre la modale du rapport Comparer."""
-            attendre_disparition_overlay(driver, 30, logger=logger, debug=args.debug)
+            attendre_disparition_overlay(driver, ATTENTE_PAGE, logger=logger, debug=args.debug)
             xpath_candidates = _get_report_xpath_candidates(nom_rapport)
-            element = _find_clickable_with_xpath_candidates(driver, xpath_candidates, timeout=30)
+            element = _find_clickable_with_xpath_candidates(driver, xpath_candidates, timeout=ATTENTE_PAGE)
             driver.execute_script("arguments[0].scrollIntoView(true);", element)
-            time.sleep(1)
+            time.sleep(PAUSE_COURTE)
             try:
                 element.click()
             except ElementClickInterceptedException:
                 driver.execute_script("arguments[0].click();", element)
-            time.sleep(2)
+            time.sleep(PAUSE_UI)
             logger.debug("Modale Comparer ouverte.")
 
         def fermer_modale_rapport():
@@ -910,11 +903,11 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
                 target_url = _append_dates_query_if_missing(compare_entry_url or get_base_url())
                 driver.get(target_url)
                 expected_prefix = target_url.split("?")[0]
-                WebDriverWait(driver, 60).until(
+                WebDriverWait(driver, ATTENTE_CHARGEMENT).until(
                     lambda d: (d.current_url or "").startswith(expected_prefix)
                 )
-                time.sleep(2)
-                attendre_disparition_overlay(driver, 30, logger=logger, debug=args.debug)
+                time.sleep(PAUSE_UI)
+                attendre_disparition_overlay(driver, ATTENTE_PAGE, logger=logger, debug=args.debug)
                 logger.debug("Modale de rapport fermee (retour vers la page d'origine).")
             except (TimeoutException, WebDriverException) as e:
                 logger.debug(f"Erreur lors de la fermeture de modale: {e}")
@@ -922,7 +915,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         def click_compare_link(link_xpath, url_fragment, label):
             """Sélectionne un sous-rapport dans la modale Comparer."""
             click_element_with_retry(link_xpath, label)
-            WebDriverWait(driver, 60).until(lambda d: url_fragment in d.current_url)
+            WebDriverWait(driver, ATTENTE_CHARGEMENT).until(lambda d: url_fragment in d.current_url)
             _ensure_dates_on_compare_page(url_fragment, "apres-clic")
             attendre_contenu_graphique(label)
             _ensure_dates_on_compare_page(url_fragment, "avant-telechargement")
@@ -930,7 +923,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         def attendre_contenu_graphique(label):
             # Attendre que le contenu graphique soit charge
             try:
-                WebDriverWait(driver, 60).until(
+                WebDriverWait(driver, ATTENTE_CHARGEMENT).until(
                     EC.presence_of_element_located(
                         (By.XPATH, "//canvas|//svg[@class='chart']|//div[contains(@class,'chart')]|//table[contains(@class,'table')]")
                     )
@@ -938,8 +931,8 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
                 logger.debug("Contenu graphique charge pour %s.", label)
             except TimeoutException:
                 logger.debug("Contenu graphique non confirme pour %s; poursuite.", label)
-            attendre_disparition_overlay(driver, 30, logger=logger, debug=args.debug)
-            time.sleep(3)
+            attendre_disparition_overlay(driver, ATTENTE_PAGE, logger=logger, debug=args.debug)
+            time.sleep(PAUSE_RENDU_GRAPHIQUE)
 
         # NOTE: Cette fonction est conservee pour une utilisation future.
         # Actuellement non utilisee en raison d'un bug Dexcom (voir ligne 432).
@@ -949,7 +942,7 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
             base_url = get_base_url()
             target_url = f"{base_url}#/compare/{route}"
             driver.get(target_url)
-            WebDriverWait(driver, 60).until(lambda d: f"/compare/{route}" in d.current_url)
+            WebDriverWait(driver, ATTENTE_CHARGEMENT).until(lambda d: f"/compare/{route}" in d.current_url)
             attendre_contenu_graphique(label)
 
         # Tendances: ouvrir modale -> selectionner -> telecharger -> fermer
@@ -1010,9 +1003,9 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
     _recover_network_or_fail(logger, f"traitement du rapport {nom_rapport}")
     try:
         xpath_candidates = _get_report_xpath_candidates(nom_rapport)
-        selection_rapport_button = _find_clickable_with_xpath_candidates(driver, xpath_candidates, timeout=30)
+        selection_rapport_button = _find_clickable_with_xpath_candidates(driver, xpath_candidates, timeout=ATTENTE_PAGE)
         driver.execute_script("arguments[0].scrollIntoView(true);", selection_rapport_button)
-        time.sleep(1)
+        time.sleep(PAUSE_COURTE)
         # Capturer l'URL de base avant la navigation, pour le fallback URL dans ouvrir_stats_route.
         try:
             base_url_stats = driver.current_url.split("#")[0]
@@ -1022,17 +1015,17 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
             selection_rapport_button.click()
         except ElementClickInterceptedException:
             driver.execute_script("arguments[0].click();", selection_rapport_button)
-        time.sleep(2)
+        time.sleep(PAUSE_UI)
 
         # Helper local: navigation robuste vers une sous-page Statistiques.
         def ouvrir_stats_route(route: str, label: str):
             xpath_route = f"//a[contains(@href, '/statistics/{route}')]"
             try:
-                link = WebDriverWait(driver, 20).until(
+                link = WebDriverWait(driver, ATTENTE_REPLI).until(
                     EC.element_to_be_clickable((By.XPATH, xpath_route))
                 )
                 driver.execute_script("arguments[0].scrollIntoView(true);", link)
-                time.sleep(1)
+                time.sleep(PAUSE_COURTE)
                 try:
                     link.click()
                 except ElementClickInterceptedException:
@@ -1051,9 +1044,9 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
                 target_url = f"{base_url}#/statistics/{route}"
                 logger.debug("Navigation directe fallback vers %s (%s)", target_url, label)
                 driver.get(target_url)
-            WebDriverWait(driver, 30).until(lambda d: f"/statistics/{route}" in (d.current_url or ""))
-            attendre_disparition_overlay(driver, 30, logger=logger, debug=args.debug)
-            time.sleep(2)
+            WebDriverWait(driver, ATTENTE_PAGE).until(lambda d: f"/statistics/{route}" in (d.current_url or ""))
+            attendre_disparition_overlay(driver, ATTENTE_PAGE, logger=logger, debug=args.debug)
+            time.sleep(PAUSE_UI)
 
         # Case à cocher "Avancé"
         checkbox = None
@@ -1064,7 +1057,7 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
         ]
         for xpath_checkbox in checkbox_xpaths:
             try:
-                checkbox = WebDriverWait(driver, 8).until(
+                checkbox = WebDriverWait(driver, ATTENTE_ETAT_RAPPORT).until(
                     EC.element_to_be_clickable((By.XPATH, xpath_checkbox))
                 )
                 break
@@ -1080,12 +1073,12 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
         try:
             if not checkbox.is_selected():
                 driver.execute_script("arguments[0].scrollIntoView(true);", checkbox)
-                time.sleep(1)
+                time.sleep(PAUSE_COURTE)
                 try:
                     checkbox.click()
                 except ElementClickInterceptedException:
                     driver.execute_script("arguments[0].click();", checkbox)
-                time.sleep(1)
+                time.sleep(PAUSE_COURTE)
 
             if not checkbox.is_selected():
                 raise RuntimeError("La case 'Avancé' n'a pas pu être activée.")
@@ -1118,12 +1111,6 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
         return
 
-def traitement_rapport_agp(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
-    """
-    Traite le rapport AGP.
-    """
-    traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-
 def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
     """
     Traite l'export CSV Dexcom Clarity.
@@ -1141,18 +1128,18 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
     _bilan_tente(nom_rapport)
     _recover_network_or_fail(logger, "traitement de l'export CSV")
     try:
-        attendre_disparition_overlay(driver, 60, logger=logger, debug=args.debug)
+        attendre_disparition_overlay(driver, ATTENTE_CHARGEMENT, logger=logger, debug=args.debug)
         xpath_export = "//button[.//img[@src='/i/assets/cui_export.svg']]"
-        bouton_export = WebDriverWait(driver, 60).until(
+        bouton_export = WebDriverWait(driver, ATTENTE_CHARGEMENT).until(
             EC.element_to_be_clickable((By.XPATH, xpath_export))
         )
         driver.execute_script("arguments[0].scrollIntoView(true);", bouton_export)
-        time.sleep(2)
+        time.sleep(PAUSE_UI)
         try:
             bouton_export.click()
         except ElementClickInterceptedException:
             driver.execute_script("arguments[0].click();", bouton_export)
-        time.sleep(5)
+        time.sleep(PAUSE_ACTION)
         logger.debug("Le bouton Exporter a été cliqué avec succès!")
     except (TimeoutException, WebDriverException, *ERREURS_TRANSPORT_RESEAU) as e:
         _handle_network_loss(logger, "clic du bouton Exporter", e)
@@ -1161,11 +1148,11 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
     try:
         # Utilisation de l'attribut data-test spécifique (plus robuste que le texte)
         xpath_bouton_export_modal = "//button[@data-test-export-dialog-export-button]"
-        bouton_export_modal = WebDriverWait(driver, 30).until(
+        bouton_export_modal = WebDriverWait(driver, ATTENTE_PAGE).until(
             EC.element_to_be_clickable((By.XPATH, xpath_bouton_export_modal))
         )
         driver.execute_script("arguments[0].scrollIntoView(true);", bouton_export_modal)
-        time.sleep(1)
+        time.sleep(PAUSE_COURTE)
         depuis = time.time()
         bouton_export_modal.click()
         logger.debug("Le bouton Exporter de la fenêtre modale a été cliqué avec succès!")
@@ -1178,16 +1165,16 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
         # Ancrage dans le composant <export-dialog> pour éviter toute ambiguïté avec
         # d'autres boutons primaires sur la page.
         xpath_fermer = "//export-dialog//button[normalize-space()='Fermer' or normalize-space()='Close']"
-        bouton_fermer = WebDriverWait(driver, 10).until(
+        bouton_fermer = WebDriverWait(driver, ATTENTE_ELEMENT).until(
             EC.element_to_be_clickable((By.XPATH, xpath_fermer))
         )
         driver.execute_script("arguments[0].scrollIntoView(true);", bouton_fermer)
-        time.sleep(1)
+        time.sleep(PAUSE_COURTE)
         bouton_fermer.click()
         logger.debug("Le bouton Fermer de la fenêtre modale a été cliqué avec succès!")
         # Attendre que le composant export-dialog soit retiré du DOM avant de poursuivre.
         try:
-            WebDriverWait(driver, 10).until_not(
+            WebDriverWait(driver, ATTENTE_ELEMENT).until_not(
                 EC.presence_of_element_located((By.TAG_NAME, "export-dialog"))
             )
             logger.debug("Composant export-dialog retiré du DOM.")
@@ -1204,7 +1191,20 @@ def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_B
         logger.info("Fichier CSV exporté détecté et téléchargement terminé.")
         deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args, driver, depuis=depuis)
     else:
-        logger.error("Le téléchargement du fichier CSV n'a pas été détecté ou n'est pas terminé après 2 minutes.")
+        logger.error(f"Le téléchargement du fichier CSV n'a pas été détecté ou n'est pas terminé après {ATTENTE_TELECHARGEMENT // 60} minutes.")
+
+# Aperçu, Modèles, Superposition, Quotidien et AGP suivent le même parcours ;
+# seuls Comparer, Statistiques et Export ont un traitement propre.
+TRAITEMENTS_RAPPORTS = {
+    "Aperçu": traitement_rapport_standard,
+    "Modèles": traitement_rapport_standard,
+    "Superposition": traitement_rapport_standard,
+    "Quotidien": traitement_rapport_standard,
+    "Comparer": traitement_rapport_comparer,
+    "Statistiques": traitement_rapport_statistiques,
+    "AGP": traitement_rapport_standard,
+    "Export": traitement_export_csv,
+}
 
 def selection_rapport(RAPPORTS, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
     """
@@ -1229,24 +1229,11 @@ def selection_rapport(RAPPORTS, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DA
             _recover_network_or_fail(logger, f"avant le traitement du rapport {rapport}")
 
             def _execute_rapport_once() -> None:
-                if rapport == "Aperçu":
-                    traitement_rapport_apercu(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-                elif rapport == "Modèles":
-                    traitement_rapports_modeles(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-                elif rapport == "Superposition":
-                    traitement_rapport_superposition(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-                elif rapport == "Quotidien":
-                    traitement_rapport_quotidien(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-                elif rapport == "Comparer":
-                    traitement_rapport_comparer(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-                elif rapport == "Statistiques":
-                    traitement_rapport_statistiques(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-                elif rapport == "AGP":
-                    traitement_rapport_agp(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-                elif rapport == "Export":
-                    traitement_export_csv(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
-                else:
+                traitement = TRAITEMENTS_RAPPORTS.get(rapport)
+                if traitement is None:
                     logger.error(f"Rapport inconnu : {rapport}. Veuillez vérifier la liste des rapports.")
+                    return
+                traitement(rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args)
 
             max_network_retries = 2
             retry_count = 0

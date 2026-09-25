@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
 Modifié le    : 2026-09-25
-Version       : 0.6.7
+Version       : 0.7.0
 Copyright     : Pierre Théberge
 
 Description
@@ -198,6 +198,8 @@ Modifications
 0.6.5   - 2026-09-25   CR      : Message d'échec du sélecteur de dates juste même sans clic.
 0.6.6   - 2026-09-25   CR      : Présence du panneau vérifiée avant chaque clic, y compris le premier.
 0.6.7   - 2026-09-25   CR      : Message de l'exception finale aligné sur le WARNING (non utilisable).
+0.7.0   - 2026-09-25   ES-29   : saisir_identifiants déplacé dans auth.py. Délais et pauses lus dans
+                                 constants.py.
 
 Paramètres
 ----------
@@ -221,7 +223,6 @@ import time
 from datetime import datetime, timedelta
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
@@ -232,7 +233,6 @@ from selenium.common.exceptions import (
     WebDriverException,
 )
 import glob
-import re
 from getpass import getpass
 import traceback
 from webdriver_manager.chrome import ChromeDriverManager
@@ -252,7 +252,20 @@ from utils import (
     attendre_verification_humaine_cloudflare
 )
 from rapports import selection_rapport, NetworkRecoveryFailedError
+from auth import saisir_identifiants
 from version import __version__
+from constants import (
+    ATTENTE_CHARGEMENT,
+    ATTENTE_CLOUDFLARE,
+    ATTENTE_ELEMENT,
+    ATTENTE_OPTIONNELLE,
+    ATTENTE_PAGE,
+    PAUSE_ACTION,
+    PAUSE_APRES_DECONNEXION,
+    PAUSE_AVANT_DECONNEXION,
+    PAUSE_SILENCE_CLOUDFLARE,
+    PAUSE_UI,
+)
 
 NOM_APPLICATION = "GlycoReport-Downloader"
 
@@ -509,258 +522,7 @@ def validate_dates(args):
 
 
 # --- Fonctions utilitaires refactorisées ---
-def saisir_identifiants(driver, logger, log_dir, NOW_STR):
-    """
-    Saisit les identifiants de connexion (nom d'utilisateur et mot de passe) sur la page Dexcom Clarity.
-
-    Args:
-        driver (WebDriver): Instance du navigateur Selenium.
-        logger (Logger): Logger à utiliser pour les messages d'erreur.
-        log_dir (str): Répertoire des logs.
-        NOW_STR (str): Timestamp actuel sous forme de chaîne.
-
-    Raises:
-        SystemExit: Si une erreur critique se produit (ex: variables d'environnement manquantes).
-    """
-    try:
-        if not check_internet():
-            logger.error("Perte de connexion internet détectée avant la saisie des identifiants.")
-            raise RuntimeError("Connexion internet requise pour poursuivre.")
-
-        # Si une vérification Cloudflare est affichée, attendre la page de login
-        # avant d'essayer de localiser le champ d'identifiant.
-        try:
-            attendre_verification_humaine_cloudflare(
-                driver,
-                logger,
-                (
-                    By.XPATH,
-                    "//input[( @type='text' or @type='email' or @type='password') and not(@disabled)]",
-                ),
-                log_dir,
-                NOW_STR,
-                timeout=600,
-                poll_seconds=5.0,
-                quiet_seconds=45.0,
-                deep_scan_interval=20.0,
-                debug=logger.isEnabledFor(logging.DEBUG),
-            )
-        except TimeoutException as e:
-            logger.error(f"Attente Cloudflare avant login: {e}")
-            logger.error(
-                "La vérification humaine Cloudflare n'a pas été complétée dans le délai prévu "
-                "(10 minutes). L'application s'arrête avant de lire vos identifiants Dexcom."
-            )
-            logger.error(
-                "Pistes de dépannage :\n"
-                "  - Relancer le script avec l'option --debug pour obtenir plus de détails et des captures d'écran.\n"
-                "  - Vérifier que votre profil Chrome permet d'accéder à Dexcom Clarity sans étape supplémentaire.\n"
-                "  - Désactiver temporairement VPN, bloqueurs de pub ou extensions pouvant perturber Cloudflare.\n"
-                "  - Réessayer plus tard : il peut s'agir d'un contrôle temporaire côté Cloudflare."
-            )
-            raise SystemExit(1)
-
-        # Récupération des identifiants via config.py
-        dexcom_username, dexcom_password, dexcom_country_code, dexcom_phone_number = get_dexcom_credentials()
-        if not dexcom_username or not dexcom_password:
-            logger.error("Les identifiants Dexcom sont manquants.")
-            raise SystemExit(1)
-
-        # Détection du type d'identifiant
-        is_phone = re.fullmatch(r"\+?[1-9]\d{9,14}", dexcom_username.strip()) is not None
-
-        if is_phone:
-            country_code = dexcom_country_code
-            phone_number = dexcom_phone_number
-            if not country_code or not phone_number:
-                logger.error("Variables DEXCOM_COUNTRY_CODE et DEXCOM_PHONE_NUMBER requises.")
-                raise SystemExit(1)
-            # Accès au mode téléphone (indépendant de la langue)
-            phone_link = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((
-                    By.XPATH,
-                    "//a[contains(@href, 'phone') or contains(@class, 'phone')]"
-                ))
-            )
-            phone_link.click()
-
-            # Champs téléphone
-            country_code_input = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.ID, "countryCode"))
-            )
-            phone_number_input = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.ID, "phoneNumber"))
-            )
-
-            country_code_input.clear()
-            country_code_input.send_keys(country_code)
-            phone_number_input.clear()
-            phone_number_input.send_keys(phone_number)
-
-        else:
-            # Sélection du mode courriel/nom d'utilisateur
-            # MODIFICATION : Vérifier d'abord si le champ login est déjà visible (bypass de la sélection)
-            login_field_already_visible = False
-            try:
-                WebDriverWait(driver, 5).until(
-                    EC.visibility_of_element_located((By.ID, "usernameLogin"))
-                )
-                login_field_already_visible = True
-                logger.debug("Champ d'identifiant détecté directement. Étape de sélection du mode ignorée.")
-            except TimeoutException:
-                pass
-
-            if not login_field_already_visible:
-                try:
-                    radio_buttons = WebDriverWait(driver, 10).until(
-                        EC.presence_of_all_elements_located((By.CLASS_NAME, "radio-outer-circle"))
-                    )
-                    if radio_buttons:
-                        driver.execute_script("arguments[0].click();", radio_buttons[0])
-                        time.sleep(1)
-                except TimeoutException:
-                    logger.debug("Boutons de sélection de mode non trouvés, tentative d'accès direct au login.")
-
-            # Capture avant la recherche du champ username (en mode debug uniquement)
-            if logger.isEnabledFor(logging.DEBUG):
-                capture_screenshot(driver, logger, "avant_username_input", log_dir, NOW_STR)
-
-            # Attendre que le champ soit présent (avec fallbacks si l'ID change)
-            username_input = None
-            username_locators = [
-                (By.ID, "usernameLogin"),
-                (By.NAME, "username"),
-                (By.NAME, "email"),
-                (By.CSS_SELECTOR, "input[type='email']"),
-                (By.CSS_SELECTOR, "input[autocomplete='username']"),
-                (By.CSS_SELECTOR, "input[id*='user'][type='text']"),
-                (By.CSS_SELECTOR, "input[id*='email']"),
-            ]
-            for locator in username_locators:
-                try:
-                    username_input = WebDriverWait(driver, 10).until(
-                        EC.presence_of_element_located(locator)
-                    )
-                    if username_input is not None:
-                        logger.debug(f"Champ d'identifiant trouvé via {locator}")
-                        break
-                except TimeoutException:
-                    continue
-
-            if username_input is None:
-                current_url = getattr(driver, "current_url", "")
-                try:
-                    page_title = driver.title
-                except WebDriverException:
-                    page_title = ""
-                logger.error(
-                    "Champ usernameLogin introuvable après sélection du mode courriel/nom d'utilisateur. "
-                    f"URL actuelle: {current_url} | Titre: {page_title}"
-                )
-                if logger.isEnabledFor(logging.DEBUG):
-                    capture_screenshot(driver, logger, "erreur_username_input", log_dir, NOW_STR)
-                raise SystemExit(1)
-
-            # Vérifier que le champ est visible et interactif
-            try:
-                WebDriverWait(driver, 10).until(EC.visibility_of(username_input))
-                WebDriverWait(driver, 10).until(EC.element_to_be_clickable(username_input))
-            except TimeoutException as e:
-                logger.error("Champ usernameLogin non visible ou non interactif.")
-                if logger.isEnabledFor(logging.DEBUG):
-                    capture_screenshot(driver, logger, "username_non_interactif", log_dir, NOW_STR)
-                raise SystemExit(1)
-
-            # Scroll jusqu'au champ pour le rendre visible
-            driver.execute_script("arguments[0].scrollIntoView(true);", username_input)
-            time.sleep(0.5)
-
-            # Clic dans le champ pour déclencher les scripts JS
-            try:
-                username_input.click()
-            except ElementClickInterceptedException:
-                driver.execute_script("arguments[0].click();", username_input)
-            time.sleep(0.5)
-
-            # Saisie classique
-            username_input.clear()
-            username_input.send_keys(dexcom_username)
-            time.sleep(0.5)
-
-            # Vérification et saisie forcée si nécessaire
-            if username_input.get_attribute("value") != dexcom_username:
-                logger.warning("La saisie classique a échoué, tentative via JavaScript.")
-                driver.execute_script("arguments[0].value = arguments[1];", username_input, dexcom_username)
-
-            # Déclencher un événement 'input' pour que le champ soit reconnu
-            driver.execute_script("""
-                arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
-                arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
-            """, username_input)
-
-            if logger.isEnabledFor(logging.DEBUG):
-                capture_screenshot(driver, logger, "apres_saisie_username", log_dir, NOW_STR)
-
-        # Bouton suivant
-        next_button = WebDriverWait(driver, 30).until(
-            EC.element_to_be_clickable((By.XPATH, "//input[@type='submit' and @value]"))
-        )
-        next_button.click()
-        time.sleep(2)
-
-        # Saisie du mot de passe
-        password_input = WebDriverWait(driver, 30).until(
-            EC.presence_of_element_located((By.ID, "password"))
-        )
-        password_input.send_keys(dexcom_password)
-
-        # Clic sur le bouton de connexion
-        # Utilisation de l'ID 'default-login-text' (indépendant de la langue et du type d'élément)
-        # On cible l'élément avec cet ID, le clic se propagera au bouton parent si nécessaire
-        try:
-            logger.debug("Tentative de clic sur le bouton de connexion via ID 'default-login-text'...")
-            login_button = WebDriverWait(driver, 5).until(
-                EC.element_to_be_clickable((By.ID, "default-login-text"))
-            )
-            login_button.click()
-        except (TimeoutException, ElementClickInterceptedException) as e:
-            logger.warning(f"ID 'default-login-text' introuvable ou non cliquable ({e}), tentative via type='submit'")
-            # Fallback : recherche par type submit (button ou input) si l'ID n'est pas trouvé
-            try:
-                login_button = WebDriverWait(driver, 10).until(
-                    EC.element_to_be_clickable((By.XPATH, "//button[@type='submit'] | //input[@type='submit']"))
-                )
-                login_button.click()
-            except (TimeoutException, ElementClickInterceptedException) as e2:
-                logger.warning(f"Échec du clic sur le bouton de connexion (fallback inclus) : {e2}. Tentative avec la touche ENTRÉE.")
-                # Dernier recours : appuyer sur Entrée dans le champ mot de passe
-                password_input.send_keys(Keys.ENTER)
-
-        time.sleep(5)
-
-        logger.info("Connexion réussie !")
-        time.sleep(2)
-        if logger.isEnabledFor(logging.DEBUG):
-            capture_screenshot(driver, logger, "apres_connexion", log_dir, NOW_STR)
-
-        # Après la connexion réussie, avant d'aller plus loin...
-        try:
-            # Attendre la présence éventuelle du bouton "Pas maintenant" (notNowButton)
-            not_now_button = WebDriverWait(driver, 5).until(
-                EC.element_to_be_clickable((By.ID, "notNowButton"))
-            )
-            driver.execute_script("arguments[0].scrollIntoView(true);", not_now_button)
-            not_now_button.click()
-            logger.debug("Bouton 'Pas maintenant' détecté et cliqué.")
-            time.sleep(2)
-        except TimeoutException:
-            # Si le bouton n'est pas présent, on continue simplement
-            logger.debug("Aucun bouton 'Pas maintenant' à cliquer, poursuite du script.")
-
-    except WebDriverException as e:
-        logger.exception(f"Erreur lors de la saisie des identifiants ou de la connexion : {e}")
-        raise SystemExit(1)
-def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=10, required=True):
+def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=ATTENTE_ELEMENT, required=True):
     """
     Clique sur le bouton 'Dexcom Clarity for Home Users' sur la page d'accueil.
 
@@ -791,7 +553,7 @@ def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=10, require
         return True
     except (TimeoutException, ElementClickInterceptedException) as e:
         if required:
-            time.sleep(2)
+            time.sleep(PAUSE_UI)
             capture_screenshot(driver, logger, "home_user_button_error", log_dir, NOW_STR)
             logger.error(f"Une erreur s'est produite au moment de cliquer sur le bouton 'Dexcom Clarity for Home Users' : {e}")
             raise
@@ -800,7 +562,7 @@ def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=10, require
         )
         return False
 
-def ouvrir_selecteur_dates(driver, logger, log_dir, now_str, tentatives=3, attente_panneau=10, attente_bouton=60):
+def ouvrir_selecteur_dates(driver, logger, log_dir, now_str, tentatives=3, attente_panneau=ATTENTE_ELEMENT, attente_bouton=ATTENTE_CHARGEMENT):
     """Clique le bouton du sélecteur de dates jusqu'à ce que le panneau s'ouvre.
 
     Le panneau ne s'ouvre parfois pas malgré un clic réussi (2 exécutions sur 4 le
@@ -1026,14 +788,14 @@ def main(args, logger, config):
 
         # Ouvrir la page de connexion
         driver.get(dexcom_url)
-        wait = WebDriverWait(driver=driver, timeout=60)
+        wait = WebDriverWait(driver=driver, timeout=ATTENTE_CHARGEMENT)
 
         if args.start_at_date_selection:
             logger.info("Mode reprise: démarrage avant sélection des dates (login déjà effectué).")
 
             # Tentative rapide: la page principale est déjà accessible ?
             try:
-                WebDriverWait(driver, 5).until(
+                WebDriverWait(driver, ATTENTE_OPTIONNELLE).until(
                     EC.presence_of_element_located((By.XPATH, "//div[@data-test-date-range-picker-toggle]"))
                 )
             except TimeoutException:
@@ -1041,7 +803,7 @@ def main(args, logger, config):
                 try:
                     clicked = click_home_user_button(driver, logger, log_dir, now_str, required=False)
                     if clicked:
-                        time.sleep(5)
+                        time.sleep(PAUSE_ACTION)
                 except (TimeoutException, ElementClickInterceptedException):
                     logger.warning("Bouton Home User introuvable lors du mode reprise.")
 
@@ -1053,7 +815,7 @@ def main(args, logger, config):
                     (By.XPATH, "//div[@data-test-date-range-picker-toggle]"),
                     log_dir,
                     now_str,
-                    timeout=600,
+                    timeout=ATTENTE_CLOUDFLARE,
                     poll_seconds=2.0,
                     debug=debug_mode,
                 )
@@ -1072,7 +834,7 @@ def main(args, logger, config):
                 (By.XPATH, "//input[@type='submit' and contains(@class, 'landing-page--button')]"),
                 log_dir,
                 now_str,
-                timeout=600,
+                timeout=ATTENTE_CLOUDFLARE,
                 poll_seconds=2.0,
                 debug=debug_mode,
             )
@@ -1084,7 +846,7 @@ def main(args, logger, config):
 
             try:
                 click_home_user_button(driver, logger, log_dir, now_str, required=True)
-                time.sleep(5)
+                time.sleep(PAUSE_ACTION)
                 logger.debug("Le bouton 'Dexcom Clarity for Home Users' a été cliqué avec succès!")
             except (TimeoutException, ElementClickInterceptedException):
                 # La gestion d'erreur est déjà dans click_home_user_button
@@ -1092,8 +854,8 @@ def main(args, logger, config):
 
             # Silence total après le clic Home User pour réduire les interactions
             # pendant la vérification Cloudflare.
-            logger.info("Pause silencieuse 45s après le bouton Home User (Cloudflare)")
-            time.sleep(45)
+            logger.info(f"Pause silencieuse {PAUSE_SILENCE_CLOUDFLARE}s après le bouton Home User (Cloudflare)")
+            time.sleep(PAUSE_SILENCE_CLOUDFLARE)
 
             try:
                 saisir_identifiants(driver, logger, log_dir, now_str)
@@ -1109,7 +871,7 @@ def main(args, logger, config):
                 (By.XPATH, "//div[@data-test-date-range-picker-toggle]"),
                 log_dir,
                 now_str,
-                timeout=600,
+                timeout=ATTENTE_CLOUDFLARE,
                 poll_seconds=2.0,
                 debug=debug_mode,
             )
@@ -1121,36 +883,36 @@ def main(args, logger, config):
 
             # Stabilisation post-connexion : attendre que l'UI principale soit interactive.
             # (Évite un délai arbitraire long, tout en restant robuste sur connexions lentes.)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, ATTENTE_PAGE).until(
                 EC.element_to_be_clickable((By.XPATH, "//div[@data-test-date-range-picker-toggle]"))
             )
-            time.sleep(2)
+            time.sleep(PAUSE_UI)
 
             ouvrir_selecteur_dates(driver, logger, log_dir, now_str)
 
             if date_debut_str is None or date_fin_str is None:
                 raise ValueError("Les variables DATE_DEBUT et DATE_FIN ne peuvent pas être None. Elles doivent être définies.")
 
-            date_debut_input = WebDriverWait(driver, 60).until(
+            date_debut_input = WebDriverWait(driver, ATTENTE_CHARGEMENT).until(
                 EC.element_to_be_clickable((By.NAME, "start_date"))
             )
             date_debut_input.click()
             date_debut_input.clear()
             date_debut_input.send_keys(date_debut_str)
 
-            date_fin_input = WebDriverWait(driver, 60).until(
+            date_fin_input = WebDriverWait(driver, ATTENTE_CHARGEMENT).until(
                 EC.element_to_be_clickable((By.NAME, "end_date"))
             )
             date_fin_input.click()
             date_fin_input.clear()
             date_fin_input.send_keys(date_fin_str)
 
-            ok_button = WebDriverWait(driver, 60).until(
+            ok_button = WebDriverWait(driver, ATTENTE_CHARGEMENT).until(
                 EC.element_to_be_clickable((By.XPATH, "//button[@data-test-date-range-picker__ok-button]"))
             )
             ok_button.click()
             logger.debug("Bouton OK du sélecteur de dates cliqué.")
-            time.sleep(5)
+            time.sleep(PAUSE_ACTION)
 
             logger.info(f"Date de début: {date_debut_str}")
             logger.info(f"Date de fin: {date_fin_str}")
@@ -1190,11 +952,11 @@ def main(args, logger, config):
             logger.error("Arrêt de l'application: %s", e)
             raise SystemExit(1)
 
-        time.sleep(60)
+        time.sleep(PAUSE_AVANT_DECONNEXION)
 
         try:
             # Attendre que tout overlay disparaisse avant de tenter la déconnexion
-            attendre_disparition_overlay(driver, 10, logger=logger, debug=debug_mode)
+            attendre_disparition_overlay(driver, ATTENTE_ELEMENT, logger=logger, debug=debug_mode)
             
             user_menu_button = get_user_menu_button(driver, logger, args)
             
@@ -1205,10 +967,10 @@ def main(args, logger, config):
                 logger.debug(f"Clic standard intercepté sur le menu utilisateur : {e}, tentative via JS.")
                 driver.execute_script("arguments[0].click();", user_menu_button)
 
-            time.sleep(2)
+            time.sleep(PAUSE_UI)
             # Seconde attente overlay : le menu peut provoquer un nouvel overlay
-            attendre_disparition_overlay(driver, 10, logger=logger, debug=debug_mode)
-            logout_link = WebDriverWait(driver, 10).until(
+            attendre_disparition_overlay(driver, ATTENTE_ELEMENT, logger=logger, debug=debug_mode)
+            logout_link = WebDriverWait(driver, ATTENTE_ELEMENT).until(
                 EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'cui-link__logout')]"))
             )
             # Tentative de clic standard, puis JS uniquement si un overlay intercepte le clic
@@ -1218,7 +980,7 @@ def main(args, logger, config):
                 logger.debug(f"Clic standard intercepté sur le lien logout : {e}, tentative via JS.")
                 driver.execute_script("arguments[0].click();", logout_link)
             logger.info("Déconnexion effectuée avec succès.")
-            time.sleep(3)
+            time.sleep(PAUSE_APRES_DECONNEXION)
         except (TimeoutException, ElementClickInterceptedException, WebDriverException) as e:
             logger.warning(f"Impossible de se déconnecter proprement : {e}", exc_info=debug_mode)
 
@@ -1234,7 +996,7 @@ def main(args, logger, config):
 
     return manquants
 
-def get_user_menu_button(driver, logger, args, timeout=10):
+def get_user_menu_button(driver, logger, args, timeout=ATTENTE_ELEMENT):
     """
     Retourne le bouton du menu utilisateur pour la déconnexion.
 

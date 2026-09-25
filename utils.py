@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
 Modifié le    : 2026-09-25
-Version       : 0.6.7
+Version       : 0.7.0
 Copyright     : Pierre Théberge
 
 Description
@@ -121,6 +121,8 @@ Modifications
 0.6.5  - 2026-09-25   CR      : Synchronisation de version (aucun changement fonctionnel).
 0.6.6  - 2026-09-25   CR      : Synchronisation de version (aucun changement fonctionnel).
 0.6.7  - 2026-09-25   CR      : Synchronisation de version (aucun changement fonctionnel).
+0.7.0  - 2026-09-25   ES-29   : Délais par défaut (overlay, bouton de téléchargement, Cloudflare)
+                                lus dans constants.py.
 
 Paramètres
 ----------
@@ -150,6 +152,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import StaleElementReferenceException, TimeoutException, WebDriverException
 from colorama import Fore  # type: ignore
+
+from constants import ATTENTE_CHARGEMENT, ATTENTE_CLOUDFLARE, ATTENTE_PAGE
 
 ONE_DAY_SECONDS = 86400
 
@@ -338,7 +342,7 @@ def check_internet(url: str = "https://clarity.dexcom.eu", timeout: int = 5) -> 
     except (URLError, OSError):
         return False
 
-def attendre_disparition_overlay(driver: WebDriver, timeout: int = 60, logger=None, debug: bool = False) -> None:
+def attendre_disparition_overlay(driver: WebDriver, timeout: int = ATTENTE_CHARGEMENT, logger=None, debug: bool = False) -> None:
     """Attend la disparition des overlays, loaders ou spinners courants."""
     try:
         WebDriverWait(driver, timeout).until_not(
@@ -442,7 +446,7 @@ def renomme_prefix(prefix: str, date_fin: str, logger=None) -> str:
         logger.debug(f"Nouveau préfix : {nouveau_prefix}")
     return nouveau_prefix
 
-def attendre_nouveau_bouton_telecharger(driver: WebDriver, bouton_avant: WebElement, timeout: int = 30) -> None:
+def attendre_nouveau_bouton_telecharger(driver: WebDriver, bouton_avant: WebElement, timeout: int = ATTENTE_PAGE) -> None:
     """Attend que le bouton Télécharger soit recréé dans le DOM (nouvelle instance)."""
     def bouton_a_change(drv):
         try:
@@ -665,7 +669,7 @@ def attendre_verification_humaine_cloudflare(
     ancre_locator: tuple,
     log_dir: str,
     now_str: str,
-    timeout: int = 600,
+    timeout: int = ATTENTE_CLOUDFLARE,
     poll_seconds: float = 2.0,
     quiet_seconds: float = 30.0,
     deep_scan_interval: float = 10.0,
