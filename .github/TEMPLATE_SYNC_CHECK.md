@@ -19,6 +19,8 @@ META:
     1.0.12 - 2026-07-31 - PD-206 : Ajout de HEADER_TEMPLATE_POWERSHELL_MODULE.md à la liste et aux
                                     paires PowerShell (comparaison et synchro), en cohérence avec
                                     IPT.PromptSync 0.2.0 (LanguageMap.PowerShell.TemplateNames).
+    1.0.13 - 2026-08-15 - CR     : Référence cf. .github/HEADER_TEMPLATE_POWERSHELL.md rendue cohérente avec
+                                    le préfixe .github/ utilisé partout ailleurs dans le document.
 -->
 
 # Vérification des templates d’en-tête
@@ -36,7 +38,7 @@ $env:USERPROFILE\Sources\IPTDevLib\prompts)
 
 - .github/HEADER_TEMPLATE_PYTHON.md (optionnel selon le repo)
 - .github/HEADER_TEMPLATE_POWERSHELL.md (optionnel selon le repo)
-- .github/HEADER_TEMPLATE_POWERSHELL_MODULE.md (optionnel selon le repo — présent si le repo contient du PowerShell, script ou module, cf. HEADER_TEMPLATE_POWERSHELL.md)
+- .github/HEADER_TEMPLATE_POWERSHELL_MODULE.md (optionnel selon le repo — présent si le repo contient du PowerShell, script ou module, cf. .github/HEADER_TEMPLATE_POWERSHELL.md)
 - .github/HEADER_TEMPLATE_SHELL.md (optionnel selon le repo)
 - .github/TEMPLATE_SYNC_CHECK.md (toujours présent)
 
@@ -149,6 +151,6 @@ foreach ($p in $pairs) {
 ---
 
 **Document créé le** : 2026-01-29  
-**Version** : 1.0.12  
+**Version** : 1.0.13  
 **Mainteneur** : Pierre Théberge  
 **Compagnie** : Innovations, Performances, Technologies inc.

@@ -1,9 +1,9 @@
 <!--
 META:
-    0.0.0 - 2026-07-31 - PD-206 : Version initiale. Extrait de HEADER_TEMPLATE_POWERSHELL.md
-                                   pour adapter les règles aux modules (.psm1/.psd1), qui ne
-                                   "s'exécutent" pas comme un script (pas de param() au niveau
-                                   module, pas de lignes Début/Fin).
+    0.0.0 - 2026-07-31 - PD-206  : Version initiale. Extrait de HEADER_TEMPLATE_POWERSHELL.md
+                                    pour adapter les règles aux modules (.psm1/.psd1), qui ne
+                                    "s'exécutent" pas comme un script (pas de param() au niveau
+                                    module, pas de lignes Début/Fin).
     0.0.1 - 2026-07-31 - CR      : Correction — l'absence de param() au niveau module n'est pas
                                     une impossibilité du langage (Import-Module -ArgumentList
                                     existe) mais une convention de ce standard ; justification
@@ -26,6 +26,11 @@ META:
                                     Retrait de la même approximation (about_*.help.txt) restée dans
                                     le texte de l'entrée 0.0.2. Accents restaurés dans cette même
                                     entrée (retirés par erreur).
+    0.1.0 - 2026-09-01 - PD-226  : Résumé fonctionnel de la .DESCRIPTION plafonné à 20 lignes ;
+                                    les mises en garde vont dans le code, à leur ligne.
+    0.1.1 - 2026-10-26 - CR      : Exception explicite à la règle 0.1.0 pour l'avertissement
+                                    d'encodage du .psd1 (contrainte sur tout le fichier, sans
+                                    ligne à elle) — règle et checklist alignées sur l'exemple.
 -->
 
 # 📘 Template d'en-tête PowerShell — Modules (.psm1 / .psd1) - IPT inc
@@ -99,8 +104,13 @@ Set-StrictMode -Version Latest
   pour un module.
 - `.SYNOPSIS` obligatoire, même pour un module.
 - Alignement `.DESCRIPTION` sur `:` (15 espaces après le label), version sémantique
-  `MAJEUR.MINEUR.CORRECTIF`, version initiale toujours `0.0.0` — mêmes règles que
+  `MAJEUR.MINEUR.CORRECTIF`, version initiale toujours `0.0.0`, **résumé fonctionnel plafonné
+  à 20 lignes** — mêmes règles que
   [HEADER_TEMPLATE_POWERSHELL.md](HEADER_TEMPLATE_POWERSHELL.md#2-description).
+- Une mise en garde va **dans le code**, à la ligne où l'erreur se commettrait — jamais dans
+  l'en-tête. Vaut aussi pour le bloc d'une fonction exportée. Seule exception : une contrainte
+  qui vise le fichier entier et n'a donc aucune ligne à elle — l'encodage du `.psd1`, plus bas —
+  reste en tête de fichier.
 - `.MODIFICATIONS` complet, une entrée par version, alignement sur `:` à la même colonne pour
   toutes les entrées, padding du champ billet et de la version selon les mêmes règles que le
   template script.
@@ -181,6 +191,9 @@ Avant de commiter un module PowerShell (`.psm1` + `.psd1`) :
 - [ ] `.psm1` : vrai bloc d'aide `<# ... #>` (pas de `#` ligne par ligne) avant tout code
 - [ ] `.psm1` : `.SYNOPSIS` présent
 - [ ] `.psm1` : `.DESCRIPTION` avec métadonnées alignées, version initiale `0.0.0`
+- [ ] `.psm1` : résumé fonctionnel de la `.DESCRIPTION` ≤ 20 lignes ; le reste dans le billet
+- [ ] Mises en garde placées à leur ligne dans le code, pas dans l'en-tête (sauf l'encodage du
+      `.psd1`, qui vise le fichier entier)
 - [ ] `.psm1` : `.MODIFICATIONS` à jour avec dernière version, alignement respecté
 - [ ] `.psm1` : `#Requires -Version 5.1` et `Set-StrictMode -Version Latest`
 - [ ] `.psm1` : `Export-ModuleMember` explicite en fin de fichier
@@ -191,6 +204,6 @@ Avant de commiter un module PowerShell (`.psm1` + `.psd1`) :
 ---
 
 **Document créé le** : 2026-07-31
-**Version** : 0.0.3
+**Version** : 0.1.1
 **Mainteneur** : Pierre Théberge
 **Compagnie** : Innovations, Performances, Technologies inc.
