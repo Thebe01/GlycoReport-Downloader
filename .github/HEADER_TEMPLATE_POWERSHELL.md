@@ -32,6 +32,10 @@ META:
                                      — « un module ne s'exécute pas comme un script » pouvait laisser
                                      croire à une contrainte du langage, alors que c'est une convention
                                      de ce standard (un .psm1 exécute bien du code à l'import).
+    1.2.0 - 2026-09-01 - PD-226    : Résumé fonctionnel de la .DESCRIPTION plafonné à 20 lignes ;
+                                     les mises en garde vont dans le code, à leur ligne.
+    1.2.1 - 2026-10-26 - CR        : .NOTES aligné sur la règle 1.2.0 — retrait des « avertissements »,
+                                     renvoi des mises en garde au code.
 -->
 
 # 📘 Template d'en-tête PowerShell - IPT inc
@@ -137,6 +141,12 @@ Bloc de métadonnées **structuré** et **aligné** :
 - Alignement sur `:` (15 espaces après le label)
 - Date au format `YYYY-MM-DD`
 - Version sémantique `MAJEUR.MINEUR.CORRECTIF`
+- Le bloc de métadonnées peut être suivi d'un **résumé fonctionnel** : ce qu'un
+  lecteur du code doit savoir sans ouvrir Jira. **20 lignes au maximum.**
+- Spécification, raisonnement, options écartées et mesures vont dans le billet.
+  Test avant d'écrire une phrase : est-elle déjà dans le billet ?
+- Une mise en garde va **dans le code**, à la ligne où l'erreur se commettrait —
+  jamais dans l'en-tête, où personne ne la lira au moment de casser la chose.
 
 ### 3. `.MODIFICATIONS`
 
@@ -210,7 +220,8 @@ Au moins **1 exemple** réaliste. Préfixe `PS>` obligatoire.
 
 ### 6. `.NOTES` (optionnel mais recommandé)
 
-Prérequis, contraintes, avertissements.
+Prérequis et contraintes d'exécution (droits, rôles installés, OS). Pas de mises en
+garde : elles vont dans le code, à leur ligne (voir [`.DESCRIPTION`](#2-description)).
 
 **Format :**
 
@@ -447,6 +458,8 @@ Avant de commiter un script PowerShell :
 - [ ] En-tête complet avec toutes les sections obligatoires
 - [ ] `.SYNOPSIS` clair et concis (1 ligne)
 - [ ] `.DESCRIPTION` avec métadonnées alignées
+- [ ] Résumé fonctionnel de la `.DESCRIPTION` ≤ 20 lignes ; le reste dans le billet
+- [ ] Mises en garde placées à leur ligne dans le code, pas dans l'en-tête
 - [ ] Version initiale `0.0.0` (jamais `1.0.0`)
 - [ ] `.MODIFICATIONS` à jour avec dernière version
 - [ ] `.PARAMETER` pour tous les paramètres
@@ -465,8 +478,6 @@ Avant de commiter un script PowerShell :
 - [ ] Pause interactive finale (`Read-Host`) conditionnée à `Test-InteractiveSession` (jamais de blocage en tâche planifiée)
 - [ ] `.ps1` enregistré en UTF-8 avec BOM ; ASCII pur dans le code exécutable
 - [ ] Sorties console (`Write-Host`, logs) en ASCII pur pour les scripts destinés aux serveurs
-- [ ] Ligne `Début NomScript Version` en première ligne d'exécution
-- [ ] Ligne `Fin NomScript Version` en dernière ligne d'exécution
 - [ ] Code testé et fonctionnel
 
 ---
@@ -523,6 +534,6 @@ Dans VS Code, tapez `headerps` puis `Tab` :
 ---
 
 **Document créé le** : 2025-11-06  
-**Version** : 1.1.2  
+**Version** : 1.2.1  
 **Mainteneur** : Pierre Théberge  
 **Compagnie** : Innovations, Performances, Technologies inc.
