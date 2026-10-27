@@ -5,6 +5,22 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [Unreleased] — ES-35
+
+### Ajouté
+- `DIST-GlycoReport-Downloader.ps1` (2.1.0 à 2.1.3) : `Assert-IssAppId` arrête le build avant
+  PyInstaller si l'`AppId` du `.iss` est absent ou mal formé, si c'est un placeholder (exemple
+  Inno Setup, zéros, motif répétitif ou séquentiel), s'il diffère de `$expectedAppId` (un
+  changement d'`AppId` rend orphelines toutes les installations existantes), ou si sa clé
+  `{AppId}_is1` appartient déjà à un autre produit dans le registre.
+- `DIST-GlycoReport-Downloader.ps1` : arrêt si le script tourne dans un PowerShell 32 bits.
+- `Setup/GlycoReport-Downloader.iss` : `ArchitecturesAllowed=x64compatible` — l'exécutable est
+  AMD64, l'installation est refusée sur un poste 32 bits ou ARM sans émulation x64.
+
+### Corrigé
+- `DIST-GlycoReport-Downloader.ps1` : enregistré en UTF-8 avec BOM ; sans BOM, Windows
+  PowerShell 5.1 sur un poste en CP1252 ne pouvait pas analyser le script.
+
 ## [0.7.0] - 2026-09-25 — ES-29
 
 ### Modifié
@@ -585,6 +601,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[Unreleased]: https://github.com/Thebe01/GlycoReport-Downloader/compare/V0.7.0...HEAD
 [0.7.0]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.7.0
 [0.6.7]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.7
 [0.6.6]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.6
