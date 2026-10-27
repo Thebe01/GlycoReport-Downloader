@@ -11,8 +11,8 @@
     Auteur         : Pierre Théberge
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2025-09-03
-    Modifié le     : 2026-09-24
-    Version        : 2.0.11
+    Modifié le     : 2026-10-26
+    Version        : 2.1.0
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
@@ -54,6 +54,13 @@
                                   est désormais vérifié pour détecter un échec de build.
     2.0.11 - 2026-09-24 - ES-28 : Exécutable compilé en --console au lieu de --windowed : la
                                   console reste ouverte jusqu'à la fin de l'exécution.
+    2.1.0  - 2026-10-26 - ES-35 : Validation de l'AppId du .iss avant le build (Assert-IssAppId) :
+                                  échec si l'AppId est absent, mal formé, un placeholder connu
+                                  ($placeholderAppIds), répétitif ou séquentiel, différent de
+                                  l'AppId attendu ($expectedAppId — un changement d'AppId rend
+                                  orphelines toutes les installations existantes), ou si sa
+                                  clé de désinstallation {AppId}_is1 existe déjà dans le
+                                  registre sous le nom d'un autre produit.
 
 .EXAMPLE
     PS> .\DIST-GlycoReport-Downloader.ps1
@@ -72,6 +79,31 @@ $versionFile = "version.py"
 $issFile = "Setup\${appName}.iss"
 $distDir = "dist"
 $setupOutputDir = "dist_setup"
+
+# AppId attendu dans le .iss. L'AppId est l'identité de l'application pour Windows (clé de
+# désinstallation {AppId}_is1) : le changer rend orphelines toutes les installations
+# existantes, qui ne verront pas la nouvelle version comme une mise à niveau. Ne modifier
+# cette valeur qu'avec le .iss, de façon délibérée, et documenter la migration.
+$script:expectedAppId = "57936694-11EA-48F6-9178-09C8008D8851"
+
+# AppId de placeholder connus, rejetés par Assert-IssAppId. Un AppId partagé avec un
+# autre produit partage aussi sa clé de désinstallation {AppId}_is1 : l'installation de
+# l'un écrase ou désinstalle l'autre.
+$script:placeholderAppIds = @(
+    "A1B2C3D4-E5F6-7890-1234-567890ABCDEF",  # Exemple de la documentation Inno Setup
+    "00000000-0000-0000-0000-000000000000"
+)
+# Motifs de placeholder : chaque groupe formé d'un seul caractère répété
+# (ex. 11111111-2222-3333-4444-555555555555, ou le même caractère partout).
+$script:placeholderAppIdPatterns = @(
+    '^([0-9A-F])\1{7}-([0-9A-F])\2{3}-([0-9A-F])\3{3}-([0-9A-F])\4{3}-([0-9A-F])\5{11}$'
+)
+# Clés de désinstallation consultées pour détecter un AppId déjà pris par un autre produit.
+$script:uninstallRoots = @(
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+    "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
+    "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
+)
 
 # Détection de l'interpréteur Python (venv ou global)
 $venvPython = ".\.venv\Scripts\python.exe"
@@ -132,6 +164,63 @@ Write-Host "Mise à jour du fichier .iss..."
 # (Get-Content/Set-Content sans -Encoding ne sont pas déterministes entre les deux).
 $issFilePath = Join-Path $PSScriptRoot $issFile
 $issContent = [System.IO.File]::ReadAllText($issFilePath, [System.Text.Encoding]::UTF8)
+
+# Vérifie que l'AppId du .iss n'est pas un placeholder et que sa clé de désinstallation
+# {AppId}_is1, si elle existe déjà sur ce poste, appartient bien à $appName. Le script ne
+# substitue jamais l'AppId : un placeholder resté en place produirait un installeur qui
+# entre en collision avec tout autre produit portant le même AppId.
+function Assert-IssAppId {
+    param(
+        [Parameter(Mandatory)][string]$IssContent,
+        [Parameter(Mandatory)][string]$IssFilePath
+    )
+    if ($IssContent -notmatch '(?m)^AppId=\{\{([0-9A-Fa-f-]+)\}') {
+        Write-Error "ÉCHEC : AppId introuvable dans $IssFilePath (format attendu : AppId={{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX})."
+        exit 1
+    }
+    $appId = $matches[1].ToUpperInvariant()
+    if ($appId -notmatch '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$') {
+        Write-Error "ÉCHEC : AppId mal formé dans $IssFilePath : {$appId}."
+        exit 1
+    }
+
+    # Placeholder : valeur connue, motif répétitif ou suite hexadécimale croissante
+    # (ex. 01234567-89AB-CDEF-0123-456789ABCDEF).
+    $hex = $appId -replace '-', ''
+    $sequentiel = $true
+    for ($i = 1; $i -lt $hex.Length; $i++) {
+        if ((([Convert]::ToInt32($hex[$i - 1], 16) + 1) % 16) -ne [Convert]::ToInt32($hex[$i], 16)) {
+            $sequentiel = $false
+            break
+        }
+    }
+    $repetitif = @($script:placeholderAppIdPatterns | Where-Object { $appId -match $_ }).Count -gt 0
+    if (($script:placeholderAppIds -contains $appId) -or $repetitif -or $sequentiel) {
+        Write-Error "ÉCHEC : l'AppId {$appId} de $IssFilePath est un placeholder. Générez un GUID réel ([guid]::NewGuid()) — attention : changer l'AppId d'une application déjà distribuée rompt la mise à niveau des postes installés."
+        exit 1
+    }
+
+    # Changement : toute installation existante deviendrait orpheline.
+    if ($appId -ne $script:expectedAppId) {
+        Write-Error "ÉCHEC : l'AppId {$appId} de $IssFilePath diffère de l'AppId attendu {$($script:expectedAppId)}. Changer l'AppId rend orphelines toutes les installations existantes (elles ne verront pas cette version comme une mise à niveau). Si ce changement est voulu, mettez aussi à jour `$expectedAppId dans ce script et documentez la migration."
+        exit 1
+    }
+
+    # Collision : la clé {AppId}_is1 existe déjà sous le nom d'un autre produit.
+    foreach ($root in $script:uninstallRoots) {
+        $cle = Join-Path $root "{$appId}_is1"
+        if (Test-Path -LiteralPath $cle) {
+            $displayName = (Get-ItemProperty -LiteralPath $cle).DisplayName
+            if ($displayName -notlike "$appName*") {
+                Write-Error "ÉCHEC : l'AppId {$appId} de $IssFilePath est déjà utilisé par « $displayName » ($cle)."
+                exit 1
+            }
+        }
+    }
+    Write-Host "AppId vérifié : {$appId}"
+}
+Assert-IssAppId -IssContent $issContent -IssFilePath $issFilePath
+
 # Remplacement de la ligne #define MyAppVersion "..."
 # Utilisation d'une regex qui préserve les commentaires éventuels en fin de ligne
 $newIssContent = $issContent -replace '(?m)^#define MyAppVersion "[^"]+"', "#define MyAppVersion ""$version"""
