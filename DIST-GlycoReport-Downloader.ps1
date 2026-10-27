@@ -1,4 +1,4 @@
-# Format d'en-tête standard à respecter pour ce projet.
+﻿# Format d'en-tête standard à respecter pour ce projet.
 # Voir .github/HEADER_TEMPLATE_POWERSHELL.md pour les détails.
 
 <#
@@ -12,7 +12,7 @@
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2025-09-03
     Modifié le     : 2026-10-26
-    Version        : 2.1.1
+    Version        : 2.1.2
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
@@ -64,6 +64,9 @@
     2.1.1  - 2026-10-26 - CR    : Assert-IssAppId : extraction de l'AppId ancrée en fin de ligne
                                   (suffixe rejeté) ; nom du produit comparé exactement au lieu
                                   d'un préfixe.
+    2.1.2  - 2026-10-26 - CR    : Fichier enregistré en UTF-8 avec BOM ; tiret cadratin retiré d'un
+                                  message d'erreur (PS 5.1 en CP1252 le lisait comme un guillemet
+                                  et l'analyse du script échouait).
 
 .EXAMPLE
     PS> .\DIST-GlycoReport-Downloader.ps1
@@ -200,7 +203,7 @@ function Assert-IssAppId {
     }
     $repetitif = @($script:placeholderAppIdPatterns | Where-Object { $appId -match $_ }).Count -gt 0
     if (($script:placeholderAppIds -contains $appId) -or $repetitif -or $sequentiel) {
-        Write-Error "ÉCHEC : l'AppId {$appId} de $IssFilePath est un placeholder. Générez un GUID réel ([guid]::NewGuid()) — attention : changer l'AppId d'une application déjà distribuée rompt la mise à niveau des postes installés."
+        Write-Error "ÉCHEC : l'AppId {$appId} de $IssFilePath est un placeholder. Générez un GUID réel ([guid]::NewGuid()) - attention : changer l'AppId d'une application déjà distribuée rompt la mise à niveau des postes installés."
         exit 1
     }
 
