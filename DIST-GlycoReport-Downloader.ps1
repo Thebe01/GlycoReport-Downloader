@@ -12,7 +12,7 @@
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2025-09-03
     Modifié le     : 2026-10-26
-    Version        : 2.1.2
+    Version        : 2.1.3
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
@@ -67,6 +67,8 @@
     2.1.2  - 2026-10-26 - CR    : Fichier enregistré en UTF-8 avec BOM ; tiret cadratin retiré d'un
                                   message d'erreur (PS 5.1 en CP1252 le lisait comme un guillemet
                                   et l'analyse du script échouait).
+    2.1.3  - 2026-10-26 - CR    : Arrêt si le script tourne dans un PowerShell 32 bits : la vue 64
+                                  bits du registre lui est invisible (contrôle de collision).
 
 .EXAMPLE
     PS> .\DIST-GlycoReport-Downloader.ps1
@@ -78,6 +80,14 @@ $ErrorActionPreference = "Stop"
 # chemins relatifs ci-dessous, peu importe le répertoire courant depuis lequel le
 # script est invoqué.
 Set-Location -Path $PSScriptRoot
+
+# Hôte 64 bits obligatoire : sous un PowerShell 32 bits, HKLM:\SOFTWARE est redirigé vers
+# la vue 32 bits et Assert-IssAppId ne verrait pas une collision inscrite en vue 64 bits.
+# L'application étant 64 bits seulement, un hôte 32 bits n'a pas lieu d'être.
+if (-not [Environment]::Is64BitProcess) {
+    Write-Error "ÉCHEC : exécuter ce script dans un PowerShell 64 bits (processus 32 bits détecté)."
+    exit 1
+}
 
 # --- Configuration ---
 $appName = "GlycoReport-Downloader"

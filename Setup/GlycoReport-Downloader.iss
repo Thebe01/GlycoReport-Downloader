@@ -27,7 +27,8 @@ OutputBaseFilename=GlycoReport-Downloader_Setup_{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-; Architecture 64-bit
+; Architecture 64-bit : l'exécutable est AMD64, l'installation est refusée ailleurs.
+ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 
 [Languages]
