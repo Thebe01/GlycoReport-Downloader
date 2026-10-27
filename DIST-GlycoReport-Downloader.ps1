@@ -12,7 +12,7 @@
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2025-09-03
     Modifié le     : 2026-10-26
-    Version        : 2.1.0
+    Version        : 2.1.1
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
@@ -61,6 +61,9 @@
                                   orphelines toutes les installations existantes), ou si sa
                                   clé de désinstallation {AppId}_is1 existe déjà dans le
                                   registre sous le nom d'un autre produit.
+    2.1.1  - 2026-10-26 - CR    : Assert-IssAppId : extraction de l'AppId ancrée en fin de ligne
+                                  (suffixe rejeté) ; nom du produit comparé exactement au lieu
+                                  d'un préfixe.
 
 .EXAMPLE
     PS> .\DIST-GlycoReport-Downloader.ps1
@@ -174,7 +177,8 @@ function Assert-IssAppId {
         [Parameter(Mandatory)][string]$IssContent,
         [Parameter(Mandatory)][string]$IssFilePath
     )
-    if ($IssContent -notmatch '(?m)^AppId=\{\{([0-9A-Fa-f-]+)\}') {
+    # Ancré en fin de ligne : un suffixe après le GUID ferait partie de l'identité Inno Setup.
+    if ($IssContent -notmatch '(?m)^AppId=\{\{([0-9A-Fa-f-]+)\}[ \t]*\r?$') {
         Write-Error "ÉCHEC : AppId introuvable dans $IssFilePath (format attendu : AppId={{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX})."
         exit 1
     }
@@ -211,7 +215,9 @@ function Assert-IssAppId {
         $cle = Join-Path $root "{$appId}_is1"
         if (Test-Path -LiteralPath $cle) {
             $displayName = (Get-ItemProperty -LiteralPath $cle).DisplayName
-            if ($displayName -notlike "$appName*") {
+            # Nom exact, avec ou sans le suffixe par défaut d'Inno Setup « version X.Y.Z » :
+            # un simple préfixe accepterait « GlycoReport-Downloader Helper ».
+            if ($displayName -notmatch "^$([regex]::Escape($appName))( version \S+)?$") {
                 Write-Error "ÉCHEC : l'AppId {$appId} de $IssFilePath est déjà utilisé par « $displayName » ($cle)."
                 exit 1
             }
