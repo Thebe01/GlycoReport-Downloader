@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-09-25
-Version       : 0.7.0
+Modifié le    : 2026-10-29
+Version       : 0.7.2
 Copyright     : Pierre Théberge
 
 Description
@@ -168,6 +168,10 @@ Modifications
 0.6.7  - 2026-09-25   CR      : Message de l'exception finale du sélecteur de dates : non utilisable.
 0.7.0  - 2026-09-25   ES-29   : Maintenabilité : dispatch des rapports par dictionnaire, connexion
                                 dans auth.py, délais et pauses dans constants.py.
+0.7.1  - 2026-10-29   ES-30   : Type hints sur les fonctions d'entrée, bornes supérieures pour
+                                cryptography et pyyaml, requirements.lock vérifié au build.
+0.7.2  - 2026-10-29   CR      : Contrôle du lock au build : pip freeze --all (setuptools omis sous
+                                Python < 3.12).
 
 Paramètres
 ----------
@@ -179,4 +183,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.7.0"
+__version__ = "0.7.2"

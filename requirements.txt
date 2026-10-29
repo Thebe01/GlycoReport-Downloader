@@ -1,8 +1,10 @@
 selenium>=4.15.2
-pyyaml
+# Bornes superieures (ES-30) : une majeure peut rompre l'API (chiffrement du .env,
+# yaml.safe_load). Relever la borne volontairement, apres tests, puis regenerer requirements.lock.
+pyyaml>=6.0,<7.0
 python-dotenv
 colorama
-cryptography
+cryptography>=50.0.0,<51.0.0
 webdriver-manager>=4.0.2
 # Importes directement par utils.py (ProtocolError / RequestException) depuis 0.5.23 :
 # dependances transitives de selenium et webdriver-manager, mais desormais utilisees en direct.

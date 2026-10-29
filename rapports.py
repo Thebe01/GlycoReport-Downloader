@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-09-25
-Version       : 0.7.0
+Modifié le    : 2026-10-29
+Version       : 0.7.2
 Copyright     : Pierre Théberge
 
 Description
@@ -153,6 +153,9 @@ Modifications
                                 traitement_rapport_standard sont retirés ; selection_rapport passe
                                 par le dictionnaire TRAITEMENTS_RAPPORTS. Délais et pauses lus dans
                                 constants.py.
+0.7.1  - 2026-10-29   ES-30   : Type hints sur les traitements de rapports, selection_rapport et
+                                deplace_et_renomme_rapport ; _BILAN annoté.
+0.7.2  - 2026-10-29   CR      : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
@@ -167,10 +170,13 @@ import os
 import time
 import glob
 import locale
+import argparse
 import logging
 from datetime import datetime, timedelta
+from typing import Any, Optional
 from urllib.parse import parse_qs, urlencode, urlparse
 from selenium.webdriver.common.by import By
+from selenium.webdriver import Chrome
 from selenium.common.exceptions import (
     ElementClickInterceptedException,
     StaleElementReferenceException,
@@ -363,7 +369,7 @@ def _is_report_active(driver, nom_rapport: str, timeout: int = ATTENTE_ETAT_RAPP
     except TimeoutException:
         return False
 
-def wait_for_csv_download(DOWNLOAD_DIR, timeout=ATTENTE_TELECHARGEMENT):
+def wait_for_csv_download(DOWNLOAD_DIR: str, timeout: int = ATTENTE_TELECHARGEMENT) -> bool:
     """
     Attend qu'un fichier .csv apparaisse dans le dossier et qu'il n'y ait plus de .crdownload.
 
@@ -384,13 +390,13 @@ def wait_for_csv_download(DOWNLOAD_DIR, timeout=ATTENTE_TELECHARGEMENT):
         time.sleep(PAUSE_COURTE)
     return False
 
-def get_period_suffix(date_debut, date_fin, args, logger=None):
+def get_period_suffix(date_debut: Optional[str], date_fin: Optional[str], args: Optional[argparse.Namespace], logger: Optional[logging.Logger] = None) -> Optional[str]:
     """
     Calcule un suffixe de période à ajouter au nom de fichier (par exemple "14j" ou "14d").
 
     Args:
-        date_debut (str): Date de début au format ``YYYY-MM-DD``.
-        date_fin (str): Date de fin au format ``YYYY-MM-DD``.
+        date_debut (str | None): Date de début au format ``YYYY-MM-DD``.
+        date_fin (str | None): Date de fin au format ``YYYY-MM-DD``.
         args (argparse.Namespace, optional): Arguments de la ligne de commande. Si
             ``args.days`` est défini et strictement positif, cette valeur est utilisée en
             priorité pour le nombre de jours de la période.
@@ -448,7 +454,7 @@ def get_period_suffix(date_debut, date_fin, args, logger=None):
 
 
 # Bilan de l'exécution : rapports tentés, classés, et sautés volontairement.
-_BILAN = {"tentes": [], "reussis": set(), "sautes": []}
+_BILAN: dict[str, Any] = {"tentes": [], "reussis": set(), "sautes": []}
 
 
 def _bilan_reinitialiser() -> None:
@@ -512,7 +518,19 @@ def _remplacer_avec_relance(source, destination, logger, delai_max=ATTENTE_TELEC
             tentative += 1
 
 
-def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT=None, args=None, driver=None, log_dir=None, now_str=None, depuis=None):
+def deplace_et_renomme_rapport(
+    nom_rapport: str,
+    logger: logging.Logger,
+    DOWNLOAD_DIR: str,
+    DIR_FINAL_BASE: str,
+    DATE_FIN: str,
+    DATE_DEBUT: Optional[str] = None,
+    args: Optional[argparse.Namespace] = None,
+    driver: Optional[Chrome] = None,
+    log_dir: Optional[str] = None,
+    now_str: Optional[str] = None,
+    depuis: Optional[float] = None,
+) -> bool:
     """
     Déplace et renomme le rapport téléchargé dans le dossier final.
 
@@ -583,7 +601,16 @@ def deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE
         _BILAN["reussis"].add(nom_rapport)
     return classe
 
-def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
+def telechargement_rapport(
+    nom_rapport: str,
+    driver: Chrome,
+    logger: logging.Logger,
+    DOWNLOAD_DIR: str,
+    DIR_FINAL_BASE: str,
+    DATE_FIN: str,
+    DATE_DEBUT: str,
+    args: argparse.Namespace,
+) -> None:
     """
     Télécharge le rapport spécifié et le déplace dans le dossier final.
 
@@ -705,7 +732,16 @@ def telechargement_rapport(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_
         return
     deplace_et_renomme_rapport(nom_rapport, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args, driver, depuis=depuis)
 
-def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
+def traitement_rapport_standard(
+    nom_rapport: str,
+    driver: Chrome,
+    logger: logging.Logger,
+    DOWNLOAD_DIR: str,
+    DIR_FINAL_BASE: str,
+    DATE_FIN: str,
+    DATE_DEBUT: str,
+    args: argparse.Namespace,
+) -> None:
     """
     Traite un rapport standard en le sélectionnant puis en le téléchargeant.
 
@@ -762,7 +798,16 @@ def traitement_rapport_standard(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}", exc_info=args.debug)
         return
 
-def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
+def traitement_rapport_comparer(
+    nom_rapport: str,
+    driver: Chrome,
+    logger: logging.Logger,
+    DOWNLOAD_DIR: str,
+    DIR_FINAL_BASE: str,
+    DATE_FIN: str,
+    DATE_DEBUT: str,
+    args: argparse.Namespace,
+) -> None:
     """
     Traite le rapport Comparer et ses sous-rapports (Tendances, Superposition, Quotidien).
 
@@ -986,7 +1031,16 @@ def traitement_rapport_comparer(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_F
             logger.error("Stack trace complète : ", exc_info=True)
         return
 
-def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
+def traitement_rapport_statistiques(
+    nom_rapport: str,
+    driver: Chrome,
+    logger: logging.Logger,
+    DOWNLOAD_DIR: str,
+    DIR_FINAL_BASE: str,
+    DATE_FIN: str,
+    DATE_DEBUT: str,
+    args: argparse.Namespace,
+) -> None:
     """
     Traite le rapport Statistiques et ses sous-rapports (Quotidien, Par heure).
 
@@ -1111,7 +1165,16 @@ def traitement_rapport_statistiques(nom_rapport, driver, logger, DOWNLOAD_DIR, D
         logger.error(f"Une erreur s'est produite lors de la page des rapports {nom_rapport} : {e}")
         return
 
-def traitement_export_csv(nom_rapport, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
+def traitement_export_csv(
+    nom_rapport: str,
+    driver: Chrome,
+    logger: logging.Logger,
+    DOWNLOAD_DIR: str,
+    DIR_FINAL_BASE: str,
+    DATE_FIN: str,
+    DATE_DEBUT: str,
+    args: argparse.Namespace,
+) -> None:
     """
     Traite l'export CSV Dexcom Clarity.
 
@@ -1206,7 +1269,16 @@ TRAITEMENTS_RAPPORTS = {
     "Export": traitement_export_csv,
 }
 
-def selection_rapport(RAPPORTS, driver, logger, DOWNLOAD_DIR, DIR_FINAL_BASE, DATE_FIN, DATE_DEBUT, args):
+def selection_rapport(
+    RAPPORTS: list[str],
+    driver: Chrome,
+    logger: logging.Logger,
+    DOWNLOAD_DIR: str,
+    DIR_FINAL_BASE: str,
+    DATE_FIN: str,
+    DATE_DEBUT: str,
+    args: argparse.Namespace,
+) -> list[str]:
     """
     Sélectionne et traite chaque rapport de la liste RAPPORTS.
 
