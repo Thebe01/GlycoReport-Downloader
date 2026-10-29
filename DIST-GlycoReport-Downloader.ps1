@@ -12,7 +12,7 @@
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2025-09-03
     Modifié le     : 2026-10-29
-    Version        : 2.2.0
+    Version        : 2.2.1
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
@@ -73,6 +73,9 @@
                                   (Assert-RequirementsLock) : arrêt si un paquet de
                                   requirements.lock est absent ou installé dans une autre
                                   version ; avertissement pour un paquet installé hors du lock.
+    2.2.1  - 2026-10-29 - CR    : pip freeze --all : sous Python < 3.12, setuptools était omis et
+                                  déclaré absent malgré un environnement conforme. pip exclu
+                                  des avertissements hors du lock.
 
 .EXAMPLE
     PS> .\DIST-GlycoReport-Downloader.ps1
@@ -168,7 +171,8 @@ function Assert-RequirementsLock {
         $attendus[(ConvertTo-NomPaquet $matches[1])] = $matches[2]
     }
 
-    $freeze = & $PythonCmd -m pip freeze
+    # --all : sous Python < 3.12, pip freeze omet setuptools, que le lock fige.
+    $freeze = & $PythonCmd -m pip freeze --all
     if ($LASTEXITCODE -ne 0) {
         Write-Error "ÉCHEC : pip freeze a échoué avec $PythonCmd (code $LASTEXITCODE)."
         exit 1
@@ -194,7 +198,8 @@ function Assert-RequirementsLock {
             $ecarts += "  $nom==$($attendus[$nom]) : installé $($installes[$nom])"
         }
     }
-    foreach ($nom in ($installes.Keys | Where-Object { -not $attendus.ContainsKey($_) } | Sort-Object)) {
+    # pip n'est pas figé dans le lock : sa version ne change pas l'exécutable produit.
+    foreach ($nom in ($installes.Keys | Where-Object { $_ -ne 'pip' -and -not $attendus.ContainsKey($_) } | Sort-Object)) {
         Write-Warning "Paquet installé hors de $($LockPath) : $nom $($installes[$nom])"
     }
     if ($ecarts.Count -gt 0) {

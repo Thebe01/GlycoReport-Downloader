@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.7.1-blue)
+![Version](https://img.shields.io/badge/version-0.7.2-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--071--29-octobre-2026)
+- [Nouveautés](#version--072--29-octobre-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,17 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.7.2 — 29 octobre 2026
+
+### Nouveautés (0.7.2)
+
+**Correction :**
+
+- Contrôle des dépendances au build : `setuptools` n'est plus déclaré absent sous
+  Python 3.10 et 3.11 quand l'environnement respecte `requirements.lock` — CR.
 
 ---
 
@@ -834,6 +845,10 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.7.2 — 29 octobre 2026
+
+- Correction : `setuptools` inclus dans le contrôle du lock au build (CR).
 
 ### 0.7.1 — 29 octobre 2026
 
@@ -1804,6 +1819,15 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.7.2 — October 29, 2026
+
+**Fix:**
+
+- Build dependency check: `setuptools` is no longer reported missing under Python 3.10
+  and 3.11 when the environment matches `requirements.lock` — CR.
+
+---
+
 ### Version: 0.7.1 — October 29, 2026
 
 **Reproducible build:**
@@ -2490,6 +2514,10 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.7.2 — October 29, 2026
+
+- Fix: `setuptools` included in the build lock check (CR).
 
 ### 0.7.1 — October 29, 2026
 

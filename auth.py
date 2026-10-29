@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-09-25
 Modifié le    : 2026-10-29
-Version       : 0.7.1
+Version       : 0.7.2
 Copyright     : Pierre Théberge
 
 Description
@@ -23,6 +23,7 @@ Modifications
 -------------
 0.7.0 - 2026-09-25   ES-29 : Extraction de saisir_identifiants depuis GlycoDownload.py.
 0.7.1 - 2026-10-29   ES-30 : Type hints sur saisir_identifiants.
+0.7.2 - 2026-10-29   CR    : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------

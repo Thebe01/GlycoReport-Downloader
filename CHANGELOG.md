@@ -5,6 +5,14 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.7.2] - 2026-10-29 — CR
+
+### Corrigé
+- `DIST-GlycoReport-Downloader.ps1` (2.2.1) : `Assert-RequirementsLock` lit `pip freeze --all`.
+  Sous Python 3.10 et 3.11, `pip freeze` omet `setuptools`, que `requirements.lock` fige : un
+  environnement conforme était déclaré non conforme et le build bloqué. `pip` n'est pas figé
+  et n'est pas signalé hors du lock.
+
 ## [0.7.1] - 2026-10-29 — ES-30, ES-35
 
 ### Ajouté
@@ -624,7 +632,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
-[Unreleased]: https://github.com/Thebe01/GlycoReport-Downloader/compare/V0.7.1...HEAD
+[0.7.2]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.7.2
 [0.7.1]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.7.1
 [0.7.0]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.7.0
 [0.6.7]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.7
