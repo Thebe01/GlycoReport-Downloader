@@ -36,6 +36,9 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
   traitements de rapports, etc.). Le pilote est annoté `Chrome`, seul navigateur utilisé :
   `get_log` n'existe pas sur le `WebDriver` générique. `mypy` passe sans erreur sur ces trois
   modules. Aucun changement de comportement.
+- `tests/test_auth_import.py`, `test_glycodownload_shutdown.py`, `test_rapports_network.py`,
+  `test_utils.py` (CR) : versions renumérotées depuis 0.0.0. Les tests suivent leur propre
+  version, indépendante de celle de l'application.
 
 ### Corrigé
 - `DIST-GlycoReport-Downloader.ps1` (ES-35) : enregistré en UTF-8 avec BOM ; sans BOM, Windows

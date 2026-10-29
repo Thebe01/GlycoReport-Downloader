@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-13
-Modifié le    : 2026-09-23
-Version       : 0.5.23
+Modifié le    : 2026-10-29
+Version       : 0.0.24
 Copyright     : Pierre Théberge
 
 Description
@@ -24,39 +24,40 @@ Modifications
 0.0.1  - 2025-08-18             Ajout de tests unitaires pour toutes les fonctions utilitaires,
                                 adaptation pour la centralisation de normalize_path dans utils.py,
                                 vérification de la robustesse et de la portabilité des utilitaires.
-0.1.6  - 2025-08-22             Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
-0.2.1  - 2025-08-29             Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
-0.2.2  - 2025-08-29             Synchronisation des entêtes, robustesse accrue du help, nettoyage des doublons CLI.
-0.2.3  - 2025-10-14   [ES-12] : Migration vers ChromeDriverManager pour gestion automatique de ChromeDriver.
-0.2.4  - 2025-10-16   [ES-12] : Synchronisation de version (aucun changement fonctionnel dans les tests).
-0.2.5  - 2025-10-16   [ES-10] : Ajout de tests pour la suppression des captures d'écran (.png) lors du nettoyage des logs.
-0.2.6  - 2025-10-21   [ES-7]  : Synchronisation de version (aucun changement fonctionnel dans les tests).
-0.2.15 - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
-0.2.16 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
-0.2.17 - 2026-01-20   [ES-19] : Ajustements typing pour tests (aucun changement fonctionnel).
-0.2.18 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
-0.3.1  - 2026-02-02   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
-0.3.2  - 2026-02-02   [ES-19] : Ajout du test pour filtrer les téléchargements par extension.
-0.3.3  - 2026-02-02   [ES-19] : Normalisation des extensions attendues (téléchargements).
-0.3.4  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
-0.3.5  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
-0.3.6  - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
-0.5.12 - 2026-04-21   [ES-28] : DummyDriver.find_element ajouté (lève NoSuchElementException) —
-                               alignement avec le narrowing except dans attendre_disparition_overlay.
-0.5.13 - 2026-07-10   [ES-28] : Ajout de DummyDriverOverlayPresent et de
-                               test_attendre_disparition_overlay_timeout_logs_warning — couvre
-                               le passage logger.debug -> logger.warning sur TimeoutException
-                               (audit ES-26). DummyLogger.warning accepte désormais exc_info.
-0.5.20 - 2026-08-18   ES-34   : Couverture de capture_page_source : écriture UTF-8 du DOM, et
+0.0.2  - 2025-08-22             Synchronisation des versions dans tous les modules, ajout de version.py, log de la version exécutée.
+0.0.3  - 2025-08-29             Changement de nom du projet (anciennement Dexcom Clarity Reports Downloader).
+0.0.4  - 2025-08-29             Synchronisation des entêtes, robustesse accrue du help, nettoyage des doublons CLI.
+0.0.5  - 2025-10-14   [ES-12] : Migration vers ChromeDriverManager pour gestion automatique de ChromeDriver.
+0.0.6  - 2025-10-16   [ES-12] : Synchronisation de version (aucun changement fonctionnel dans les tests).
+0.0.7  - 2025-10-16   [ES-10] : Ajout de tests pour la suppression des captures d'écran (.png) lors du nettoyage des logs.
+0.0.8  - 2025-10-21   [ES-7]  : Synchronisation de version (aucun changement fonctionnel dans les tests).
+0.0.9  - 2026-01-19   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.0.10 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.0.11 - 2026-01-20   [ES-19] : Ajustements typing pour tests (aucun changement fonctionnel).
+0.0.12 - 2026-01-20   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.0.13 - 2026-02-02   [ES-19] : Synchronisation de version (aucun changement fonctionnel).
+0.0.14 - 2026-02-02   [ES-19] : Ajout du test pour filtrer les téléchargements par extension.
+0.0.15 - 2026-02-02   [ES-19] : Normalisation des extensions attendues (téléchargements).
+0.0.16 - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
+0.0.17 - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
+0.0.18 - 2026-02-12   [ES-3]  : Synchronisation de version (aucun changement fonctionnel).
+0.0.19 - 2026-04-21   [ES-28] : DummyDriver.find_element ajouté (lève NoSuchElementException) —
+                                alignement avec le narrowing except dans attendre_disparition_overlay.
+0.0.20 - 2026-07-10   [ES-28] : Ajout de DummyDriverOverlayPresent et de
+                                test_attendre_disparition_overlay_timeout_logs_warning — couvre
+                                le passage logger.debug -> logger.warning sur TimeoutException
+                                (audit ES-26). DummyLogger.warning accepte désormais exc_info.
+0.0.21 - 2026-08-18   ES-34   : Couverture de capture_page_source : écriture UTF-8 du DOM, et
                                 absence de fichier résiduel quand la lecture du DOM échoue
                                 (DummyDriverPageSourceKO). DummyDriver expose page_source.
-0.5.21 - 2026-08-18   ES-34   : Couverture de la purge des dumps DOM (.html) par cleanup_logs,
+0.0.22 - 2026-08-18   ES-34   : Couverture de la purge des dumps DOM (.html) par cleanup_logs,
                                 incluant la garantie que les extensions non gérées ne sont jamais
                                 supprimées. Accents corrigés dans les docstrings.
-0.5.23 - 2026-09-23   ES-28   : Couverture de is_connection_reset (reset nu, emballé par urllib3
+0.0.23 - 2026-09-23   ES-28   : Couverture de is_connection_reset (reset nu, emballé par urllib3
                                 puis requests, chaîne __cause__, cycles) et de
                                 retry_on_network_error (succès au 2e essai, échec persistant,
                                 exception non réseau relancée sans retry).
+0.0.24 - 2026-10-29   CR      : Numérotation propre aux tests, indépendante de la version de l'application.
 
 Paramètres
 ----------

@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-03-23
-Modifié le    : 2026-09-25
-Version       : 0.7.0
+Modifié le    : 2026-10-29
+Version       : 0.0.6
 Copyright     : Pierre Théberge
 
 Description
@@ -20,20 +20,21 @@ Tests unitaires ciblés pour la robustesse réseau pendant le traitement des rap
 
 Modifications
 -------------
-0.3.17 - 2026-03-23   [ES-14] : Ajout des tests de reconnexion (succès puis échec persistant).
-0.3.19 - 2026-03-25   [ES-14] : Ajout des tests d'intégration de selection_rapport
+0.0.0 - 2026-03-23   [ES-14] : Ajout des tests de reconnexion (succès puis échec persistant).
+0.0.1 - 2026-03-25   [ES-14] : Ajout des tests d'intégration de selection_rapport
                                (retry après NetworkRecoveryRetry et propagation de NetworkRecoveryFailedError).
-0.5.23 - 2026-09-23   ES-28   : Ajout des tests de reset TCP distant : _handle_network_loss relance
-                                le rapport quand l'hôte coupe malgré un accès internet fonctionnel,
-                                et telechargement_rapport convertit une ProtocolError en retry.
-0.5.24 - 2026-09-23   CR      : Ajout des tests de relance des erreurs de transport non reconnues
-                                et de non-deplacement de fichier dans le flux d'export.
-0.7.0  - 2026-09-25   ES-29   : Les tests de retry remplacent l'entrée « Aperçu » de
-                                TRAITEMENTS_RAPPORTS ; ajout des tests de couverture du dispatch
-                                et du rapport inconnu.
-0.5.25 - 2026-09-23   CR      : Ajout du test ciblant le bloc de fermeture de modale d'export :
-                                les deux clics precedents reussissent, la coupure survient sur la
-                                fermeture, et l'assertion verifie le contexte atteint.
+0.0.2 - 2026-09-23   ES-28   : Ajout des tests de reset TCP distant : _handle_network_loss relance
+                               le rapport quand l'hôte coupe malgré un accès internet fonctionnel,
+                               et telechargement_rapport convertit une ProtocolError en retry.
+0.0.3 - 2026-09-23   CR      : Ajout des tests de relance des erreurs de transport non reconnues
+                               et de non-deplacement de fichier dans le flux d'export.
+0.0.4 - 2026-09-23   CR      : Ajout du test ciblant le bloc de fermeture de modale d'export :
+                               les deux clics precedents reussissent, la coupure survient sur la
+                               fermeture, et l'assertion verifie le contexte atteint.
+0.0.5 - 2026-09-25   ES-29   : Les tests de retry remplacent l'entrée « Aperçu » de
+                               TRAITEMENTS_RAPPORTS ; ajout des tests de couverture du dispatch
+                               et du rapport inconnu.
+0.0.6 - 2026-10-29   CR      : Numérotation propre aux tests, indépendante de la version de l'application.
 
 Paramètres
 ----------
