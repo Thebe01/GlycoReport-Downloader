@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.7.0-blue)
+![Version](https://img.shields.io/badge/version-0.7.1-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--070--25-septembre-2026)
+- [Nouveautés](#version--071--29-octobre-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,32 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.7.1 — 29 octobre 2026
+
+### Nouveautés (0.7.1)
+
+**Build reproductible :**
+
+- Nouveau fichier `requirements.lock` : versions exactes de l'environnement de build. Le
+  script `DIST-GlycoReport-Downloader.ps1` arrête le build si l'interpréteur utilisé
+  (`.venv` ou Python global) ne contient pas exactement ces versions. Pour aligner un
+  poste : `.venv\Scripts\python.exe -m pip install -r requirements.lock` — ES-30.
+- `requirements.txt` : bornes supérieures sur `cryptography` (`<51.0.0`) et `pyyaml`
+  (`<7.0`) — ES-30.
+
+**Maintenabilité (aucun changement de comportement) :**
+
+- Type hints sur les fonctions d'entrée (`main`, `saisir_identifiants`,
+  `selection_rapport`, `telechargement_rapport`, etc.) — ES-30.
+
+**Installateur :**
+
+- Le build vérifie l'`AppId` du `.iss` (absent, placeholder, modifié ou déjà utilisé par
+  un autre produit) et exige un PowerShell 64 bits ; l'installation est refusée sur un
+  poste qui ne peut pas exécuter du x64 — ES-35.
 
 ---
 
@@ -808,6 +834,12 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.7.1 — 29 octobre 2026
+
+- Build reproductible : `requirements.lock` vérifié par le script de build, bornes
+  supérieures sur `cryptography` et `pyyaml`, type hints (ES-30).
+- Installateur : vérification de l'`AppId`, PowerShell 64 bits et poste x64 exigés (ES-35).
 
 ### 0.7.0 — 25 septembre 2026
 
@@ -1772,6 +1804,30 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.7.1 — October 29, 2026
+
+**Reproducible build:**
+
+- New `requirements.lock` file: exact versions of the build environment. The
+  `DIST-GlycoReport-Downloader.ps1` script stops the build if the interpreter in use
+  (`.venv` or global Python) does not contain exactly these versions. To align a
+  machine: `.venv\Scripts\python.exe -m pip install -r requirements.lock` — ES-30.
+- `requirements.txt`: upper bounds on `cryptography` (`<51.0.0`) and `pyyaml` (`<7.0`) —
+  ES-30.
+
+**Maintainability (no behavior change):**
+
+- Type hints on the entry functions (`main`, `saisir_identifiants`,
+  `selection_rapport`, `telechargement_rapport`, etc.) — ES-30.
+
+**Installer:**
+
+- The build checks the `.iss` `AppId` (missing, placeholder, changed, or already used by
+  another product) and requires a 64-bit PowerShell; installation is refused on a
+  machine that cannot run x64 — ES-35.
+
+---
+
 ### Version: 0.7.0 — September 25, 2026
 
 **Maintainability (no behavior change):**
@@ -2434,6 +2490,12 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.7.1 — October 29, 2026
+
+- Reproducible build: `requirements.lock` checked by the build script, upper bounds on
+  `cryptography` and `pyyaml`, type hints (ES-30).
+- Installer: `AppId` check, 64-bit PowerShell and x64 machine required (ES-35).
 
 ### 0.7.0 — September 25, 2026
 

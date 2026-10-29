@@ -11,8 +11,8 @@
     Auteur         : Pierre Théberge
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2025-09-03
-    Modifié le     : 2026-10-26
-    Version        : 2.1.3
+    Modifié le     : 2026-10-29
+    Version        : 2.2.0
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
@@ -69,6 +69,10 @@
                                   et l'analyse du script échouait).
     2.1.3  - 2026-10-26 - CR    : Arrêt si le script tourne dans un PowerShell 32 bits : la vue 64
                                   bits du registre lui est invisible (contrôle de collision).
+    2.2.0  - 2026-10-29 - ES-30 : Vérification de l'environnement de build avant toute étape
+                                  (Assert-RequirementsLock) : arrêt si un paquet de
+                                  requirements.lock est absent ou installé dans une autre
+                                  version ; avertissement pour un paquet installé hors du lock.
 
 .EXAMPLE
     PS> .\DIST-GlycoReport-Downloader.ps1
@@ -95,6 +99,7 @@ $versionFile = "version.py"
 $issFile = "Setup\${appName}.iss"
 $distDir = "dist"
 $setupOutputDir = "dist_setup"
+$lockFile = "requirements.lock"
 
 # AppId attendu dans le .iss. L'AppId est l'identité de l'application pour Windows (clé de
 # désinstallation {AppId}_is1) : le changer rend orphelines toutes les installations
@@ -131,6 +136,76 @@ else {
     $pythonCmd = "python"
     Write-Host "Utilisation de l'interpréteur Python global"
 }
+
+# Nom de paquet normalisé (PEP 503) : PyYAML, pyyaml et py_yaml désignent le même paquet.
+function ConvertTo-NomPaquet {
+    param([Parameter(Mandatory)][string]$Nom)
+    return ($Nom -replace '[-_.]+', '-').ToLowerInvariant()
+}
+
+# Vérifie que l'interpréteur de build contient exactement les versions de requirements.lock.
+# Sans ce contrôle, deux postes (ou le .venv et le Python global) produisent des exécutables
+# différents à partir du même code source. Une version différente ou un paquet absent arrête
+# le build ; un paquet installé hors du lock est seulement signalé (ex. outil de dev local).
+function Assert-RequirementsLock {
+    param(
+        [Parameter(Mandatory)][string]$PythonCmd,
+        [Parameter(Mandatory)][string]$LockPath
+    )
+    if (-not (Test-Path -LiteralPath $LockPath)) {
+        Write-Error "ÉCHEC : $LockPath introuvable. Générez-le avec : .\.venv\Scripts\python.exe -m pip freeze > $LockPath"
+        exit 1
+    }
+
+    $attendus = @{}
+    foreach ($ligne in Get-Content -LiteralPath $LockPath) {
+        $ligne = $ligne.Trim()
+        if ($ligne -eq '' -or $ligne.StartsWith('#')) { continue }
+        if ($ligne -notmatch '^([A-Za-z0-9][A-Za-z0-9._-]*)==(\S+)$') {
+            Write-Error "ÉCHEC : ligne invalide dans $LockPath (format attendu : nom==version) : $ligne"
+            exit 1
+        }
+        $attendus[(ConvertTo-NomPaquet $matches[1])] = $matches[2]
+    }
+
+    $freeze = & $PythonCmd -m pip freeze
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "ÉCHEC : pip freeze a échoué avec $PythonCmd (code $LASTEXITCODE)."
+        exit 1
+    }
+    $installes = @{}
+    foreach ($ligne in $freeze) {
+        # Une installation hors index (nom @ file://..., -e ...) n'a pas de version comparable :
+        # elle est conservée telle quelle et ne correspondra à aucune version du lock.
+        if ($ligne -match '^([A-Za-z0-9][A-Za-z0-9._-]*)==(\S+)$') {
+            $installes[(ConvertTo-NomPaquet $matches[1])] = $matches[2]
+        }
+        elseif ($ligne -match '^([A-Za-z0-9][A-Za-z0-9._-]*)\s*@') {
+            $installes[(ConvertTo-NomPaquet $matches[1])] = $ligne.Trim()
+        }
+    }
+
+    $ecarts = @()
+    foreach ($nom in ($attendus.Keys | Sort-Object)) {
+        if (-not $installes.ContainsKey($nom)) {
+            $ecarts += "  $nom==$($attendus[$nom]) : absent"
+        }
+        elseif ($installes[$nom] -ne $attendus[$nom]) {
+            $ecarts += "  $nom==$($attendus[$nom]) : installé $($installes[$nom])"
+        }
+    }
+    foreach ($nom in ($installes.Keys | Where-Object { -not $attendus.ContainsKey($_) } | Sort-Object)) {
+        Write-Warning "Paquet installé hors de $($LockPath) : $nom $($installes[$nom])"
+    }
+    if ($ecarts.Count -gt 0) {
+        Write-Host "Écarts entre $LockPath et l'interpréteur $($PythonCmd) :"
+        $ecarts | ForEach-Object { Write-Host $_ }
+        Write-Error "ÉCHEC : l'environnement de build ne correspond pas à $LockPath. Alignez-le avec : $PythonCmd -m pip install -r $LockPath (ou, pour adopter les versions installées, régénérez le lock avec pip freeze)."
+        exit 1
+    }
+    Write-Host "Dépendances vérifiées : $($attendus.Count) paquets conformes à $LockPath"
+}
+Assert-RequirementsLock -PythonCmd $pythonCmd -LockPath $lockFile
 
 # --- 1. Trouver Inno Setup Compiler (ISCC.exe) ---
 Write-Host "Recherche de Inno Setup Compiler..."

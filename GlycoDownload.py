@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
-Modifié le    : 2026-09-25
-Version       : 0.7.0
+Modifié le    : 2026-10-29
+Version       : 0.7.1
 Copyright     : Pierre Théberge
 
 Description
@@ -200,6 +200,8 @@ Modifications
 0.6.7   - 2026-09-25   CR      : Message de l'exception finale aligné sur le WARNING (non utilisable).
 0.7.0   - 2026-09-25   ES-29   : saisir_identifiants déplacé dans auth.py. Délais et pauses lus dans
                                  constants.py.
+0.7.1   - 2026-10-29   ES-30   : Type hints sur les fonctions d'entrée (main, parse_args, dates,
+                                 sélecteur de dates, session navigateur).
 
 Paramètres
 ----------
@@ -221,6 +223,7 @@ import os
 import logging
 import time
 from datetime import datetime, timedelta
+from typing import Any, Optional
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -232,6 +235,7 @@ from selenium.common.exceptions import (
     TimeoutException,
     WebDriverException,
 )
+from selenium.webdriver.remote.webelement import WebElement
 import glob
 from getpass import getpass
 import traceback
@@ -270,7 +274,7 @@ from constants import (
 NOM_APPLICATION = "GlycoReport-Downloader"
 
 # --- Gestion des arguments CLI et du help ---
-def parse_args():
+def parse_args() -> tuple[argparse.ArgumentParser, argparse.Namespace]:
     """Parse les arguments de la ligne de commande."""
     import argparse
     from version import __version__
@@ -404,7 +408,7 @@ Pour toute question ou signalement de bug : GitHub Issues
     return parser, parser.parse_args()
 
 
-def list_available_reports():
+def list_available_reports() -> None:
     """Affiche la liste des rapports disponibles avec leurs descriptions."""
     from colorama import Fore, Style, init
     init(autoreset=True)
@@ -435,10 +439,10 @@ def list_available_reports():
 
 
 def resolve_effective_date_range(
-    args_days, args_date_debut, args_date_fin,
-    config_days, config_date_debut, config_date_fin,
-    today=None,
-):
+    args_days: Optional[int], args_date_debut: Optional[str], args_date_fin: Optional[str],
+    config_days: Optional[int], config_date_debut: Optional[str], config_date_fin: Optional[str],
+    today: Optional[datetime] = None,
+) -> tuple[Optional[str], Optional[str]]:
     """
     Résout la période effective selon la chaîne de priorité :
       1. CLI date_debut + date_fin (les deux fournis)
@@ -480,7 +484,7 @@ def resolve_effective_date_range(
     return config_date_debut, config_date_fin
 
 
-def validate_dates(args):
+def validate_dates(args: argparse.Namespace) -> None:
     """Valide les dates fournies en arguments."""
     from datetime import datetime
     from colorama import Fore, Style, init
@@ -522,7 +526,7 @@ def validate_dates(args):
 
 
 # --- Fonctions utilitaires refactorisées ---
-def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=ATTENTE_ELEMENT, required=True):
+def click_home_user_button(driver: webdriver.Chrome, logger: logging.Logger, log_dir: str, NOW_STR: str, timeout: int = ATTENTE_ELEMENT, required: bool = True) -> bool:
     """
     Clique sur le bouton 'Dexcom Clarity for Home Users' sur la page d'accueil.
 
@@ -562,7 +566,7 @@ def click_home_user_button(driver, logger, log_dir, NOW_STR, timeout=ATTENTE_ELE
         )
         return False
 
-def ouvrir_selecteur_dates(driver, logger, log_dir, now_str, tentatives=3, attente_panneau=ATTENTE_ELEMENT, attente_bouton=ATTENTE_CHARGEMENT):
+def ouvrir_selecteur_dates(driver: webdriver.Chrome, logger: logging.Logger, log_dir: str, now_str: str, tentatives: int = 3, attente_panneau: int = ATTENTE_ELEMENT, attente_bouton: int = ATTENTE_CHARGEMENT) -> None:
     """Clique le bouton du sélecteur de dates jusqu'à ce que le panneau s'ouvre.
 
     Le panneau ne s'ouvre parfois pas malgré un clic réussi (2 exécutions sur 4 le
@@ -605,7 +609,7 @@ def ouvrir_selecteur_dates(driver, logger, log_dir, now_str, tentatives=3, atten
     raise TimeoutException(f"Panneau du sélecteur de dates non utilisable après {tentatives} tentatives.")
 
 
-def setup_logger(debug, log_dir, now_str):
+def setup_logger(debug: bool, log_dir: str, now_str: str) -> logging.Logger:
     # Créer le répertoire de logs s'il n'existe pas
     os.makedirs(log_dir, exist_ok=True)
 
@@ -622,7 +626,7 @@ def setup_logger(debug, log_dir, now_str):
     return logger
 
 
-def close_browser_session(driver, logger, debug=False):
+def close_browser_session(driver: Optional[webdriver.Chrome], logger: logging.Logger, debug: bool = False) -> None:
     """Ferme proprement la session navigateur selon le nombre d'onglets ouverts."""
     if driver is None:
         return
@@ -662,7 +666,7 @@ def close_browser_session(driver, logger, debug=False):
             logger.debug("Arrêt du service ChromeDriver impossible : %s", e)
 
 
-def main(args, logger, config):
+def main(args: argparse.Namespace, logger: logging.Logger, config: dict[str, Any]) -> list[str]:
     """
     Fonction principale du script GlycoReport-Downloader (refactorisée).
     Gère la connexion, la sélection des dates, le téléchargement des rapports et la déconnexion.
@@ -996,7 +1000,7 @@ def main(args, logger, config):
 
     return manquants
 
-def get_user_menu_button(driver, logger, args, timeout=ATTENTE_ELEMENT):
+def get_user_menu_button(driver: webdriver.Chrome, logger: logging.Logger, args: argparse.Namespace, timeout: int = ATTENTE_ELEMENT) -> WebElement:
     """
     Retourne le bouton du menu utilisateur pour la déconnexion.
 

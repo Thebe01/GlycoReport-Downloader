@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-09-25
-Modifié le    : 2026-09-25
-Version       : 0.7.0
+Modifié le    : 2026-10-29
+Version       : 0.7.1
 Copyright     : Pierre Théberge
 
 Description
@@ -22,6 +22,7 @@ ou téléphone) et du mot de passe, puis fermeture de l'invite « Pas maintenant
 Modifications
 -------------
 0.7.0 - 2026-09-25   ES-29 : Extraction de saisir_identifiants depuis GlycoDownload.py.
+0.7.1 - 2026-10-29   ES-30 : Type hints sur saisir_identifiants.
 
 Paramètres
 ----------
@@ -37,6 +38,7 @@ import re
 import time
 import logging
 from selenium.webdriver.common.by import By
+from selenium.webdriver import Chrome
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -63,7 +65,7 @@ from utils import (
 )
 
 
-def saisir_identifiants(driver, logger, log_dir, NOW_STR):
+def saisir_identifiants(driver: Chrome, logger: logging.Logger, log_dir: str, NOW_STR: str) -> None:
     """
     Saisit les identifiants de connexion (nom d'utilisateur et mot de passe) sur la page Dexcom Clarity.
 

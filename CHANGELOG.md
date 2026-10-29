@@ -5,20 +5,40 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
-## [Unreleased] — ES-35
+## [0.7.1] - 2026-10-29 — ES-30, ES-35
 
 ### Ajouté
-- `DIST-GlycoReport-Downloader.ps1` (2.1.0 à 2.1.3) : `Assert-IssAppId` arrête le build avant
+- `requirements.lock` (ES-30) : versions exactes de l'environnement de build (`pip freeze` du
+  `.venv`), pour que deux postes produisent le même exécutable.
+- `DIST-GlycoReport-Downloader.ps1` (2.2.0, ES-30) : `Assert-RequirementsLock` arrête le build,
+  avant toute autre étape, si un paquet du lock est absent ou installé dans une autre version
+  dans l'interpréteur utilisé (`.venv` ou Python global). Un paquet installé hors du lock est
+  seulement signalé.
+- `tests/test_requirements_lock.py` (ES-30) : le lock respecte les bornes de `requirements.txt`
+  et `requirements-dev.txt`, et `cryptography` et `pyyaml` ont une borne supérieure.
+- `DIST-GlycoReport-Downloader.ps1` (2.1.0 à 2.1.3, ES-35) : `Assert-IssAppId` arrête le build avant
   PyInstaller si l'`AppId` du `.iss` est absent ou mal formé, si c'est un placeholder (exemple
   Inno Setup, zéros, motif répétitif ou séquentiel), s'il diffère de `$expectedAppId` (un
   changement d'`AppId` rend orphelines toutes les installations existantes), ou si sa clé
   `{AppId}_is1` appartient déjà à un autre produit dans le registre.
-- `DIST-GlycoReport-Downloader.ps1` : arrêt si le script tourne dans un PowerShell 32 bits.
-- `Setup/GlycoReport-Downloader.iss` : `ArchitecturesAllowed=x64compatible` — l'exécutable est
-  AMD64, l'installation est refusée sur un poste 32 bits ou ARM sans émulation x64.
+- `DIST-GlycoReport-Downloader.ps1` (ES-35) : arrêt si le script tourne dans un PowerShell
+  32 bits.
+- `Setup/GlycoReport-Downloader.iss` (ES-35) : `ArchitecturesAllowed=x64compatible` —
+  l'exécutable est AMD64, l'installation est refusée sur un poste 32 bits ou ARM sans émulation
+  x64.
+
+### Modifié
+- `requirements.txt` (ES-30) : bornes supérieures `cryptography>=50.0.0,<51.0.0` et
+  `pyyaml>=6.0,<7.0` ; une majeure peut rompre le chiffrement du `.env` ou la lecture de
+  `config.yaml`. L'exemple du billet (`<43.0.0`) aurait fait reculer de 8 majeures.
+- `GlycoDownload.py`, `auth.py`, `rapports.py` (ES-30) : type hints sur les fonctions d'entrée
+  (`main`, `parse_args`, `saisir_identifiants`, `selection_rapport`, `telechargement_rapport`,
+  traitements de rapports, etc.). Le pilote est annoté `Chrome`, seul navigateur utilisé :
+  `get_log` n'existe pas sur le `WebDriver` générique. `mypy` passe sans erreur sur ces trois
+  modules. Aucun changement de comportement.
 
 ### Corrigé
-- `DIST-GlycoReport-Downloader.ps1` : enregistré en UTF-8 avec BOM ; sans BOM, Windows
+- `DIST-GlycoReport-Downloader.ps1` (ES-35) : enregistré en UTF-8 avec BOM ; sans BOM, Windows
   PowerShell 5.1 sur un poste en CP1252 ne pouvait pas analyser le script.
 
 ## [0.7.0] - 2026-09-25 — ES-29
@@ -601,7 +621,8 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
-[Unreleased]: https://github.com/Thebe01/GlycoReport-Downloader/compare/V0.7.0...HEAD
+[Unreleased]: https://github.com/Thebe01/GlycoReport-Downloader/compare/V0.7.1...HEAD
+[0.7.1]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.7.1
 [0.7.0]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.7.0
 [0.6.7]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.7
 [0.6.6]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.6.6

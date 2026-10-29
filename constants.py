@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-09-25
-Modifié le    : 2026-09-25
-Version       : 0.7.0
+Modifié le    : 2026-10-29
+Version       : 0.7.1
 Copyright     : Pierre Théberge
 
 Description
@@ -25,6 +25,7 @@ dès que la condition est remplie. Les PAUSE_* sont des pauses fixes
 Modifications
 -------------
 0.7.0 - 2026-09-25   ES-29 : Version initiale : centralisation des délais et pauses.
+0.7.1 - 2026-10-29   ES-30 : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------
