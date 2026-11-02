@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-03-03
 Modifié le    : 2026-10-29
-Version       : 0.7.2
+Version       : 0.7.3
 Copyright     : Pierre Théberge
 
 Description
@@ -203,6 +203,7 @@ Modifications
 0.7.1   - 2026-10-29   ES-30   : Type hints sur les fonctions d'entrée (main, parse_args, dates,
                                  sélecteur de dates, session navigateur).
 0.7.2   - 2026-10-29   CR      : Synchronisation de version (aucun changement fonctionnel).
+0.7.3   - 2026-10-29   CR      : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------

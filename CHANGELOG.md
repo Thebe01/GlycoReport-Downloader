@@ -5,6 +5,22 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.7.3] - 2026-10-29 — CR
+
+### Modifié
+- Environnement de build (`.venv`) passé de Python 3.13.9 à 3.13.17 : l'exécutable
+  PyInstaller embarque désormais cet interpréteur.
+- Dépendances mises à jour dans les bornes de `requirements.txt`, `requirements.lock`
+  régénéré : selenium 4.52.0, cryptography 50.0.2, python-dotenv 1.2.4, certifi 2026.10.23,
+  charset-normalizer 3.5.2, setuptools 84.2.1, pyinstaller-hooks-contrib 2026.9,
+  pycparser 3.12, pytest 9.2.0, pluggy 1.7.0, iniconfig 2.3.1.
+
+### Corrigé
+- `DIST-GlycoReport-Downloader.ps1` (2.2.2) : les messages d'erreur proposent de régénérer le
+  lock avec `pip freeze | Set-Content -Encoding ascii requirements.lock`. Sous Windows
+  PowerShell 5.1, la redirection `>` proposée jusqu'ici écrivait en UTF-16LE, et
+  `tests/test_requirements_lock.py`, qui lit en UTF-8, échouait.
+
 ## [0.7.2] - 2026-10-29 — CR
 
 ### Corrigé
@@ -632,6 +648,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.7.3]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.7.3
 [0.7.2]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.7.2
 [0.7.1]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.7.1
 [0.7.0]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.7.0

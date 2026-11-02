@@ -12,7 +12,7 @@
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2025-09-03
     Modifié le     : 2026-10-29
-    Version        : 2.2.1
+    Version        : 2.2.2
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
@@ -76,6 +76,8 @@
     2.2.1  - 2026-10-29 - CR    : pip freeze --all : sous Python < 3.12, setuptools était omis et
                                   déclaré absent malgré un environnement conforme. pip exclu
                                   des avertissements hors du lock.
+    2.2.2  - 2026-10-29 - CR    : Commande de régénération du lock avec Set-Content -Encoding
+                                  ascii : sous PS 5.1, la redirection > écrivait en UTF-16LE.
 
 .EXAMPLE
     PS> .\DIST-GlycoReport-Downloader.ps1
@@ -155,8 +157,11 @@ function Assert-RequirementsLock {
         [Parameter(Mandatory)][string]$PythonCmd,
         [Parameter(Mandatory)][string]$LockPath
     )
+    # Encodage explicite : sous Windows PowerShell 5.1, la redirection > écrit en UTF-16LE,
+    # illisible pour tests/test_requirements_lock.py (UTF-8).
+    $commandeLock = "$PythonCmd -m pip freeze | Set-Content -Encoding ascii $LockPath"
     if (-not (Test-Path -LiteralPath $LockPath)) {
-        Write-Error "ÉCHEC : $LockPath introuvable. Générez-le avec : .\.venv\Scripts\python.exe -m pip freeze > $LockPath"
+        Write-Error "ÉCHEC : $LockPath introuvable. Générez-le avec : $commandeLock"
         exit 1
     }
 
@@ -205,7 +210,7 @@ function Assert-RequirementsLock {
     if ($ecarts.Count -gt 0) {
         Write-Host "Écarts entre $LockPath et l'interpréteur $($PythonCmd) :"
         $ecarts | ForEach-Object { Write-Host $_ }
-        Write-Error "ÉCHEC : l'environnement de build ne correspond pas à $LockPath. Alignez-le avec : $PythonCmd -m pip install -r $LockPath (ou, pour adopter les versions installées, régénérez le lock avec pip freeze)."
+        Write-Error "ÉCHEC : l'environnement de build ne correspond pas à $LockPath. Alignez-le avec : $PythonCmd -m pip install -r $LockPath (ou, pour adopter les versions installées, régénérez le lock avec : $commandeLock)."
         exit 1
     }
     Write-Host "Dépendances vérifiées : $($attendus.Count) paquets conformes à $LockPath"

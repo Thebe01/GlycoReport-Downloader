@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.7.2-blue)
+![Version](https://img.shields.io/badge/version-0.7.3-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--072--29-octobre-2026)
+- [Nouveautés](#version--073--29-octobre-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,23 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.7.3 — 29 octobre 2026
+
+### Nouveautés (0.7.3)
+
+**Correction :**
+
+- Régénération de `requirements.lock` : le script de build propose une commande qui écrit en
+  ASCII. Sous Windows PowerShell 5.1, la redirection `>` produisait un fichier UTF-16LE
+  illisible pour les tests — CR.
+
+**Maintenance :**
+
+- Exécutable construit avec Python 3.13.17 (au lieu de 3.13.9).
+- Dépendances mises à jour (notamment selenium 4.52.0 et cryptography 50.0.2), lock régénéré.
 
 ---
 
@@ -845,6 +862,11 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.7.3 — 29 octobre 2026
+
+- Correction : commande de régénération du lock en ASCII explicite (CR).
+- Maintenance : Python 3.13.17 et dépendances à jour.
 
 ### 0.7.2 — 29 octobre 2026
 
@@ -1819,6 +1841,21 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.7.3 — October 29, 2026
+
+**Fix:**
+
+- `requirements.lock` regeneration: the build script suggests a command that writes ASCII.
+  Under Windows PowerShell 5.1, the `>` redirection produced a UTF-16LE file the tests could
+  not read — CR.
+
+**Maintenance:**
+
+- Executable built with Python 3.13.17 (instead of 3.13.9).
+- Dependencies updated (notably selenium 4.52.0 and cryptography 50.0.2), lock regenerated.
+
+---
+
 ### Version: 0.7.2 — October 29, 2026
 
 **Fix:**
@@ -2514,6 +2551,11 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.7.3 — October 29, 2026
+
+- Fix: lock regeneration command with explicit ASCII encoding (CR).
+- Maintenance: Python 3.13.17 and dependencies up to date.
 
 ### 0.7.2 — October 29, 2026
 

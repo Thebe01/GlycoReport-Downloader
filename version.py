@@ -11,7 +11,7 @@ Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
 Modifié le    : 2026-10-29
-Version       : 0.7.2
+Version       : 0.7.3
 Copyright     : Pierre Théberge
 
 Description
@@ -172,6 +172,9 @@ Modifications
                                 cryptography et pyyaml, requirements.lock vérifié au build.
 0.7.2  - 2026-10-29   CR      : Contrôle du lock au build : pip freeze --all (setuptools omis sous
                                 Python < 3.12).
+0.7.3  - 2026-10-29   CR      : Commande de régénération du lock en ASCII explicite (UTF-16LE sous
+                                PowerShell 5.1). Python 3.13.17 et dépendances à jour
+                                (requirements.lock régénéré).
 
 Paramètres
 ----------
@@ -183,4 +186,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.7.2"
+__version__ = "0.7.3"
