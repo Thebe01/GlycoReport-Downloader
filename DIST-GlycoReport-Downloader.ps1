@@ -11,8 +11,8 @@
     Auteur         : Pierre Théberge
     Compagnie      : Innovations, Performances, Technologies inc.
     Créé le        : 2025-09-03
-    Modifié le     : 2026-10-29
-    Version        : 2.2.2
+    Modifié le     : 2026-11-02
+    Version        : 2.2.3
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
@@ -78,6 +78,9 @@
                                   des avertissements hors du lock.
     2.2.2  - 2026-10-29 - CR    : Commande de régénération du lock avec Set-Content -Encoding
                                   ascii : sous PS 5.1, la redirection > écrivait en UTF-16LE.
+    2.2.3  - 2026-11-02 - CR    : Commandes de régénération et d'alignement affichées avec & et
+                                  chemins entre guillemets (chemins avec espaces) ; régénération
+                                  avec pip freeze --all --exclude pip (setuptools sous Python < 3.12).
 
 .EXAMPLE
     PS> .\DIST-GlycoReport-Downloader.ps1
@@ -158,8 +161,11 @@ function Assert-RequirementsLock {
         [Parameter(Mandatory)][string]$LockPath
     )
     # Encodage explicite : sous Windows PowerShell 5.1, la redirection > écrit en UTF-16LE,
-    # illisible pour tests/test_requirements_lock.py (UTF-8).
-    $commandeLock = "$PythonCmd -m pip freeze | Set-Content -Encoding ascii $LockPath"
+    # illisible pour tests/test_requirements_lock.py (UTF-8). --all garde setuptools sous
+    # Python < 3.12 ; pip, non figé, est exclu. Opérateur & et guillemets : la commande
+    # affichée doit fonctionner telle quelle si le chemin contient des espaces.
+    $commandeLock = "& `"$PythonCmd`" -m pip freeze --all --exclude pip | Set-Content -Encoding ascii `"$LockPath`""
+    $commandeAlignement = "& `"$PythonCmd`" -m pip install -r `"$LockPath`""
     if (-not (Test-Path -LiteralPath $LockPath)) {
         Write-Error "ÉCHEC : $LockPath introuvable. Générez-le avec : $commandeLock"
         exit 1
@@ -210,7 +216,7 @@ function Assert-RequirementsLock {
     if ($ecarts.Count -gt 0) {
         Write-Host "Écarts entre $LockPath et l'interpréteur $($PythonCmd) :"
         $ecarts | ForEach-Object { Write-Host $_ }
-        Write-Error "ÉCHEC : l'environnement de build ne correspond pas à $LockPath. Alignez-le avec : $PythonCmd -m pip install -r $LockPath (ou, pour adopter les versions installées, régénérez le lock avec : $commandeLock)."
+        Write-Error "ÉCHEC : l'environnement de build ne correspond pas à $LockPath. Alignez-le avec : $commandeAlignement (ou, pour adopter les versions installées, régénérez le lock avec : $commandeLock)."
         exit 1
     }
     Write-Host "Dépendances vérifiées : $($attendus.Count) paquets conformes à $LockPath"

@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-22
-Modifié le    : 2026-10-29
-Version       : 0.7.3
+Modifié le    : 2026-11-02
+Version       : 0.7.4
 Copyright     : Pierre Théberge
 
 Description
@@ -175,6 +175,9 @@ Modifications
 0.7.3  - 2026-10-29   CR      : Commande de régénération du lock en ASCII explicite (UTF-16LE sous
                                 PowerShell 5.1). Python 3.13.17 et dépendances à jour
                                 (requirements.lock régénéré).
+0.7.4  - 2026-11-02   CR      : Commandes de régénération et d'alignement du lock affichées
+                                avec & et chemins entre guillemets (chemins avec espaces) ;
+                                régénération avec pip freeze --all --exclude pip (setuptools).
 
 Paramètres
 ----------
@@ -186,4 +189,4 @@ Exemple
 >>> print(__version__)
 """
 
-__version__ = "0.7.3"
+__version__ = "0.7.4"

@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.7.3-blue)
+![Version](https://img.shields.io/badge/version-0.7.4-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--073--29-octobre-2026)
+- [Nouveautés](#version--074--2-novembre-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,18 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.7.4 — 2 novembre 2026
+
+### Nouveautés (0.7.4)
+
+**Correction :**
+
+- Commandes proposées par le script de build pour régénérer ou aligner `requirements.lock` :
+  utilisables telles quelles quand le chemin du dépôt contient des espaces, et la
+  régénération conserve `setuptools` sous Python 3.10 et 3.11 — CR.
 
 ---
 
@@ -862,6 +874,11 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.7.4 — 2 novembre 2026
+
+- Correction : commandes de régénération et d'alignement du lock (chemins avec espaces,
+  `setuptools`) (CR).
 
 ### 0.7.3 — 29 octobre 2026
 
@@ -1841,6 +1858,16 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.7.4 — November 2, 2026
+
+**Fix:**
+
+- Commands suggested by the build script to regenerate or align `requirements.lock`:
+  usable as-is when the repository path contains spaces, and regeneration keeps
+  `setuptools` under Python 3.10 and 3.11 — CR.
+
+---
+
 ### Version: 0.7.3 — October 29, 2026
 
 **Fix:**
@@ -2551,6 +2578,10 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.7.4 — November 2, 2026
+
+- Fix: lock regeneration and alignment commands (paths with spaces, `setuptools`) (CR).
 
 ### 0.7.3 — October 29, 2026
 

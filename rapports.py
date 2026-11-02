@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2025-08-05
-Modifié le    : 2026-10-29
-Version       : 0.7.3
+Modifié le    : 2026-11-02
+Version       : 0.7.4
 Copyright     : Pierre Théberge
 
 Description
@@ -157,6 +157,7 @@ Modifications
                                 deplace_et_renomme_rapport ; _BILAN annoté.
 0.7.2  - 2026-10-29   CR      : Synchronisation de version (aucun changement fonctionnel).
 0.7.3  - 2026-10-29   CR      : Synchronisation de version (aucun changement fonctionnel).
+0.7.4  - 2026-11-02   CR      : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------

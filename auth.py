@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-09-25
-Modifié le    : 2026-10-29
-Version       : 0.7.3
+Modifié le    : 2026-11-02
+Version       : 0.7.4
 Copyright     : Pierre Théberge
 
 Description
@@ -25,6 +25,7 @@ Modifications
 0.7.1 - 2026-10-29   ES-30 : Type hints sur saisir_identifiants.
 0.7.2 - 2026-10-29   CR    : Synchronisation de version (aucun changement fonctionnel).
 0.7.3 - 2026-10-29   CR    : Synchronisation de version (aucun changement fonctionnel).
+0.7.4 - 2026-11-02   CR    : Synchronisation de version (aucun changement fonctionnel).
 
 Paramètres
 ----------

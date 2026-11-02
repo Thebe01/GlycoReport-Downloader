@@ -5,6 +5,16 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+## [0.7.4] - 2026-11-02 — CR
+
+### Corrigé
+- `DIST-GlycoReport-Downloader.ps1` (2.2.3) : les commandes affichées pour régénérer
+  (`pip freeze`) ou aligner (`pip install -r`) `requirements.lock` utilisent l'opérateur `&`
+  et des chemins entre guillemets : elles échouaient en PowerShell quand le chemin du dépôt
+  ou du `.venv` contenait des espaces. La régénération utilise
+  `pip freeze --all --exclude pip` : sous Python 3.10 et 3.11, `pip freeze` seul retirait
+  `setuptools` du lock.
+
 ## [0.7.3] - 2026-10-29 — CR
 
 ### Modifié
@@ -648,6 +658,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) — versionnag
 
 ---
 
+[0.7.4]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.7.4
 [0.7.3]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.7.3
 [0.7.2]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.7.2
 [0.7.1]: https://github.com/Thebe01/GlycoReport-Downloader/releases/tag/V0.7.1
