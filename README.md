@@ -3,7 +3,7 @@
 [![Licence: CC BY-NC 4.0](https://img.shields.io/badge/Licence-CC--BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.fr)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 ![Build Status](https://img.shields.io/badge/build-manuel-lightgrey)
-![Version](https://img.shields.io/badge/version-0.7.0-blue)
+![Version](https://img.shields.io/badge/version-0.7.4-blue)
 
 An English version of this text follows the French text.
 
@@ -14,7 +14,7 @@ traduction stricte de la version francaise.
 
 ## Sommaire
 
-- [Nouveautés](#version--070--25-septembre-2026)
+- [Nouveautés](#version--074--2-novembre-2026)
 - [Installation et utilisation](#installation-et-utilisation)
 - [Configuration](#configuration)
 - [Fonctionnalités principales](#fonctionnalités-principales)
@@ -23,6 +23,72 @@ traduction stricte de la version francaise.
 - [Notes](#notes)
 - [Licence](#licence)
 - [GlycoReport Downloader (English)](#glycoreport-downloader-english)
+
+---
+
+## Version : 0.7.4 — 2 novembre 2026
+
+### Nouveautés (0.7.4)
+
+**Correction :**
+
+- Commandes proposées par le script de build pour régénérer ou aligner `requirements.lock` :
+  utilisables telles quelles quand le chemin du dépôt contient des espaces, et la
+  régénération conserve `setuptools` sous Python 3.10 et 3.11 — CR.
+
+---
+
+## Version : 0.7.3 — 29 octobre 2026
+
+### Nouveautés (0.7.3)
+
+**Correction :**
+
+- Régénération de `requirements.lock` : le script de build propose une commande qui écrit en
+  ASCII. Sous Windows PowerShell 5.1, la redirection `>` produisait un fichier UTF-16LE
+  illisible pour les tests — CR.
+
+**Maintenance :**
+
+- Exécutable construit avec Python 3.13.17 (au lieu de 3.13.9).
+- Dépendances mises à jour (notamment selenium 4.52.0 et cryptography 50.0.2), lock régénéré.
+
+---
+
+## Version : 0.7.2 — 29 octobre 2026
+
+### Nouveautés (0.7.2)
+
+**Correction :**
+
+- Contrôle des dépendances au build : `setuptools` n'est plus déclaré absent sous
+  Python 3.10 et 3.11 quand l'environnement respecte `requirements.lock` — CR.
+
+---
+
+## Version : 0.7.1 — 29 octobre 2026
+
+### Nouveautés (0.7.1)
+
+**Build reproductible :**
+
+- Nouveau fichier `requirements.lock` : versions exactes de l'environnement de build. Le
+  script `DIST-GlycoReport-Downloader.ps1` arrête le build si l'interpréteur utilisé
+  (`.venv` ou Python global) ne contient pas exactement ces versions. Pour aligner un
+  poste : `.venv\Scripts\python.exe -m pip install -r requirements.lock` — ES-30.
+- `requirements.txt` : bornes supérieures sur `cryptography` (`<51.0.0`) et `pyyaml`
+  (`<7.0`) — ES-30.
+
+**Maintenabilité (aucun changement de comportement) :**
+
+- Type hints sur les fonctions d'entrée (`main`, `saisir_identifiants`,
+  `selection_rapport`, `telechargement_rapport`, etc.) — ES-30.
+
+**Installateur :**
+
+- Le build vérifie l'`AppId` du `.iss` (absent, placeholder, modifié ou déjà utilisé par
+  un autre produit) et exige un PowerShell 64 bits ; l'installation est refusée sur un
+  poste qui ne peut pas exécuter du x64 — ES-35.
 
 ---
 
@@ -808,6 +874,26 @@ pour la distribution.
 ---
 
 ## Historique des versions
+
+### 0.7.4 — 2 novembre 2026
+
+- Correction : commandes de régénération et d'alignement du lock (chemins avec espaces,
+  `setuptools`) (CR).
+
+### 0.7.3 — 29 octobre 2026
+
+- Correction : commande de régénération du lock en ASCII explicite (CR).
+- Maintenance : Python 3.13.17 et dépendances à jour.
+
+### 0.7.2 — 29 octobre 2026
+
+- Correction : `setuptools` inclus dans le contrôle du lock au build (CR).
+
+### 0.7.1 — 29 octobre 2026
+
+- Build reproductible : `requirements.lock` vérifié par le script de build, bornes
+  supérieures sur `cryptography` et `pyyaml`, type hints (ES-30).
+- Installateur : vérification de l'`AppId`, PowerShell 64 bits et poste x64 exigés (ES-35).
 
 ### 0.7.0 — 25 septembre 2026
 
@@ -1772,6 +1858,64 @@ translation of the French version.
 
 ## What's New (English)
 
+### Version: 0.7.4 — November 2, 2026
+
+**Fix:**
+
+- Commands suggested by the build script to regenerate or align `requirements.lock`:
+  usable as-is when the repository path contains spaces, and regeneration keeps
+  `setuptools` under Python 3.10 and 3.11 — CR.
+
+---
+
+### Version: 0.7.3 — October 29, 2026
+
+**Fix:**
+
+- `requirements.lock` regeneration: the build script suggests a command that writes ASCII.
+  Under Windows PowerShell 5.1, the `>` redirection produced a UTF-16LE file the tests could
+  not read — CR.
+
+**Maintenance:**
+
+- Executable built with Python 3.13.17 (instead of 3.13.9).
+- Dependencies updated (notably selenium 4.52.0 and cryptography 50.0.2), lock regenerated.
+
+---
+
+### Version: 0.7.2 — October 29, 2026
+
+**Fix:**
+
+- Build dependency check: `setuptools` is no longer reported missing under Python 3.10
+  and 3.11 when the environment matches `requirements.lock` — CR.
+
+---
+
+### Version: 0.7.1 — October 29, 2026
+
+**Reproducible build:**
+
+- New `requirements.lock` file: exact versions of the build environment. The
+  `DIST-GlycoReport-Downloader.ps1` script stops the build if the interpreter in use
+  (`.venv` or global Python) does not contain exactly these versions. To align a
+  machine: `.venv\Scripts\python.exe -m pip install -r requirements.lock` — ES-30.
+- `requirements.txt`: upper bounds on `cryptography` (`<51.0.0`) and `pyyaml` (`<7.0`) —
+  ES-30.
+
+**Maintainability (no behavior change):**
+
+- Type hints on the entry functions (`main`, `saisir_identifiants`,
+  `selection_rapport`, `telechargement_rapport`, etc.) — ES-30.
+
+**Installer:**
+
+- The build checks the `.iss` `AppId` (missing, placeholder, changed, or already used by
+  another product) and requires a 64-bit PowerShell; installation is refused on a
+  machine that cannot run x64 — ES-35.
+
+---
+
 ### Version: 0.7.0 — September 25, 2026
 
 **Maintainability (no behavior change):**
@@ -2434,6 +2578,25 @@ distribution.
 ---
 
 ## Version History (English)
+
+### 0.7.4 — November 2, 2026
+
+- Fix: lock regeneration and alignment commands (paths with spaces, `setuptools`) (CR).
+
+### 0.7.3 — October 29, 2026
+
+- Fix: lock regeneration command with explicit ASCII encoding (CR).
+- Maintenance: Python 3.13.17 and dependencies up to date.
+
+### 0.7.2 — October 29, 2026
+
+- Fix: `setuptools` included in the build lock check (CR).
+
+### 0.7.1 — October 29, 2026
+
+- Reproducible build: `requirements.lock` checked by the build script, upper bounds on
+  `cryptography` and `pyyaml`, type hints (ES-30).
+- Installer: `AppId` check, 64-bit PowerShell and x64 machine required (ES-35).
 
 ### 0.7.0 — September 25, 2026
 

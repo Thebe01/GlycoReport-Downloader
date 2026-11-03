@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-03-23
-Modifié le    : 2026-09-24
-Version       : 0.6.1
+Modifié le    : 2026-10-29
+Version       : 0.0.3
 Copyright     : Pierre Théberge
 
 Description
@@ -20,11 +20,12 @@ Tests unitaires pour la fermeture de session navigateur en fin de traitement.
 
 Modifications
 -------------
-0.3.17 - 2026-03-23   [ES-14] : Ajout des tests unitaires de fermeture onglet/navigateur (single-tab vs multi-tab).
-0.5.12 - 2026-04-21   [ES-28] : Mocks cdp_raises/close_raises : RuntimeError → WebDriverException
-                                (alignement avec le narrowing except dans close_browser_session).
-0.6.1  - 2026-09-24   ES-28   : Tests de l'arrêt explicite du service ChromeDriver (deux branches,
-                                OSError absorbée, pilote sans service).
+0.0.0 - 2026-03-23   [ES-14] : Ajout des tests unitaires de fermeture onglet/navigateur (single-tab vs multi-tab).
+0.0.1 - 2026-04-21   [ES-28] : Mocks cdp_raises/close_raises : RuntimeError → WebDriverException
+                               (alignement avec le narrowing except dans close_browser_session).
+0.0.2 - 2026-09-24   ES-28   : Tests de l'arrêt explicite du service ChromeDriver (deux branches,
+                               OSError absorbée, pilote sans service).
+0.0.3 - 2026-10-29   CR      : Numérotation propre aux tests, indépendante de la version de l'application.
 
 Paramètres
 ----------

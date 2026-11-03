@@ -10,8 +10,8 @@ Type          : Python module
 Auteur        : Pierre Théberge
 Compagnie     : Innovations, Performances, Technologies inc.
 Créé le       : 2026-09-25
-Modifié le    : 2026-09-25
-Version       : 0.7.0
+Modifié le    : 2026-10-29
+Version       : 0.0.1
 Copyright     : Pierre Théberge
 
 Description
@@ -22,7 +22,8 @@ l'application démarre donc après une connexion manuelle (mode reprise).
 
 Modifications
 -------------
-0.7.0 - 2026-09-25   ES-29 : Version initiale.
+0.0.0 - 2026-09-25   ES-29 : Version initiale.
+0.0.1 - 2026-10-29   CR    : Numérotation propre aux tests, indépendante de la version de l'application.
 
 Paramètres
 ----------
