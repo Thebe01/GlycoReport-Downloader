@@ -1,15 +1,19 @@
 <!--
 META:
-    0.0.0 - 2026-07-31 - PD-206  : Version initiale. Extrait de HEADER_TEMPLATE_POWERSHELL.md
-                                    pour adapter les règles aux modules (.psm1/.psd1), qui ne
-                                    "s'exécutent" pas comme un script (pas de param() au niveau
-                                    module, pas de lignes Début/Fin).
-    0.0.1 - 2026-07-31 - CR      : Correction — l'absence de param() au niveau module n'est pas
-                                    une impossibilité du langage (Import-Module -ArgumentList
-                                    existe) mais une convention de ce standard ; justification
-                                    ajoutée (fragilité de l'auto-chargement, pas de liaison
-                                    nommée, invisible dans Get-Help). CompanyName de l'exemple de
-                                    manifeste aligné sur la graphie officielle (avec virgules).
+    0.2.0 - 2026-11-04 - PD-99   : .MODIFICATIONS en ordre descendant (entrée la plus récente en
+                                    tête), même règle de transition que le template script ;
+                                    exemple du .psm1 inversé ; bloc META inversé.
+    0.1.1 - 2026-10-26 - CR      : Exception explicite à la règle 0.1.0 pour l'avertissement
+                                    d'encodage du .psd1 (contrainte sur tout le fichier, sans
+                                    ligne à elle) — règle et checklist alignées sur l'exemple.
+    0.1.0 - 2026-09-01 - PD-226  : Résumé fonctionnel de la .DESCRIPTION plafonné à 20 lignes ;
+                                    les mises en garde vont dans le code, à leur ligne.
+    0.0.3 - 2026-08-01 - CR      : Précision du motif de fichier d'aide externe recherché par
+                                    Get-Help <NomDuModule> — about_<NomDuModule>.help.txt sous un
+                                    sous-dossier de culture (ex : en-US), pas about_*.help.txt.
+                                    Retrait de la même approximation (about_*.help.txt) restée dans
+                                    le texte de l'entrée 0.0.2. Accents restaurés dans cette même
+                                    entrée (retirés par erreur).
     0.0.2 - 2026-08-01 - PD-210  : Correction d'une affirmation fausse : le bloc <# ... #> en tête
                                     de .psm1 ne rend PAS le module visible via Get-Help
                                     <NomDuModule> (Get-Help traite un nom de module comme une
@@ -20,17 +24,16 @@ META:
                                     mais plus au motif erroné de l'aide fonctionnelle au niveau
                                     module. Get-Help Verb-Noun -Full sur une fonction exportée
                                     individuelle, lui, fonctionne bien.
-    0.0.3 - 2026-08-01 - CR      : Précision du motif de fichier d'aide externe recherché par
-                                    Get-Help <NomDuModule> — about_<NomDuModule>.help.txt sous un
-                                    sous-dossier de culture (ex : en-US), pas about_*.help.txt.
-                                    Retrait de la même approximation (about_*.help.txt) restée dans
-                                    le texte de l'entrée 0.0.2. Accents restaurés dans cette même
-                                    entrée (retirés par erreur).
-    0.1.0 - 2026-09-01 - PD-226  : Résumé fonctionnel de la .DESCRIPTION plafonné à 20 lignes ;
-                                    les mises en garde vont dans le code, à leur ligne.
-    0.1.1 - 2026-10-26 - CR      : Exception explicite à la règle 0.1.0 pour l'avertissement
-                                    d'encodage du .psd1 (contrainte sur tout le fichier, sans
-                                    ligne à elle) — règle et checklist alignées sur l'exemple.
+    0.0.1 - 2026-07-31 - CR      : Correction — l'absence de param() au niveau module n'est pas
+                                    une impossibilité du langage (Import-Module -ArgumentList
+                                    existe) mais une convention de ce standard ; justification
+                                    ajoutée (fragilité de l'auto-chargement, pas de liaison
+                                    nommée, invisible dans Get-Help). CompanyName de l'exemple de
+                                    manifeste aligné sur la graphie officielle (avec virgules).
+    0.0.0 - 2026-07-31 - PD-206  : Version initiale. Extrait de HEADER_TEMPLATE_POWERSHELL.md
+                                    pour adapter les règles aux modules (.psm1/.psd1), qui ne
+                                    "s'exécutent" pas comme un script (pas de param() au niveau
+                                    module, pas de lignes Début/Fin).
 -->
 
 # 📘 Template d'en-tête PowerShell — Modules (.psm1 / .psd1) - IPT inc
@@ -71,10 +74,10 @@ versionnement — s'applique de la même façon.
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
-    0.0.0 - YYYY-MM-DD - Billet-XXX  : Initialisation.
-    0.1.0 - YYYY-MM-DD - -           : Ajout de la fonction Verb-Noun.
-    0.1.1 - YYYY-MM-DD - PD-10000001 : Correction encodage UTF-8.
     1.0.0 - YYYY-MM-DD - -           : Version de production stable.
+    0.1.1 - YYYY-MM-DD - PD-10000001 : Correction encodage UTF-8.
+    0.1.0 - YYYY-MM-DD - -           : Ajout de la fonction Verb-Noun.
+    0.0.0 - YYYY-MM-DD - Billet-XXX  : Initialisation.
 #>
 
 #Requires -Version 5.1
@@ -114,6 +117,10 @@ Set-StrictMode -Version Latest
 - `.MODIFICATIONS` complet, une entrée par version, alignement sur `:` à la même colonne pour
   toutes les entrées, padding du champ billet et de la version selon les mêmes règles que le
   template script.
+- `.MODIFICATIONS` en ordre **descendant** (entrée la plus récente en tête), avec la même règle
+  de transition que le template script : un bloc encore croissant est inversé en entier au
+  moment où le fichier est modifié, jamais à moitié, et jamais en correction de masse — voir
+  [HEADER_TEMPLATE_POWERSHELL.md](HEADER_TEMPLATE_POWERSHELL.md#3-modifications).
 - `#Requires -Version 5.1` et `Set-StrictMode -Version Latest` obligatoires.
 
 **Ce qui ne s'applique PAS aux modules (contrairement aux scripts) :**
@@ -194,7 +201,7 @@ Avant de commiter un module PowerShell (`.psm1` + `.psd1`) :
 - [ ] `.psm1` : résumé fonctionnel de la `.DESCRIPTION` ≤ 20 lignes ; le reste dans le billet
 - [ ] Mises en garde placées à leur ligne dans le code, pas dans l'en-tête (sauf l'encodage du
       `.psd1`, qui vise le fichier entier)
-- [ ] `.psm1` : `.MODIFICATIONS` à jour avec dernière version, alignement respecté
+- [ ] `.psm1` : `.MODIFICATIONS` à jour, entrée la plus récente en tête, alignement respecté
 - [ ] `.psm1` : `#Requires -Version 5.1` et `Set-StrictMode -Version Latest`
 - [ ] `.psm1` : `Export-ModuleMember` explicite en fin de fichier
 - [ ] `.psd1` : `ModuleVersion` == `Version` du `.psm1` (même PR)
@@ -204,6 +211,6 @@ Avant de commiter un module PowerShell (`.psm1` + `.psd1`) :
 ---
 
 **Document créé le** : 2026-07-31
-**Version** : 0.1.1
+**Version** : 0.2.0
 **Mainteneur** : Pierre Théberge
 **Compagnie** : Innovations, Performances, Technologies inc.

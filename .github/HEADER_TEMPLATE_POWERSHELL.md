@@ -1,22 +1,23 @@
 <!--
 META:
-    1.0.0 - 2026-01-29 - -         : Version initiale.
-    1.0.1 - 2026-01-29 - ES-19     : Ajout des variables standard.
-    1.0.2 - 2026-03-19 - ES-15     : Références .github/ et ajout de la référence dans l'exemple .DESCRIPTION.
-    1.0.3 - 2026-03-20 - ES-15     : Suppression des lignes de consigne dans l'exemple .DESCRIPTION.
-    1.0.4 - 2026-04-21 - ES-28     : Correction alignement exemple section 3; règles alignement billet et normalisation longueur version.
-    1.0.5 - 2026-06-08 - SUP1-1159 : Ajout convention Début/Fin : afficher le nom et la version du script en
-                                     première et dernière ligne d'exécution (checklist + section code obligatoire).
-    1.0.6 - 2026-06-08 - SUP1-1159 : Lignes Début/Fin : Write-Output → Write-Host -ForegroundColor Green.
-    1.0.7 - 2026-06-08 - SUP1-1159 : $Script:NomScript — valeur dynamique via $PSCommandPath au lieu
-                                     d'un nom codé en dur (évite divergence si renommage).
-    1.0.8 - 2026-07-03 - OBS-78    : Clarification convention Début/Fin — la ligne Fin doit
-                                     précéder toute pause interactive de fermeture (Read-Host,
-                                     pause); la mesure de durée porte sur le travail effectif du
-                                     script, pas sur l'attente utilisateur.
-    1.0.9 - 2026-07-16 - PD-202    : Ajout règle explicite — la version initiale d'un script est
-                                     toujours 0.0.0 (jamais 1.0.0). La version 1.0.0 marque le
-                                     passage en production stable (checklist + section .MODIFICATIONS).
+    1.3.0 - 2026-11-04 - PD-99     : .MODIFICATIONS en ordre descendant (entrée la plus récente en
+                                     tête) ; règle de transition ; exemples des sections 1 et 3
+                                     inversés.
+    1.2.2 - 2026-11-04 - CR        : Pause finale : réponse de Read-Host affectée à $null (ne pollue
+                                     plus la sortie du script) ; PSInvalidOperationException
+                                     interceptée sous -NonInteractive (une exécution réussie ne
+                                     finit plus en erreur). Bloc META inversé (ordre descendant).
+    1.2.1 - 2026-10-26 - CR        : .NOTES aligné sur la règle 1.2.0 — retrait des « avertissements »,
+                                     renvoi des mises en garde au code.
+    1.2.0 - 2026-09-01 - PD-226    : Résumé fonctionnel de la .DESCRIPTION plafonné à 20 lignes ;
+                                     les mises en garde vont dans le code, à leur ligne.
+    1.1.2 - 2026-07-31 - CR        : Reformulation du renvoi vers HEADER_TEMPLATE_POWERSHELL_MODULE.md
+                                     — « un module ne s'exécute pas comme un script » pouvait laisser
+                                     croire à une contrainte du langage, alors que c'est une convention
+                                     de ce standard (un .psm1 exécute bien du code à l'import).
+    1.1.1 - 2026-07-31 - PD-206    : Ajout d'un renvoi vers HEADER_TEMPLATE_POWERSHELL_MODULE.md
+                                     (variante pour modules .psm1/.psd1) en tête de document et
+                                     dans les Ressources.
     1.1.0 - 2026-07-30 - PD-207    : Lignes Début/Fin encadrées d'un try/finally (Fin s'affiche à
                                      chaque point de sortie) ; ajout de la pause interactive finale
                                      (Read-Host) conditionnée à Test-InteractiveSession — volontairement
@@ -25,17 +26,23 @@ META:
                                      (.ps1 en UTF-8 avec BOM) et console (ASCII pur pour les scripts
                                      serveurs) — recoupe SUP1-1190. Formule reprise telle qu'éprouvée
                                      dans le module IPT.PromptSync (PD-206).
-    1.1.1 - 2026-07-31 - PD-206    : Ajout d'un renvoi vers HEADER_TEMPLATE_POWERSHELL_MODULE.md
-                                     (variante pour modules .psm1/.psd1) en tête de document et
-                                     dans les Ressources.
-    1.1.2 - 2026-07-31 - CR        : Reformulation du renvoi vers HEADER_TEMPLATE_POWERSHELL_MODULE.md
-                                     — « un module ne s'exécute pas comme un script » pouvait laisser
-                                     croire à une contrainte du langage, alors que c'est une convention
-                                     de ce standard (un .psm1 exécute bien du code à l'import).
-    1.2.0 - 2026-09-01 - PD-226    : Résumé fonctionnel de la .DESCRIPTION plafonné à 20 lignes ;
-                                     les mises en garde vont dans le code, à leur ligne.
-    1.2.1 - 2026-10-26 - CR        : .NOTES aligné sur la règle 1.2.0 — retrait des « avertissements »,
-                                     renvoi des mises en garde au code.
+    1.0.9 - 2026-07-16 - PD-202    : Ajout règle explicite — la version initiale d'un script est
+                                     toujours 0.0.0 (jamais 1.0.0). La version 1.0.0 marque le
+                                     passage en production stable (checklist + section .MODIFICATIONS).
+    1.0.8 - 2026-07-03 - OBS-78    : Clarification convention Début/Fin — la ligne Fin doit
+                                     précéder toute pause interactive de fermeture (Read-Host,
+                                     pause); la mesure de durée porte sur le travail effectif du
+                                     script, pas sur l'attente utilisateur.
+    1.0.7 - 2026-06-08 - SUP1-1159 : $Script:NomScript — valeur dynamique via $PSCommandPath au lieu
+                                     d'un nom codé en dur (évite divergence si renommage).
+    1.0.6 - 2026-06-08 - SUP1-1159 : Lignes Début/Fin : Write-Output → Write-Host -ForegroundColor Green.
+    1.0.5 - 2026-06-08 - SUP1-1159 : Ajout convention Début/Fin : afficher le nom et la version du script en
+                                     première et dernière ligne d'exécution (checklist + section code obligatoire).
+    1.0.4 - 2026-04-21 - ES-28     : Correction alignement exemple section 3; règles alignement billet et normalisation longueur version.
+    1.0.3 - 2026-03-20 - ES-15     : Suppression des lignes de consigne dans l'exemple .DESCRIPTION.
+    1.0.2 - 2026-03-19 - ES-15     : Références .github/ et ajout de la référence dans l'exemple .DESCRIPTION.
+    1.0.1 - 2026-01-29 - ES-19     : Ajout des variables standard.
+    1.0.0 - 2026-01-29 - -         : Version initiale.
 -->
 
 # 📘 Template d'en-tête PowerShell - IPT inc
@@ -68,10 +75,10 @@ Pour les modules (`.psm1`/`.psd1`), voir [HEADER_TEMPLATE_POWERSHELL_MODULE.md](
     Copyright      : Pierre Théberge
 
 .MODIFICATIONS
-    0.0.0 - YYYY-MM-DD - Billet-XXX  : Initialisation.
-    0.1.0 - YYYY-MM-DD - -           : Ajout paramètre -Verbose.
-    0.1.1 - YYYY-MM-DD - PD-10000001 : Correction encodage UTF-8.
     1.0.0 - YYYY-MM-DD - -           : Version de production stable.
+    0.1.1 - YYYY-MM-DD - PD-10000001 : Correction encodage UTF-8.
+    0.1.0 - YYYY-MM-DD - -           : Ajout paramètre -Verbose.
+    0.0.0 - YYYY-MM-DD - Billet-XXX  : Initialisation.
 
 .PARAMETER Paramètre
     Description du paramètre
@@ -156,11 +163,19 @@ Changelog **complet** avec chaque version documentée.
 
 ```powershell
 .MODIFICATIONS
-    0.0.0 - 2025-11-06 - Billet-XX  : Initialisation.
-    0.1.0 - 2025-11-08 - -          : Ajout paramètre -Verbose.
-    0.1.1 - 2025-11-09 - PD-100     : Correction encodage UTF-8.
     1.0.0 - 2025-11-15 - -          : Version de production stable.
+    0.1.1 - 2025-11-09 - PD-100     : Correction encodage UTF-8.
+    0.1.0 - 2025-11-08 - -          : Ajout paramètre -Verbose.
+    0.0.0 - 2025-11-06 - Billet-XX  : Initialisation.
 ```
+
+**Règles d'ordre :**
+
+- Ordre **descendant** : l'entrée la plus récente en tête du bloc.
+- Fichier existant en ordre croissant : on inverse **tout le bloc** au moment où le
+  fichier est modifié pour une autre raison, dans le même commit. Jamais de bloc à
+  moitié inversé.
+- Aucune correction de masse : un fichier qu'on ne touche pas garde son ordre.
 
 **Règles d'alignement :**
 
@@ -172,8 +187,8 @@ Changelog **complet** avec chaque version documentée.
   (noter l'espace supplémentaire après `0.0.9`) :
 
   ```powershell
-    0.0.9  - 2025-11-14 - PD-100     : Correction d'un bug.
     0.0.10 - 2025-11-15 - PD-100     : Ajout d'une fonctionnalité.
+    0.0.9  - 2025-11-14 - PD-100     : Correction d'un bug.
   ```
 
 **Règles versioning :**
@@ -346,14 +361,23 @@ finally {
 
     if ($Script:IsInteractive) {
         Write-Host ""
-        Read-Host "Appuyez sur Entree pour fermer la fenetre"
+        try {
+            # $null = : la reponse ne doit pas sortir dans le flux du script.
+            $null = Read-Host "Appuyez sur Entree pour fermer la fenetre"
+        }
+        catch [System.Management.Automation.PSInvalidOperationException] {
+            # Session lancee avec -NonInteractive : PowerShell refuse la lecture.
+            # Ni UserInteractive ni IsInputRedirected ne voient ce mode.
+            # La pause n'a pas lieu ; l'execution reste un succes.
+            Write-Verbose "Pause ignoree : session -NonInteractive"
+        }
     }
 }
 ```
 
 **Pourquoi :** Permet d'identifier immédiatement quel script a tourné, quelle version, et d'en mesurer la durée dans les logs — y compris pour les tâches planifiées, où les lignes Début/Fin s'affichent dans tous les cas.
 
-**Pause finale interactive :** la pause (`Read-Host`) est **conditionnée** à `Test-InteractiveSession`, pour qu'un script lancé par une tâche planifiée ne bloque jamais en attente d'une touche. Elle permet à l'usager de voir le résultat avant la fermeture de la fenêtre quand le script est lancé depuis un menu (ex. `Menu-ScriptIPT-locaux.ps1`). Le texte de la pause reste en ASCII pur (voir section « 🔤 Règles d'encodage »).
+**Pause finale interactive :** la pause (`Read-Host`) est **conditionnée** à `Test-InteractiveSession`, pour qu'un script lancé par une tâche planifiée ne bloque jamais en attente d'une touche. Elle permet à l'usager de voir le résultat avant la fermeture de la fenêtre quand le script est lancé depuis un menu (ex. `Menu-ScriptIPT-locaux.ps1`). Le texte de la pause reste en ASCII pur (voir section « 🔤 Règles d'encodage »). La réponse de `Read-Host` est affectée à `$null` pour ne pas sortir dans le flux du script ; sous `-NonInteractive`, que `Test-InteractiveSession` ne détecte pas, PowerShell 5.1 et 7 refusent la lecture par une `PSInvalidOperationException`, interceptée pour que l'exécution reste un succès.
 
 ---
 
@@ -461,7 +485,7 @@ Avant de commiter un script PowerShell :
 - [ ] Résumé fonctionnel de la `.DESCRIPTION` ≤ 20 lignes ; le reste dans le billet
 - [ ] Mises en garde placées à leur ligne dans le code, pas dans l'en-tête
 - [ ] Version initiale `0.0.0` (jamais `1.0.0`)
-- [ ] `.MODIFICATIONS` à jour avec dernière version
+- [ ] `.MODIFICATIONS` à jour, entrée la plus récente en tête (bloc entier inversé s'il était croissant)
 - [ ] `.PARAMETER` pour tous les paramètres
 - [ ] `.EXAMPLE` avec au moins 1 cas d'usage réel
 - [ ] `[CmdletBinding()]` présent si paramètres
@@ -476,6 +500,7 @@ Avant de commiter un script PowerShell :
 - [ ] Ligne `Debut NomScript Version` en première ligne d'exécution
 - [ ] Ligne `Fin NomScript Version` dans un `finally` (s'affiche à chaque point de sortie)
 - [ ] Pause interactive finale (`Read-Host`) conditionnée à `Test-InteractiveSession` (jamais de blocage en tâche planifiée)
+- [ ] Pause : `$null = Read-Host ...` dans un `try` qui intercepte `PSInvalidOperationException` (`-NonInteractive`)
 - [ ] `.ps1` enregistré en UTF-8 avec BOM ; ASCII pur dans le code exécutable
 - [ ] Sorties console (`Write-Host`, logs) en ASCII pur pour les scripts destinés aux serveurs
 - [ ] Code testé et fonctionnel
@@ -534,6 +559,6 @@ Dans VS Code, tapez `headerps` puis `Tab` :
 ---
 
 **Document créé le** : 2025-11-06  
-**Version** : 1.2.1  
+**Version** : 1.3.0  
 **Mainteneur** : Pierre Théberge  
 **Compagnie** : Innovations, Performances, Technologies inc.
