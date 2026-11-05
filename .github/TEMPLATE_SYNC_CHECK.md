@@ -1,26 +1,29 @@
 <!--
 META:
-    1.0.0  - 2026-01-29 - ES-19  : Version initiale.
-    1.0.1  - 2026-02-11 - PD-188 : Chemin de référence via variable d'environnement.
-    1.0.2  - 2026-02-11 - PD-188 : $repoRoot via REPO_ROOT ou détection Git.
-    1.0.3  - 2026-02-11 - PD-188 : Templates optionnels selon le repo.
-    1.0.4  - 2026-02-11 - PD-188 : Message d'erreur REPO_ROOT corrigé.
-    1.0.5  - 2026-02-12 - ES-3   : Validation REPO_ROOT et gestion sources
-                                   officielles manquantes.
-    1.0.6  - 2026-02-12 - ES-3   : Validation fichier officiel en mode Leaf.
-    1.0.7  - 2026-03-19 - ES-15  : Ajout du déclenchement à l'activation d'une conversation Copilot.
-    1.0.8  - 2026-03-19 - ES-15  : Ajout de la section finale standard du document.
-    1.0.9  - 2026-03-19 - ES-15  : Règle une version par séance sauf indication contraire.
-    1.0.10 - 2026-07-22 - PD-202 : Ajout de HEADER_TEMPLATE_SHELL.md à la liste des fichiers
-                                    comparés/synchronisés (section et paires PowerShell).
-    1.0.11 - 2026-07-23 - PD-202 : Copilot Review — chemin par défaut d’officialRoot assemblé via
-                                    [IO.Path]::Combine($HOME, ...) au lieu de Join-Path avec un backslash
-                                    littéral, pour rester portable sur pwsh non-Windows.
+    1.0.14 - 2026-11-04 - CR     : Compare-Object avec -SyncWindow 0 -CaseSensitive : la comparaison
+                                    détecte les lignes déplacées et les changements de casse. Bloc
+                                    META inversé (ordre descendant).
+    1.0.13 - 2026-08-15 - CR     : Référence cf. .github/HEADER_TEMPLATE_POWERSHELL.md rendue cohérente avec
+                                    le préfixe .github/ utilisé partout ailleurs dans le document.
     1.0.12 - 2026-07-31 - PD-206 : Ajout de HEADER_TEMPLATE_POWERSHELL_MODULE.md à la liste et aux
                                     paires PowerShell (comparaison et synchro), en cohérence avec
                                     IPT.PromptSync 0.2.0 (LanguageMap.PowerShell.TemplateNames).
-    1.0.13 - 2026-08-15 - CR     : Référence cf. .github/HEADER_TEMPLATE_POWERSHELL.md rendue cohérente avec
-                                    le préfixe .github/ utilisé partout ailleurs dans le document.
+    1.0.11 - 2026-07-23 - PD-202 : Copilot Review — chemin par défaut d’officialRoot assemblé via
+                                    [IO.Path]::Combine($HOME, ...) au lieu de Join-Path avec un backslash
+                                    littéral, pour rester portable sur pwsh non-Windows.
+    1.0.10 - 2026-07-22 - PD-202 : Ajout de HEADER_TEMPLATE_SHELL.md à la liste des fichiers
+                                    comparés/synchronisés (section et paires PowerShell).
+    1.0.9  - 2026-03-19 - ES-15  : Règle une version par séance sauf indication contraire.
+    1.0.8  - 2026-03-19 - ES-15  : Ajout de la section finale standard du document.
+    1.0.7  - 2026-03-19 - ES-15  : Ajout du déclenchement à l'activation d'une conversation Copilot.
+    1.0.6  - 2026-02-12 - ES-3   : Validation fichier officiel en mode Leaf.
+    1.0.5  - 2026-02-12 - ES-3   : Validation REPO_ROOT et gestion sources
+                                   officielles manquantes.
+    1.0.4  - 2026-02-11 - PD-188 : Message d'erreur REPO_ROOT corrigé.
+    1.0.3  - 2026-02-11 - PD-188 : Templates optionnels selon le repo.
+    1.0.2  - 2026-02-11 - PD-188 : $repoRoot via REPO_ROOT ou détection Git.
+    1.0.1  - 2026-02-11 - PD-188 : Chemin de référence via variable d'environnement.
+    1.0.0  - 2026-01-29 - ES-19  : Version initiale.
 -->
 
 # Vérification des templates d’en-tête
@@ -95,7 +98,9 @@ foreach ($p in $pairs) {
       "(Ignoré) Fichier officiel introuvable : $($p.Official)"
       continue
    }
-   Compare-Object (Get-Content -LiteralPath $p.Official) (Get-Content -LiteralPath $p.Repo) -IncludeEqual:$false |
+   # -SyncWindow 0 : ligne a ligne, a sa position (detecte un deplacement) ;
+   # -CaseSensitive : une difference de casse est un ecart.
+   Compare-Object (Get-Content -LiteralPath $p.Official) (Get-Content -LiteralPath $p.Repo) -IncludeEqual:$false -SyncWindow 0 -CaseSensitive |
       Select-Object @{n='Side';e={$_.SideIndicator}}, @{n='Line';e={$_.InputObject}}
 }
 ```
@@ -151,6 +156,6 @@ foreach ($p in $pairs) {
 ---
 
 **Document créé le** : 2026-01-29  
-**Version** : 1.0.13  
+**Version** : 1.0.14  
 **Mainteneur** : Pierre Théberge  
 **Compagnie** : Innovations, Performances, Technologies inc.
